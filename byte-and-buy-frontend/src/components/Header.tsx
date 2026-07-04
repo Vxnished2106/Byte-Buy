@@ -132,7 +132,7 @@ export default function Header() {
                 <Link to={"/"} className="link">
                   Iniciar sesion
                 </Link>
-                <Link to={"/"} className="link">
+                <Link to={"/register"} className="link">
                   Crear cuenta
                 </Link>
               </div>
