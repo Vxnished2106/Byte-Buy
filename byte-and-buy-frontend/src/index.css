@@ -24,4 +24,21 @@
 
   /* Éxito */
   --bb-success: #1f9d63;
+
+  /*Fuentes*/
+  --titles: "Space Grotesk", system-ui, sans-serif;
+  --text:
+    -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  --details: ui-monospace, Menlo, monospace;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bb-bg-1);
+  font-family: var(--text);
 }
