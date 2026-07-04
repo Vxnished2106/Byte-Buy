@@ -1,0 +1,220 @@
+header {
+  width: 100vw;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  background-color: #e7e9f644;
+  border-bottom: 1px solid #5856561a;
+  padding-left: 40px;
+  padding-right: 60px;
+  backdrop-filter: blur(10px);
+}
+
+.title {
+  font-family: var(--titles);
+  font-weight: 700;
+  font-size: 22px;
+}
+.title span {
+  color: var(--links-color);
+}
+.title .B {
+  color: #000;
+  transition: all .2s ease;
+}
+
+.title .B:hover{
+    color: var(--links-color);
+}
+
+.search-options{
+    display: flex;
+    gap: 120px;
+    position: relative;
+}
+
+.catalog{
+    width: 100px;
+    background-color: transparent;
+    border: none;
+    font-family: var(--titles);
+    font-weight: 700;
+    font-size: 16px
+}
+
+.catalog::after{
+    content: "▼";
+    display: inline-block;
+    font-size: 10px;
+    margin-left: 5px;
+}
+
+.catalog.open::after{
+    content: "▲";
+}
+
+.items-container {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    width: 240px;
+    background-color: var(--bb-surface);
+    border-radius: 14px;
+    border: 1px solid var(--bb-border);
+    box-shadow: 0 12px 30px rgba(35, 37, 47, 0.12);
+    padding: 8px;
+    z-index: 20;
+}
+
+.items-container ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.items {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: var(--text);
+    color: var(--bb-ink);
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.items:hover {
+    background-color: var(--bb-bg-2);
+    color: var(--links-color);
+}
+
+.item-name {
+    font-size: 15px;
+}
+
+.item-count {
+    font-family: var(--details);
+    font-size: 13px;
+    color: var(--bb-text-4);
+}
+
+.items:hover .item-count {
+    color: var(--links-color);
+}
+.search-bar-container input{
+    width: 400px;
+    height: 40px;
+    border: 1px solid #3a393933;
+    border-radius: 10px;
+    padding-left: 40px;
+}
+.search-bar-container{
+    position: relative;
+}
+.search-bar-container input:focus{
+    outline: none;
+}
+.user-menu {
+    position: relative;
+}
+.action-buttons{
+    display: flex;
+    gap: 20px;
+}
+.action-buttons button{
+    height: 40px;
+    width: 40px;
+    place-items: center;
+    border-radius: 5px;
+    border: 1px solid #2b2a2a0c;
+}
+.item-container-user {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    width: 260px;
+    background-color: var(--bb-surface);
+    border-radius: 14px;
+    border: 1px solid var(--bb-border);
+    box-shadow: 0 12px 30px rgba(35, 37, 47, 0.12);
+    padding: 16px;
+    z-index: 20;
+}
+
+.perfil-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+}
+
+.icon-user {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--bb-ink);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--titles);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.perfil-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.name {
+    font-family: var(--titles);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--bb-ink);
+}
+
+.ver-perfil-link {
+    font-size: 13px;
+    color: var(--bb-text-3);
+    text-decoration: none;
+    transition: color .15s ease;
+}
+
+.ver-perfil-link:hover {
+    color: var(--links-color);
+}
+
+.divider {
+    height: 1px;
+    background-color: var(--bb-border);
+    margin: 0 -16px;
+}
+
+.user-actions,
+.sesion-actions {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    gap: 2px;
+}
+
+.item-container-user .link {
+    text-decoration: none;
+    color: var(--bb-ink);
+    font-size: 15px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.item-container-user .link:hover {
+    background-color: var(--bb-bg-2);
+    color: var(--links-color);
+}
