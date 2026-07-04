@@ -1,0 +1,221 @@
+.form-container {
+  padding-top: 110px;
+  padding-bottom: 60px;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background-color: var(--bb-bg-1);
+}
+
+.register-form {
+  width: 460px;
+  background-color: var(--bb-surface);
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  border: 1px solid var(--bb-border);
+  box-shadow: 0 12px 30px rgba(35, 37, 47, 0.1);
+  padding: 36px 40px 32px;
+}
+
+.form-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 28px;
+}
+
+.form-header h3 {
+  font-family: var(--titles);
+  font-weight: 700;
+  font-size: 1.9em;
+  color: var(--bb-ink);
+}
+
+.form-header h5 {
+  font-family: var(--text);
+  font-weight: 400;
+  color: var(--bb-text-2);
+}
+
+.fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fields label {
+  font-family: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bb-ink);
+}
+
+.fields input[type="text"],
+.fields input[type="email"],
+.fields input[type="password"] {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--bb-border-input);
+  border-radius: 10px;
+  padding: 0 14px;
+  font-family: var(--text);
+  font-size: 14px;
+  color: var(--bb-ink);
+  background-color: var(--bb-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fields input::placeholder {
+  color: var(--bb-text-4);
+}
+
+.fields input:focus {
+  outline: none;
+  border-color: var(--links-color);
+  box-shadow: 0 0 0 3px rgba(58, 69, 189, 0.12);
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon input {
+  padding-right: 40px;
+}
+
+.eye-container {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--bb-text-3);
+}
+
+.password-validations {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin-top: -4px;
+}
+
+.password-validations li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--text);
+  font-size: 12px;
+  color: var(--bb-text-3);
+}
+
+.password-validations li .checked {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--bb-text-4);
+  font-size: 9px;
+  color: transparent;
+}
+
+.password-validations li.completed {
+  color: var(--bb-success);
+}
+
+.password-validations li.completed .checked {
+  border-color: var(--bb-success);
+  background-color: var(--bb-success);
+  color: #fff;
+}
+
+.terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.terms input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--links-color);
+  flex-shrink: 0;
+}
+
+.terms label {
+  font-family: var(--text);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--bb-text-2);
+  line-height: 1.4;
+}
+
+.terms span {
+  color: var(--links-color);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.terms span:hover {
+  text-decoration: underline;
+}
+
+.fields button[type="submit"] {
+  width: 100%;
+  height: 46px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  background-color: var(--bb-ink);
+  color: #fff;
+  font-family: var(--text);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.fields button[type="submit"]:hover {
+  background-color: #000;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 8px;
+  font-family: var(--text);
+  font-size: 13px;
+  color: var(--bb-text-2);
+}
+
+.login-link a {
+  color: var(--links-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
