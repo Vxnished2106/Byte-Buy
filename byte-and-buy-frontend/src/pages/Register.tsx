@@ -160,7 +160,7 @@ export default function Register() {
             </div>
             <button type="submit">Crear cuenta</button>
             <p className="login-link">
-              Ya tienes cuenta? <Link to={"/"}>Iniciar sesion</Link>
+              Ya tienes cuenta? <Link to={"/login"}>Iniciar sesion</Link>
             </p>
           </div>
         </form>

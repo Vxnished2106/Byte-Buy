@@ -49,7 +49,7 @@ export default function Login() {
               </div>
             </div>
             <div className="extra-actions">
-              <Link to={"/"}>¿Olvidaste tu contraseña?</Link>
+              <Link to={"/forgot-password"}>¿Olvidaste tu contraseña?</Link>
             </div>
             <button type="submit">Iniciar sesion</button>
 
