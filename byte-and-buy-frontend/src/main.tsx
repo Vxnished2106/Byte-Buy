@@ -13,10 +13,10 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/buy&buy/login" element={<Login />} />
-        <Route path="/buy&buy/register" element={<Register />} />
-        <Route path="/buy&buy/perfil" element={<Perfil/>}/>
-        <Route path="/buy&buy/forgot-password" element={<ForgotPassword />} />
+        <Route path="/byte&buy/login" element={<Login />} />
+        <Route path="/byte&buy/register" element={<Register />} />
+        <Route path="/byte&buy/perfil" element={<Perfil/>}/>
+        <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

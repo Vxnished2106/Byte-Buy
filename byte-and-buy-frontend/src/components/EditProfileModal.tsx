@@ -87,7 +87,7 @@ export default function EditProfileModal({
           </div>
           <p className="change-password">
             ¿Quieres cambiar tu contraseña?{" "}
-            <Link to="/buy&buy/forgot-password">Cambiar contraseña</Link>
+            <Link to="/byte&buy/forgot-password">Cambiar contraseña</Link>
           </p>
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>

@@ -165,7 +165,7 @@ export default function ForgotPassword() {
                 {error && <p className="error-message">{error}</p>}
                 <button type="submit">Restablecer contraseña</button>
                 <p className="back-link">
-                  <Link to={"/buy&buy/login"}>Volver a iniciar sesion</Link>
+                  <Link to={"/byte&buy/login"}>Volver a iniciar sesion</Link>
                 </p>
               </div>
             </>

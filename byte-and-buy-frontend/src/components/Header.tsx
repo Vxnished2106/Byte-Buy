@@ -116,14 +116,14 @@ export default function Header() {
                 <div className="icon-user">AM</div>
                 <div className="perfil-text">
                   <span className="name">Alex Morales</span>
-                  <Link to={"/buy&buy/perfil"} className="ver-perfil-link">
+                  <Link to={"/byte&buy/perfil"} className="ver-perfil-link">
                     Ver mi perfil
                   </Link>
                 </div>
               </div>
               <div className="divider" />
               <div className="user-actions">
-                <Link to={"/buy&buy/perfil"} className="link">
+                <Link to={"/byte&buy/perfil"} className="link">
                   Mi perfil
                 </Link>
                 <Link to={"/"} className="link">
@@ -132,10 +132,10 @@ export default function Header() {
               </div>
               <div className="divider" />
               <div className="sesion-actions">
-                <Link to={"/buy&buy/login"} className="link">
+                <Link to={"/byte&buy/login"} className="link">
                   Iniciar sesion
                 </Link>
-                <Link to={"/buy&buy/register"} className="link">
+                <Link to={"/byte&buy/register"} className="link">
                   Crear cuenta
                 </Link>
               </div>

@@ -54,7 +54,7 @@ export default function Login() {
             <button type="submit">Iniciar sesion</button>
 
             <p className="register-link">
-              ¿No tienes cuenta? <Link to={"/buy&buy/register"}>Crear cuenta</Link>
+              ¿No tienes cuenta? <Link to={"/byte&buy/register"}>Crear cuenta</Link>
             </p>
           </div>
         </form>
