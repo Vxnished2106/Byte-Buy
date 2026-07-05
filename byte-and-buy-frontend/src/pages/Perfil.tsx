@@ -5,10 +5,7 @@ import EditProfileModal, {
 } from "../components/EditProfileModal";
 import "../styles/perfil.css";
 
-const stats = [
-  { id: 1, value: "24", label: "Pedidos realizados" },
-  { id: 2, value: "$4,860", label: "Total gastado" },
-];
+const stats = [{ id: 1, value: "24", label: "Pedidos realizados" }];
 
 const direcciones = [
   {
@@ -100,9 +97,7 @@ export default function Perfil() {
               </div>
               <div className="perfil-heading">
                 <h3>{nombreCompleto}</h3>
-                <span className="perfil-email">
-                  {profile.correo} · Miembro desde 2024
-                </span>
+                <span className="perfil-email">{profile.correo}</span>
               </div>
             </div>
             <button
@@ -122,69 +117,6 @@ export default function Perfil() {
               <span className="stat-label">{stat.label}</span>
             </div>
           ))}
-        </div>
-
-        <section className="perfil-card">
-          <h4>Datos personales</h4>
-          <div className="datos-grid">
-            <div className="dato">
-              <span className="dato-label">Nombre completo</span>
-              <span className="dato-value">{nombreCompleto}</span>
-            </div>
-            <div className="dato">
-              <span className="dato-label">Correo electrónico</span>
-              <span className="dato-value">{profile.correo}</span>
-            </div>
-          </div>
-        </section>
-
-        <div className="perfil-row">
-          <section className="perfil-card direcciones-card">
-            <div className="card-header">
-              <h4>Direcciones</h4>
-              <button type="button" className="add-link">
-                + Añadir
-              </button>
-            </div>
-            <div className="direcciones-list">
-              {direcciones.map((direccion) => (
-                <div
-                  className={`direccion-box${direccion.predeterminada ? " default" : ""}`}
-                  key={direccion.id}
-                >
-                  <div className="direccion-title">
-                    {direccion.nombre}
-                    {direccion.predeterminada && (
-                      <span className="badge-default">Predeterminada</span>
-                    )}
-                  </div>
-                  <address>
-                    {direccion.calle}
-                    <br />
-                    {direccion.ciudad}
-                    <br />
-                    {direccion.pais}
-                  </address>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="perfil-card metodo-pago-card">
-            <h4>Método de pago</h4>
-            <div className="tarjeta-box">
-              <div className="tarjeta-header">
-                <span className="marca">{tarjeta.marca}</span>
-                <span className="exp">Exp. {tarjeta.expiracion}</span>
-              </div>
-              <span className="tarjeta-numero">
-                •••• •••• •••• {tarjeta.ultimosDigitos}
-              </span>
-            </div>
-            <button type="button" className="add-link">
-              + Añadir tarjeta
-            </button>
-          </section>
         </div>
 
         <section className="perfil-card">
