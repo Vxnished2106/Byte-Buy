@@ -5,6 +5,7 @@ header {
   align-items: center;
   justify-content: space-between;
   position: fixed;
+  z-index: 100;
   background-color: #e7e9f644;
   border-bottom: 1px solid #5856561a;
   padding-left: 40px;
