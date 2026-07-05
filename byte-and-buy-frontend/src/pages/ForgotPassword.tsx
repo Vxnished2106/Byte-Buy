@@ -94,7 +94,7 @@ export default function ForgotPassword() {
                 </div>
                 <button type="submit">Continuar</button>
                 <p className="back-link">
-                  <Link to={"/login"}>Volver a iniciar sesion</Link>
+                  <Link to={"/buy&buy/login"}>Volver a iniciar sesion</Link>
                 </p>
               </div>
             </>
@@ -165,7 +165,7 @@ export default function ForgotPassword() {
                 {error && <p className="error-message">{error}</p>}
                 <button type="submit">Restablecer contraseña</button>
                 <p className="back-link">
-                  <Link to={"/login"}>Volver a iniciar sesion</Link>
+                  <Link to={"/buy&buy/login"}>Volver a iniciar sesion</Link>
                 </p>
               </div>
             </>
@@ -182,7 +182,7 @@ export default function ForgotPassword() {
                 <p className="success-text">
                   Ya puedes iniciar sesion en Byte&Buy con tu nueva contraseña
                 </p>
-                <Link to={"/login"}>
+                <Link to={"/buy&buy/login"}>
                   <button type="button">Ir a iniciar sesion</button>
                 </Link>
               </div>

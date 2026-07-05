@@ -49,12 +49,12 @@ export default function Login() {
               </div>
             </div>
             <div className="extra-actions">
-              <Link to={"/forgot-password"}>¿Olvidaste tu contraseña?</Link>
+              <Link to={"/buy&buy/forgot-password"}>¿Olvidaste tu contraseña?</Link>
             </div>
             <button type="submit">Iniciar sesion</button>
 
             <p className="register-link">
-              ¿No tienes cuenta? <Link to={"/register"}>Crear cuenta</Link>
+              ¿No tienes cuenta? <Link to={"/buy&buy/register"}>Crear cuenta</Link>
             </p>
           </div>
         </form>
