@@ -129,7 +129,7 @@ export default function Header() {
               </div>
               <div className="divider" />
               <div className="sesion-actions">
-                <Link to={"/"} className="link">
+                <Link to={"/login"} className="link">
                   Iniciar sesion
                 </Link>
                 <Link to={"/register"} className="link">
