@@ -113,14 +113,14 @@ export default function Header() {
                 <div className="icon-user">AM</div>
                 <div className="perfil-text">
                   <span className="name">Alex Morales</span>
-                  <Link to={"/"} className="ver-perfil-link">
+                  <Link to={"/perfil"} className="ver-perfil-link">
                     Ver mi perfil
                   </Link>
                 </div>
               </div>
               <div className="divider" />
               <div className="user-actions">
-                <Link to={"/"} className="link">
+                <Link to={"/perfil"} className="link">
                   Mi perfil
                 </Link>
                 <Link to={"/"} className="link">
