@@ -29,7 +29,10 @@ header {
 .title .B:hover{
     color: var(--links-color);
 }
-
+.link{
+    text-decoration: none;
+    color: #000;
+}
 .search-options{
     display: flex;
     gap: 120px;

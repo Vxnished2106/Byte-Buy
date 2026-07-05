@@ -68,10 +68,13 @@ export default function Header() {
   ];
   return (
     <header>
+      <Link to={"/"} className="link">
       <h4 className="title">
+        
         <span className="B">B</span>yte<span>&</span>
         <span className="B">B</span>uy
       </h4>
+      </Link>
       <div className="search-options">
         <button
           className={`catalog${openCatalogo ? " open" : ""}`}
