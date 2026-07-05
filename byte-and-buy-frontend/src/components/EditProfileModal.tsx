@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { Link } from "react-router";
 
 export interface ProfileData {
   nombre: string;
+  apellido1: string;
+  apellido2: string;
   correo: string;
-  telefono: string;
-  fechaNacimiento: string;
 }
 
 interface EditProfileModalProps {
@@ -44,7 +45,7 @@ export default function EditProfileModal({
         </div>
         <div className="fields">
           <div className="field">
-            <label htmlFor="nombre">Nombre completo</label>
+            <label htmlFor="nombre">Nombre</label>
             <input
               id="nombre"
               type="text"
@@ -52,6 +53,27 @@ export default function EditProfileModal({
               onChange={handleChange("nombre")}
               required
             />
+          </div>
+          <div className="field-row">
+            <div className="field">
+              <label htmlFor="apellido1">Primer apellido</label>
+              <input
+                id="apellido1"
+                type="text"
+                value={form.apellido1}
+                onChange={handleChange("apellido1")}
+                required
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="apellido2">Segundo apellido</label>
+              <input
+                id="apellido2"
+                type="text"
+                value={form.apellido2}
+                onChange={handleChange("apellido2")}
+              />
+            </div>
           </div>
           <div className="field">
             <label htmlFor="correo">Correo electrónico</label>
@@ -63,26 +85,10 @@ export default function EditProfileModal({
               required
             />
           </div>
-          <div className="field">
-            <label htmlFor="telefono">Teléfono</label>
-            <input
-              id="telefono"
-              type="tel"
-              value={form.telefono}
-              onChange={handleChange("telefono")}
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="fechaNacimiento">Fecha de nacimiento</label>
-            <input
-              id="fechaNacimiento"
-              type="date"
-              value={form.fechaNacimiento}
-              onChange={handleChange("fechaNacimiento")}
-              required
-            />
-          </div>
+          <p className="change-password">
+            ¿Quieres cambiar tu contraseña?{" "}
+            <Link to="/forgot-password">Cambiar contraseña</Link>
+          </p>
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancelar

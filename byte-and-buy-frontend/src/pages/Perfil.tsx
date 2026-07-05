@@ -59,15 +59,6 @@ const pedidos = [
   },
 ];
 
-function formatFechaNacimiento(iso: string) {
-  const [year, month, day] = iso.split("-").map(Number);
-  return new Intl.DateTimeFormat("es-ES", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(year, month - 1, day));
-}
-
 function estadoClassName(estado: string) {
   return estado === "Entregado" ? "entregado" : "en-camino";
 }
@@ -75,17 +66,20 @@ function estadoClassName(estado: string) {
 export default function Perfil() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
-    nombre: "Alex Morales",
+    nombre: "Alex",
+    apellido1: "Morales",
+    apellido2: "",
     correo: "alex.morales@correo.com",
-    telefono: "+1 555 218 4409",
-    fechaNacimiento: "1992-03-14",
   });
 
-  const iniciales = profile.nombre
-    .split(" ")
+  const nombreCompleto = [profile.nombre, profile.apellido1, profile.apellido2]
+    .filter(Boolean)
+    .join(" ");
+
+  const iniciales = [profile.nombre, profile.apellido1]
+    .filter(Boolean)
     .map((palabra) => palabra[0])
     .join("")
-    .slice(0, 2)
     .toUpperCase();
 
   const handleSave = (updated: ProfileData) => {
@@ -105,9 +99,9 @@ export default function Perfil() {
                 <h2>{iniciales}</h2>
               </div>
               <div className="perfil-heading">
-                <h3>{profile.nombre}</h3>
+                <h3>{nombreCompleto}</h3>
                 <span className="perfil-email">
-                  {profile.correo}
+                  {profile.correo} · Miembro desde 2024
                 </span>
               </div>
             </div>
@@ -135,21 +129,11 @@ export default function Perfil() {
           <div className="datos-grid">
             <div className="dato">
               <span className="dato-label">Nombre completo</span>
-              <span className="dato-value">{profile.nombre}</span>
+              <span className="dato-value">{nombreCompleto}</span>
             </div>
             <div className="dato">
               <span className="dato-label">Correo electrónico</span>
               <span className="dato-value">{profile.correo}</span>
-            </div>
-            <div className="dato">
-              <span className="dato-label">Teléfono</span>
-              <span className="dato-value">{profile.telefono}</span>
-            </div>
-            <div className="dato">
-              <span className="dato-label">Fecha de nacimiento</span>
-              <span className="dato-value">
-                {formatFechaNacimiento(profile.fechaNacimiento)}
-              </span>
             </div>
           </div>
         </section>
