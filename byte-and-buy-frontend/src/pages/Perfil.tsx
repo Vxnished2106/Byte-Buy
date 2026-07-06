@@ -77,6 +77,7 @@ export default function Perfil() {
           apellido1: usuario.usuario_apellido1,
           apellido2: usuario.usuario_apellido2 ?? "",
           correo: usuario.usuario_correo,
+          foto: usuario.usuario_foto ?? null,
         });
       })
       .catch((err) => {
@@ -101,21 +102,25 @@ export default function Perfil() {
         .toUpperCase()
     : "";
 
-  const handleSave = async (updated: ProfileData) => {
+  const handleSave = async (updated: ProfileData, foto?: File) => {
     setSaving(true);
     setSaveError("");
     try {
-      const usuarioActualizado = await actualizarPerfil({
-        usuario_nombre: updated.nombre,
-        usuario_apellido1: updated.apellido1,
-        usuario_apellido2: updated.apellido2 || null,
-        usuario_correo: updated.correo,
-      });
+      const usuarioActualizado = await actualizarPerfil(
+        {
+          usuario_nombre: updated.nombre,
+          usuario_apellido1: updated.apellido1,
+          usuario_apellido2: updated.apellido2 || null,
+          usuario_correo: updated.correo,
+        },
+        foto,
+      );
       setProfile({
         nombre: usuarioActualizado.usuario_nombre,
         apellido1: usuarioActualizado.usuario_apellido1,
         apellido2: usuarioActualizado.usuario_apellido2 ?? "",
         correo: usuarioActualizado.usuario_correo,
+        foto: usuarioActualizado.usuario_foto ?? null,
       });
       setIsEditOpen(false);
     } catch (err) {
@@ -158,7 +163,11 @@ export default function Perfil() {
           <div className="banner-info">
             <div className="banner-info-left">
               <div className="perfil-bubble">
-                <h2>{iniciales}</h2>
+                {profile.foto ? (
+                  <img src={profile.foto} alt="Foto de perfil" />
+                ) : (
+                  <h2>{iniciales}</h2>
+                )}
               </div>
               <div className="perfil-heading">
                 <h3>{nombreCompleto}</h3>
