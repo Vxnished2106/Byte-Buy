@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
+import { obtenerIniciales } from "../utils/usuario";
+import { validarImagen } from "../utils/validaciones";
 
 export interface ProfileData {
   nombre: string;
@@ -16,8 +18,6 @@ interface EditProfileModalProps {
   saving?: boolean;
   error?: string;
 }
-
-const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024;
 
 export default function EditProfileModal({
   profile,
@@ -40,11 +40,7 @@ export default function EditProfileModal({
     };
   }, [fotoPreview]);
 
-  const iniciales = [form.nombre, form.apellido1]
-    .filter(Boolean)
-    .map((palabra) => palabra[0])
-    .join("")
-    .toUpperCase();
+  const iniciales = obtenerIniciales(form.nombre, form.apellido1);
 
   const handleChange =
     (field: keyof ProfileData) =>
@@ -57,12 +53,9 @@ export default function EditProfileModal({
     e.target.value = "";
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setFotoError("El archivo debe ser una imagen");
-      return;
-    }
-    if (file.size > TAMANO_MAXIMO_FOTO) {
-      setFotoError("La imagen no debe superar los 5MB");
+    const mensajeError = validarImagen(file);
+    if (mensajeError) {
+      setFotoError(mensajeError);
       return;
     }
 

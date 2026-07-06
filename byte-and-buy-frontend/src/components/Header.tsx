@@ -1,73 +1,56 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import User from "../assets/favicon/user";
 import Cart from "../assets/favicon/cart";
 import "../styles/header.css";
 import { Link, useNavigate } from "react-router";
 import SearchRounded from "../assets/favicon/search";
-import { supabase } from "../services/supabaseClient";
 import { obtenerPerfil } from "../services/usuario";
 import { logout } from "../services/auth";
+import { useSesion } from "../hooks/useSesion";
+import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 
 export default function Header() {
   const navigate = useNavigate();
+  const { session } = useSesion();
   const [openCatalogo, setOpenCatalogo] = useState(false);
   const [openPerfil, setOpenPerfil] = useState(false);
   const [product, setProduct] = useState<string>("");
-  const [autenticado, setAutenticado] = useState(false);
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [inicialesUsuario, setInicialesUsuario] = useState("");
+  const autenticado = !!session;
   const handleOpenCatalogo = () => setOpenCatalogo(!openCatalogo);
   const handleOpenPerfil = () => setOpenPerfil(!openPerfil);
   const cerrarMenuPerfil = () => setOpenPerfil(false);
 
   useEffect(() => {
-    let vigente = true;
+    if (!session) {
+      setNombreUsuario("");
+      setInicialesUsuario("");
+      return;
+    }
 
-    const cargarUsuario = async (haySesion: boolean) => {
-      if (!haySesion) {
+    let vigente = true;
+    obtenerPerfil()
+      .then((usuario) => {
+        if (!vigente) return;
+        setNombreUsuario(
+          obtenerNombreCompleto(usuario.usuario_nombre, usuario.usuario_apellido1),
+        );
+        setInicialesUsuario(
+          obtenerIniciales(usuario.usuario_nombre, usuario.usuario_apellido1),
+        );
+      })
+      .catch(() => {
         if (vigente) {
-          setAutenticado(false);
           setNombreUsuario("");
           setInicialesUsuario("");
         }
-        return;
-      }
-      try {
-        const usuario = await obtenerPerfil();
-        if (!vigente) return;
-        setAutenticado(true);
-        setNombreUsuario(
-          [usuario.usuario_nombre, usuario.usuario_apellido1]
-            .filter(Boolean)
-            .join(" "),
-        );
-        setInicialesUsuario(
-          [usuario.usuario_nombre, usuario.usuario_apellido1]
-            .filter(Boolean)
-            .map((palabra) => palabra[0])
-            .join("")
-            .toUpperCase(),
-        );
-      } catch {
-        if (vigente) setAutenticado(false);
-      }
-    };
-
-    supabase.auth.getSession().then(({ data }) => {
-      cargarUsuario(!!data.session);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        cargarUsuario(!!session);
-      },
-    );
+      });
 
     return () => {
       vigente = false;
-      listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [session]);
 
   const handleLogout = async () => {
     await logout();

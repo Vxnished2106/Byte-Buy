@@ -4,6 +4,7 @@ import "../styles/forgot-password.css";
 import EyeOutline from "../assets/favicon/openEye";
 import EyeCloseFill from "../assets/favicon/closeEye";
 import Header from "../components/Header";
+import { validarContrasena } from "../utils/validaciones";
 
 export default function ForgotPassword() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -14,24 +15,7 @@ export default function ForgotPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const validations = [
-    {
-      text: "Minimo 8 caracteres",
-      completed: newPassword.length >= 8,
-    },
-    {
-      text: "Uso de mayusculas",
-      completed: /[A-Z]/.test(newPassword),
-    },
-    {
-      text: "Uso de numeros",
-      completed: /[0-9]/.test(newPassword),
-    },
-    {
-      text: "Uso de caracteres especiales",
-      completed: /[!@#$%^&*()?:{}|<>]/.test(newPassword),
-    },
-  ];
+  const validations = validarContrasena(newPassword);
 
   const handleShowPassword = () => setShowPassword(!showPassword);
   const handleShowConfirmPassword = () =>

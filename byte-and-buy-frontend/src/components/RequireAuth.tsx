@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Navigate } from "react-router";
-import type { Session } from "@supabase/supabase-js";
-import { supabase } from "../services/supabaseClient";
+import { useSesion } from "../hooks/useSesion";
 
 interface RequireAuthProps {
   children: ReactNode;
@@ -10,24 +8,7 @@ interface RequireAuthProps {
 }
 
 export default function RequireAuth({ children, fallback }: RequireAuthProps) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, nuevaSesion) => {
-        setSession(nuevaSesion);
-        setLoading(false);
-      },
-    );
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
+  const { session, loading } = useSesion();
 
   if (loading) return null;
 

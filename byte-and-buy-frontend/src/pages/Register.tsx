@@ -5,6 +5,7 @@ import "../styles/register.css";
 import EyeOutline from "../assets/favicon/openEye";
 import EyeCloseFill from "../assets/favicon/closeEye";
 import { register } from "../services/auth";
+import { validarContrasena } from "../utils/validaciones";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -19,24 +20,7 @@ export default function Register() {
   const [accept, setAccept] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const validations = [
-    {
-      text: "Minimo 8 caracteres",
-      completed: password.length >= 8,
-    },
-    {
-      text: "Uso de mayusculas",
-      completed: /[A-Z]/.test(password),
-    },
-    {
-      text: "Uso de numeros",
-      completed: /[0-9]/.test(password),
-    },
-    {
-      text: "Uso de caracteres especiales",
-      completed: /[!@#$%^&*()?:{}|<>]/.test(password),
-    },
-  ];
+  const validations = validarContrasena(password);
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };

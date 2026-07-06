@@ -4,6 +4,7 @@ import EditProfileModal, {
   type ProfileData,
 } from "../components/EditProfileModal";
 import { actualizarPerfil, obtenerPerfil } from "../services/usuario";
+import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 import "../styles/perfil.css";
 
 const stats = [{ id: 1, value: "24", label: "Pedidos realizados" }];
@@ -89,17 +90,11 @@ export default function Perfil() {
   }, []);
 
   const nombreCompleto = profile
-    ? [profile.nombre, profile.apellido1, profile.apellido2]
-        .filter(Boolean)
-        .join(" ")
+    ? obtenerNombreCompleto(profile.nombre, profile.apellido1, profile.apellido2)
     : "";
 
   const iniciales = profile
-    ? [profile.nombre, profile.apellido1]
-        .filter(Boolean)
-        .map((palabra) => palabra[0])
-        .join("")
-        .toUpperCase()
+    ? obtenerIniciales(profile.nombre, profile.apellido1)
     : "";
 
   const handleSave = async (updated: ProfileData, foto?: File) => {
