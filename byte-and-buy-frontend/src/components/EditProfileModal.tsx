@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
 export interface ProfileData {
@@ -6,15 +6,18 @@ export interface ProfileData {
   apellido1: string;
   apellido2: string;
   correo: string;
+  foto?: string | null;
 }
 
 interface EditProfileModalProps {
   profile: ProfileData;
   onClose: () => void;
-  onSave: (profile: ProfileData) => void | Promise<void>;
+  onSave: (profile: ProfileData, foto?: File) => void | Promise<void>;
   saving?: boolean;
   error?: string;
 }
+
+const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024;
 
 export default function EditProfileModal({
   profile,
@@ -24,6 +27,24 @@ export default function EditProfileModal({
   error = "",
 }: EditProfileModalProps) {
   const [form, setForm] = useState<ProfileData>(profile);
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(
+    profile.foto ?? null,
+  );
+  const [fotoError, setFotoError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (fotoPreview?.startsWith("blob:")) URL.revokeObjectURL(fotoPreview);
+    };
+  }, [fotoPreview]);
+
+  const iniciales = [form.nombre, form.apellido1]
+    .filter(Boolean)
+    .map((palabra) => palabra[0])
+    .join("")
+    .toUpperCase();
 
   const handleChange =
     (field: keyof ProfileData) =>
@@ -31,9 +52,28 @@ export default function EditProfileModal({
       setForm({ ...form, [field]: e.target.value });
     };
 
+  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setFotoError("El archivo debe ser una imagen");
+      return;
+    }
+    if (file.size > TAMANO_MAXIMO_FOTO) {
+      setFotoError("La imagen no debe superar los 5MB");
+      return;
+    }
+
+    setFotoError("");
+    setFotoFile(file);
+    setFotoPreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(form);
+    onSave(form, fotoFile ?? undefined);
   };
 
   return (
@@ -48,6 +88,33 @@ export default function EditProfileModal({
           <h5>Actualiza tus datos personales</h5>
         </div>
         <div className="fields">
+          <div className="modal-avatar">
+            <div className="modal-avatar-preview">
+              {fotoPreview ? (
+                <img src={fotoPreview} alt="Foto de perfil" />
+              ) : (
+                <span>{iniciales}</span>
+              )}
+            </div>
+            <div className="modal-avatar-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={saving}
+              >
+                Cambiar foto
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFotoChange}
+                hidden
+              />
+            </div>
+          </div>
+          {fotoError && <p className="error-message">{fotoError}</p>}
           <div className="field">
             <label htmlFor="nombre">Nombre</label>
             <input
