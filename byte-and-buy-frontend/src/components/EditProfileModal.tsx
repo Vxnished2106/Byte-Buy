@@ -11,13 +11,17 @@ export interface ProfileData {
 interface EditProfileModalProps {
   profile: ProfileData;
   onClose: () => void;
-  onSave: (profile: ProfileData) => void;
+  onSave: (profile: ProfileData) => void | Promise<void>;
+  saving?: boolean;
+  error?: string;
 }
 
 export default function EditProfileModal({
   profile,
   onClose,
   onSave,
+  saving = false,
+  error = "",
 }: EditProfileModalProps) {
   const [form, setForm] = useState<ProfileData>(profile);
 
@@ -89,12 +93,18 @@ export default function EditProfileModal({
             ¿Quieres cambiar tu contraseña?{" "}
             <Link to="/byte&buy/forgot-password">Cambiar contraseña</Link>
           </p>
+          {error && <p className="error-message">{error}</p>}
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onClose}
+              disabled={saving}
+            >
               Cancelar
             </button>
-            <button type="submit" className="btn-primary">
-              Guardar cambios
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? "Guardando..." : "Guardar cambios"}
             </button>
           </div>
         </div>
