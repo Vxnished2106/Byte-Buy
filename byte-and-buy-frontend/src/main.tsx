@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import Register from "./pages/Register.tsx";
 import Login from "./pages/Login.tsx";
 import Perfil from "./pages/Perfil.tsx";
+import PerfilInvitado from "./pages/PerfilInvitado.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import RequireAuth from "./components/RequireAuth.tsx";
 
@@ -13,20 +14,13 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <App />
-            </RequireAuth>
-          }
-        />
+        <Route path="/" element={<App />} />
         <Route path="/byte&buy/login" element={<Login />} />
         <Route path="/byte&buy/register" element={<Register />} />
         <Route
           path="/byte&buy/perfil"
           element={
-            <RequireAuth>
+            <RequireAuth fallback={<PerfilInvitado />}>
               <Perfil />
             </RequireAuth>
           }
