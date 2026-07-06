@@ -5,6 +5,7 @@ import EyeOutline from "../assets/favicon/openEye";
 import EyeCloseFill from "../assets/favicon/closeEye";
 import Header from "../components/Header";
 import { login } from "../services/auth";
+import { Rol } from "../ts/interfaces";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,8 +24,8 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      navigate("/");
+      const usuario = await login(email, password);
+      navigate(usuario.usuario_rol === Rol.ADMIN ? "/byte&buy/admin" : "/");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "No se pudo iniciar sesion",
