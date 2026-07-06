@@ -1,11 +1,6 @@
-import api from "./api";
 import { supabase } from "./supabaseClient";
-import type { Usuario, RegisterData, RegisterResult } from "../ts/interfaces";
-
-async function syncUsuario(): Promise<Usuario> {
-  const { data } = await api.get<Usuario>("/usuarios/me");
-  return data;
-}
+import { obtenerPerfil } from "./usuario";
+import type { RegisterData, RegisterResult } from "../ts/interfaces";
 
 export async function register(datos: RegisterData): Promise<RegisterResult> {
   const { data, error } = await supabase.auth.signUp({
@@ -26,14 +21,14 @@ export async function register(datos: RegisterData): Promise<RegisterResult> {
     return { usuario: null, requiereConfirmacion: true };
   }
 
-  const usuario = await syncUsuario();
+  const usuario = await obtenerPerfil();
   return { usuario, requiereConfirmacion: false };
 }
 
-export async function login(email: string, password: string): Promise<Usuario> {
+export async function login(email: string, password: string) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
-  return syncUsuario();
+  return obtenerPerfil();
 }
 
 export async function logout(): Promise<void> {
