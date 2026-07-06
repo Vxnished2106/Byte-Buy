@@ -6,7 +6,28 @@ export async function obtenerPerfil(): Promise<Usuario> {
   return data;
 }
 
-export async function actualizarPerfil(datos: UpdateUsuario): Promise<Usuario> {
-  const { data } = await api.patch<Usuario>("/usuarios", datos);
+export async function actualizarPerfil(
+  datos: UpdateUsuario,
+  foto?: File,
+): Promise<Usuario> {
+  if (!foto) {
+    const { data } = await api.patch<Usuario>("/usuarios", datos);
+    return data;
+  }
+
+  const formData = new FormData();
+  if (datos.usuario_nombre !== undefined)
+    formData.append("usuario_nombre", datos.usuario_nombre);
+  if (datos.usuario_apellido1 !== undefined)
+    formData.append("usuario_apellido1", datos.usuario_apellido1);
+  if (datos.usuario_apellido2)
+    formData.append("usuario_apellido2", datos.usuario_apellido2);
+  if (datos.usuario_correo !== undefined)
+    formData.append("usuario_correo", datos.usuario_correo);
+  formData.append("usuario_foto", foto);
+
+  const { data } = await api.patch<Usuario>("/usuarios", formData, {
+    headers: { "Content-Type": undefined },
+  });
   return data;
 }
