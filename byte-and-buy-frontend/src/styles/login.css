@@ -220,3 +220,11 @@
 .register-link a:hover {
   text-decoration: underline;
 }
+
+.error-message {
+  font-family: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  color: #d64545;
+  margin-top: -4px;
+}
