@@ -9,6 +9,8 @@ import Perfil from "./pages/Perfil.tsx";
 import PerfilInvitado from "./pages/PerfilInvitado.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import RequireAuth from "./components/RequireAuth.tsx";
+import RequireAdmin from "./components/RequireAdmin.tsx";
+import Admin from "./admin/admin.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -26,6 +28,14 @@ createRoot(document.getElementById("root")!).render(
           }
         />
         <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
+        <Route
+          path="/byte&buy/admin"
+          element={
+            <RequireAdmin>
+              <Admin />
+            </RequireAdmin>
+          }
+        />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
