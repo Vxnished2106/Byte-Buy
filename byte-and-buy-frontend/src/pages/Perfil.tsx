@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import EditProfileModal, {
   type ProfileData,
 } from "../components/EditProfileModal";
+import { actualizarPerfil, obtenerPerfil } from "../services/usuario";
 import "../styles/perfil.css";
 
 const stats = [{ id: 1, value: "24", label: "Pedidos realizados" }];
@@ -62,27 +63,91 @@ function estadoClassName(estado: string) {
 
 export default function Perfil() {
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [profile, setProfile] = useState<ProfileData>({
-    nombre: "Alex",
-    apellido1: "Morales",
-    apellido2: "",
-    correo: "alex.morales@correo.com",
-  });
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
-  const nombreCompleto = [profile.nombre, profile.apellido1, profile.apellido2]
-    .filter(Boolean)
-    .join(" ");
+  useEffect(() => {
+    obtenerPerfil()
+      .then((usuario) => {
+        setProfile({
+          nombre: usuario.usuario_nombre,
+          apellido1: usuario.usuario_apellido1,
+          apellido2: usuario.usuario_apellido2 ?? "",
+          correo: usuario.usuario_correo,
+        });
+      })
+      .catch((err) => {
+        setError(
+          err instanceof Error ? err.message : "No se pudo cargar el perfil",
+        );
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const iniciales = [profile.nombre, profile.apellido1]
-    .filter(Boolean)
-    .map((palabra) => palabra[0])
-    .join("")
-    .toUpperCase();
+  const nombreCompleto = profile
+    ? [profile.nombre, profile.apellido1, profile.apellido2]
+        .filter(Boolean)
+        .join(" ")
+    : "";
 
-  const handleSave = (updated: ProfileData) => {
-    setProfile(updated);
-    setIsEditOpen(false);
+  const iniciales = profile
+    ? [profile.nombre, profile.apellido1]
+        .filter(Boolean)
+        .map((palabra) => palabra[0])
+        .join("")
+        .toUpperCase()
+    : "";
+
+  const handleSave = async (updated: ProfileData) => {
+    setSaving(true);
+    setSaveError("");
+    try {
+      const usuarioActualizado = await actualizarPerfil({
+        usuario_nombre: updated.nombre,
+        usuario_apellido1: updated.apellido1,
+        usuario_apellido2: updated.apellido2 || null,
+        usuario_correo: updated.correo,
+      });
+      setProfile({
+        nombre: usuarioActualizado.usuario_nombre,
+        apellido1: usuarioActualizado.usuario_apellido1,
+        apellido2: usuarioActualizado.usuario_apellido2 ?? "",
+        correo: usuarioActualizado.usuario_correo,
+      });
+      setIsEditOpen(false);
+    } catch (err) {
+      setSaveError(
+        err instanceof Error ? err.message : "No se pudo actualizar el perfil",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="perfil-container">
+          <p>Cargando perfil...</p>
+        </div>
+      </>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <>
+        <Header />
+        <div className="perfil-container">
+          <p className="error-message">{error || "No se pudo cargar el perfil"}</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -151,8 +216,13 @@ export default function Perfil() {
       {isEditOpen && (
         <EditProfileModal
           profile={profile}
-          onClose={() => setIsEditOpen(false)}
+          onClose={() => {
+            setIsEditOpen(false);
+            setSaveError("");
+          }}
           onSave={handleSave}
+          saving={saving}
+          error={saveError}
         />
       )}
     </>
