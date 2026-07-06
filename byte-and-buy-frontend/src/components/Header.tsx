@@ -1,15 +1,79 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import User from "../assets/favicon/user";
 import Cart from "../assets/favicon/cart";
 import "../styles/header.css";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import SearchRounded from "../assets/favicon/search";
+import { supabase } from "../services/supabaseClient";
+import { obtenerPerfil } from "../services/usuario";
+import { logout } from "../services/auth";
+
 export default function Header() {
+  const navigate = useNavigate();
   const [openCatalogo, setOpenCatalogo] = useState(false);
   const [openPerfil, setOpenPerfil] = useState(false);
   const [product, setProduct] = useState<string>("");
+  const [autenticado, setAutenticado] = useState(false);
+  const [nombreUsuario, setNombreUsuario] = useState("");
+  const [inicialesUsuario, setInicialesUsuario] = useState("");
   const handleOpenCatalogo = () => setOpenCatalogo(!openCatalogo);
   const handleOpenPerfil = () => setOpenPerfil(!openPerfil);
+  const cerrarMenuPerfil = () => setOpenPerfil(false);
+
+  useEffect(() => {
+    let vigente = true;
+
+    const cargarUsuario = async (haySesion: boolean) => {
+      if (!haySesion) {
+        if (vigente) {
+          setAutenticado(false);
+          setNombreUsuario("");
+          setInicialesUsuario("");
+        }
+        return;
+      }
+      try {
+        const usuario = await obtenerPerfil();
+        if (!vigente) return;
+        setAutenticado(true);
+        setNombreUsuario(
+          [usuario.usuario_nombre, usuario.usuario_apellido1]
+            .filter(Boolean)
+            .join(" "),
+        );
+        setInicialesUsuario(
+          [usuario.usuario_nombre, usuario.usuario_apellido1]
+            .filter(Boolean)
+            .map((palabra) => palabra[0])
+            .join("")
+            .toUpperCase(),
+        );
+      } catch {
+        if (vigente) setAutenticado(false);
+      }
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      cargarUsuario(!!data.session);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        cargarUsuario(!!session);
+      },
+    );
+
+    return () => {
+      vigente = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    cerrarMenuPerfil();
+    navigate("/");
+  };
   const items = [
     {
       id: 1,
@@ -112,33 +176,63 @@ export default function Header() {
           </button>
           {openPerfil && (
             <div className="item-container-user">
-              <div className="perfil-info">
-                <div className="icon-user">AM</div>
-                <div className="perfil-text">
-                  <span className="name">Alex Morales</span>
-                  <Link to={"/byte&buy/perfil"} className="ver-perfil-link">
-                    Ver mi perfil
+              {autenticado ? (
+                <>
+                  <div className="perfil-info">
+                    <div className="icon-user">{inicialesUsuario}</div>
+                    <div className="perfil-text">
+                      <span className="name">{nombreUsuario}</span>
+                      <Link
+                        to={"/byte&buy/perfil"}
+                        className="ver-perfil-link"
+                        onClick={cerrarMenuPerfil}
+                      >
+                        Ver mi perfil
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="divider" />
+                  <div className="user-actions">
+                    <Link
+                      to={"/byte&buy/perfil"}
+                      className="link"
+                      onClick={cerrarMenuPerfil}
+                    >
+                      Mi perfil
+                    </Link>
+                    <Link to={"/"} className="link" onClick={cerrarMenuPerfil}>
+                      Mis pedidos
+                    </Link>
+                  </div>
+                  <div className="divider" />
+                  <div className="sesion-actions">
+                    <button
+                      type="button"
+                      className="link"
+                      onClick={handleLogout}
+                    >
+                      Cerrar sesion
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="sesion-actions">
+                  <Link
+                    to={"/byte&buy/login"}
+                    className="link"
+                    onClick={cerrarMenuPerfil}
+                  >
+                    Iniciar sesion
+                  </Link>
+                  <Link
+                    to={"/byte&buy/register"}
+                    className="link"
+                    onClick={cerrarMenuPerfil}
+                  >
+                    Crear cuenta
                   </Link>
                 </div>
-              </div>
-              <div className="divider" />
-              <div className="user-actions">
-                <Link to={"/byte&buy/perfil"} className="link">
-                  Mi perfil
-                </Link>
-                <Link to={"/"} className="link">
-                  Mis pedidos
-                </Link>
-              </div>
-              <div className="divider" />
-              <div className="sesion-actions">
-                <Link to={"/byte&buy/login"} className="link">
-                  Iniciar sesion
-                </Link>
-                <Link to={"/byte&buy/register"} className="link">
-                  Crear cuenta
-                </Link>
-              </div>
+              )}
             </div>
           )}
         </div>
