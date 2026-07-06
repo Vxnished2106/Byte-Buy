@@ -9,30 +9,6 @@ import "../styles/perfil.css";
 
 const stats = [{ id: 1, value: "24", label: "Pedidos realizados" }];
 
-const direcciones = [
-  {
-    id: 1,
-    nombre: "Casa",
-    predeterminada: true,
-    calle: "Av. Reforma 1234, Piso 8",
-    ciudad: "Ciudad de México, 06600",
-    pais: "México",
-  },
-  {
-    id: 2,
-    nombre: "Oficina",
-    predeterminada: false,
-    calle: "Torre Insurgentes 500, Of. 12",
-    ciudad: "Ciudad de México, 03810",
-    pais: "México",
-  },
-];
-
-const tarjeta = {
-  marca: "VISA",
-  expiracion: "09/27",
-  ultimosDigitos: "4242",
-};
 
 const pedidos = [
   {
