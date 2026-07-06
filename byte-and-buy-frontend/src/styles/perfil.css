@@ -538,3 +538,10 @@
 .btn-primary:hover {
   background-color: #000;
 }
+
+.error-message {
+  font-family: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  color: #d64545;
+}
