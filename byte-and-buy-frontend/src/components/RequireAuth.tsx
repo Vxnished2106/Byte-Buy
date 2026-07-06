@@ -6,9 +6,10 @@ import { supabase } from "../services/supabaseClient";
 
 interface RequireAuthProps {
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
-export default function RequireAuth({ children }: RequireAuthProps) {
+export default function RequireAuth({ children, fallback }: RequireAuthProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,9 @@ export default function RequireAuth({ children }: RequireAuthProps) {
 
   if (loading) return null;
 
-  if (!session) return <Navigate to="/byte&buy/login" replace />;
+  if (!session) {
+    return fallback ? <>{fallback}</> : <Navigate to="/byte&buy/login" replace />;
+  }
 
   return <>{children}</>;
 }
