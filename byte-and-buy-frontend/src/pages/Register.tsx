@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Header from "../components/Header";
 import "../styles/register.css";
 import EyeOutline from "../assets/favicon/openEye";
 import EyeCloseFill from "../assets/favicon/closeEye";
+import { register } from "../services/auth";
+
 export default function Register() {
+  const navigate = useNavigate();
   const [nombre, setNombre] = useState("");
   const [primerApellido, setPrimerApellido] = useState("");
   const [segundoApellido, setSegundoApellido] = useState("");
@@ -14,6 +17,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [accept, setAccept] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const validations = [
     {
       text: "Minimo 8 caracteres",
@@ -38,11 +43,52 @@ export default function Register() {
   const handleShowConfirmPassword = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+    if (!validations.every((validation) => validation.completed)) {
+      setError("La contraseña no cumple con todos los requisitos");
+      return;
+    }
+    if (!accept) {
+      setError("Debes aceptar los terminos y la politica de privacidad");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { requiereConfirmacion } = await register({
+        nombre,
+        apellido1: primerApellido,
+        apellido2: segundoApellido,
+        email,
+        password,
+      });
+
+      if (requiereConfirmacion) {
+        setError("Revisa tu correo para confirmar la cuenta antes de iniciar sesion");
+        return;
+      }
+
+      navigate("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear la cuenta");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Header />
       <div className="form-container">
-        <form action="post" className="register-form">
+        <form className="register-form" onSubmit={handleSubmit}>
           <div className="form-header">
             <h3>Crear cuenta</h3>
             <h5>Unete a Byte&Buy y compra en segundos</h5>
@@ -158,7 +204,10 @@ export default function Register() {
                 <span>Politica de privacidad</span>
               </label>
             </div>
-            <button type="submit">Crear cuenta</button>
+            {error && <p className="error-message">{error}</p>}
+            <button type="submit" disabled={loading}>
+              {loading ? "Creando cuenta..." : "Crear cuenta"}
+            </button>
             <p className="login-link">
               Ya tienes cuenta? <Link to={"/byte&buy/login"}>Iniciar sesion</Link>
             </p>
