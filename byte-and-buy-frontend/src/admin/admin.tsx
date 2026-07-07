@@ -8,15 +8,15 @@ export default function Admin() {
   const [isProveedores, setIsProveedor] = useState(true);
   const [isProducto, setIsProducto] = useState(false);
   const proveedores_columns_name = ["Proveedor", "Contacto"];
-  const producto_columns_name = ["Producto", "Categoria", "Precio"];
+  const producto_columns_name = ["Producto", "Categoria", "Precio", "Stock"];
   const handleProveedores = () => {
-    setIsProveedor(false);
-    setIsProducto(true);
+    setIsProveedor(!isProveedores);
+    setIsProducto(!isProducto);
   };
 
   const handleProductos = () => {
-    setIsProducto(false);
-    setIsProveedor(true);
+    setIsProducto(!isProducto);
+    setIsProveedor(!isProveedores);
   };
   const iniciales = usuario
     ? obtenerIniciales(usuario.usuario_nombre, usuario.usuario_apellido1)
