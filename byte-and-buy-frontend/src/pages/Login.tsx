@@ -73,15 +73,20 @@ export default function Login() {
               </div>
             </div>
             <div className="extra-actions">
-              <Link to={"/buy&buy/forgot-password"}>¿Olvidaste tu contraseña?</Link>
+              <Link to={"/buy&buy/forgot-password"}>
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
-            {error && <p className="error-message">{error}</p>}
+            {error && (
+              <p className="error-message">Correo o contraseña incorrectos</p>
+            )}
             <button type="submit" disabled={loading}>
               {loading ? "Iniciando sesion..." : "Iniciar sesion"}
             </button>
 
             <p className="register-link">
-              ¿No tienes cuenta? <Link to={"/byte&buy/register"}>Crear cuenta</Link>
+              ¿No tienes cuenta?{" "}
+              <Link to={"/byte&buy/register"}>Crear cuenta</Link>
             </p>
           </div>
         </form>
