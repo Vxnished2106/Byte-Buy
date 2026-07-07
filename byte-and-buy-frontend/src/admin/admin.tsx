@@ -1,12 +1,16 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 import { useUsuario } from "../hooks/useUsuario";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
+import { logout } from "../services/auth";
 import Table from "../components/Table";
 import "../styles/admin.css";
 export default function Admin() {
+  const navigate = useNavigate();
   const { usuario } = useUsuario();
   const [isProveedores, setIsProveedor] = useState(true);
   const [isProducto, setIsProducto] = useState(false);
+  const [openMenu, setOpenMenu] = useState(false);
   const proveedores_columns_name = ["Proveedor", "Contacto"];
   const producto_columns_name = ["Producto", "Categoria", "Precio", "Stock"];
   const handleProveedores = () => {
@@ -17,6 +21,15 @@ export default function Admin() {
   const handleProductos = () => {
     setIsProducto(!isProducto);
     setIsProveedor(!isProveedores);
+  };
+
+  const handleToggleMenu = () => setOpenMenu(!openMenu);
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await logout();
+    setOpenMenu(false);
+    navigate("/byte&buy/login");
   };
   const iniciales = usuario
     ? obtenerIniciales(usuario.usuario_nombre, usuario.usuario_apellido1)
@@ -31,12 +44,23 @@ export default function Admin() {
           <h5>Panel de control</h5>
           <h1>Administracion</h1>
         </div>
-        <div className="admin-info">
+        <div className="admin-info" onClick={handleToggleMenu}>
           <div className="admin-bubble">{iniciales}</div>
           <div className="admin-data">
             <h5 className="admin-name">{nombreCompleto}</h5>
             <span className="admin-role">Administrador</span>
           </div>
+          {openMenu && (
+            <div className="admin-menu">
+              <button
+                type="button"
+                className="admin-menu-item"
+                onClick={handleLogout}
+              >
+                Cerrar sesion
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <section className="stats-section">
