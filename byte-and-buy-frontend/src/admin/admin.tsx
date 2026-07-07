@@ -44,11 +44,11 @@ export default function Admin() {
       </section>
       <section className="table-section">
         <div className="admin-action-buttons">
-          <button className="admin-action-button" onClick={handleProveedores}>
-            Productos
-          </button>
           <button className="admin-action-button" onClick={handleProductos}>
             Proveedores
+          </button>
+          <button className="admin-action-button" onClick={handleProveedores}>
+            Productos
           </button>
         </div>
         <div className="table">
