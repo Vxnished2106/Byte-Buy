@@ -1,0 +1,120 @@
+.admin-panel-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  position: relative;
+}
+
+.admin-panel-header {
+  position: absolute;
+  top: 70px;
+  width: 100vw;
+  height: 90px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 100px;
+  padding: 0px 40px;
+}
+
+.admin-panel-titles {
+  width: 50%;
+  height: 100%;
+  padding-top: 20px;
+}
+
+.admin-panel-titles h1 {
+  color: #000;
+  font-family: var(--titles);
+}
+
+.admin-panel-titles h5 {
+  font-family: var(--details);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 4px;
+  color: #4b5fe5;
+  text-transform: uppercase;
+}
+
+.admin-info{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 14%;
+    height: 55px;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 0px 15px;
+}
+
+.admin-bubble{
+    background-color: #000;
+    width: 25%;
+    height: 40px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+.admin-data{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.admin-name{
+    font-family: var(--titles);
+    color: #000;
+}
+
+.admin-role{
+    color: gray;
+    font-size: 12px;
+    padding-right: 30px;
+}
+
+.table-section {
+  width: 90%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-action-button {
+  width: auto;
+  height: auto;
+  background-color: #fff;
+  border: 1px solid #e5e6ef;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: var(--details);
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.admin-action-button:hover {
+  border-color: #4b5fe5;
+  color: #4b5fe5;
+}
+
+.table {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 18px rgba(17, 24, 39, 0.06);
+}
+
