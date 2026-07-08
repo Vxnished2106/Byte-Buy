@@ -28,7 +28,7 @@ Sigue estos pasos para ejecutar el proyecto de forma local:
 
 ### Requisitos Previos
 *   Node.js (versión 18 o superior)
-*   NPM o Yarn
+*   PNPM o Yarn
 *   Instancia de Base de Datos (Local o en la nube)
 
 ### 1. Clonar el repositorio
