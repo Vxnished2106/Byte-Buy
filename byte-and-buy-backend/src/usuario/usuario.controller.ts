@@ -49,6 +49,35 @@ export class UsuarioController {
     return this.usuarioService.update(usuario.usuario_id, datos, file);
   }
 
+  /**
+   * GET /usuarios/perfil
+   * Permite a un usuario autenticado obtener sus datos de perfil
+   * Headers: Authorization: Bearer <token_supabase>
+   */
+  @UseGuards(SupabaseAuthGuard)
+  @Get('perfil')
+  async obtenerPerfil(@Request() req: any): Promise<ResponseUsuarioDto> {
+    return this.usuarioService.obtenerPerfilAutenticado(req.user);
+  }
+
+  /**
+   * PATCH /usuarios/perfil
+   * Permite a un usuario autenticado actualizar su perfil personal
+   * Headers: Authorization: Bearer <token_supabase>
+   * Body: UpdateUsuarioDto
+   */
+  @UseGuards(SupabaseAuthGuard)
+  @Patch('perfil')
+  @UseInterceptors(FileInterceptor('usuario_foto'))
+  async actualizarPerfil(
+    @Request() req: any,
+    @Body() datos: UpdateUsuarioDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<ResponseUsuarioDto> {
+    const usuario = await this.usuarioService.getOrCreateFromToken(req.user);
+    return this.usuarioService.update(usuario.usuario_id, datos, file);
+  }
+
   @UseGuards(SupabaseAuthGuard)
   @Patch('cambiar-contrasena')
   async cambiarContrasena(

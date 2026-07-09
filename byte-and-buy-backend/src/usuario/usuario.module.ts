@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from './entities/usuario.entity';
+import { RegistroActividad } from './entities/registro-actividad.entity';
 import { UsuarioService } from './usuario.service';
 import { UsuarioController } from './usuario.controller';
 import { AuthController } from '../auth/auth.controller';
@@ -10,7 +11,7 @@ import { TokenRecuperacionModule } from '../token_recuperacion/token_recuperacio
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Usuario]),
+    TypeOrmModule.forFeature([Usuario, RegistroActividad]),
     AuthModule,
     MailModule,
     TokenRecuperacionModule

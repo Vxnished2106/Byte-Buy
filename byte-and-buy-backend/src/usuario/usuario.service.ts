@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Usuario, Rol } from './entities/usuario.entity';
+import { RegistroActividad } from './entities/registro-actividad.entity';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ResponseUsuarioDto } from './dto/response-usuario.dto';
 import { SupabaseAuthService } from '../auth/supabase-auth/auth-password.service';
@@ -20,6 +21,8 @@ export class UsuarioService {
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+    @InjectRepository(RegistroActividad)
+    private readonly registroActividadRepository: Repository<RegistroActividad>,
     private readonly supabaseAuthService: SupabaseAuthService,
     private readonly fileUploadService: FileUploadService,
     private readonly supabaseService: SupabaseService,
@@ -94,6 +97,15 @@ export class UsuarioService {
     return usuario ? this.toResponseDto(usuario) : null;
   }
 
+  /**
+   * Obtiene los datos del usuario autenticado.
+   * @param user Datos del usuario del token.
+   * @returns DTO del usuario.
+   */
+  async obtenerPerfilAutenticado(user: any): Promise<ResponseUsuarioDto> {
+    return this.getOrCreateFromToken(user);
+  }
+
 
 
   /**
@@ -130,6 +142,25 @@ export class UsuarioService {
   // ─── Actualizar ────────────────────────────────────────────────
 
   /**
+   * Registra una actividad en el historial de auditoría.
+   * @param usuarioId ID del usuario.
+   * @param tipoActividad Tipo de actividad.
+   * @param camposActualizados Campos que se actualizaron.
+   */
+  private async registrarActividad(
+    usuarioId: number,
+    tipoActividad: string,
+    camposActualizados: any,
+  ): Promise<void> {
+    const registro = this.registroActividadRepository.create({
+      usuario_id: usuarioId,
+      tipo_actividad: tipoActividad,
+      campos_actualizados: camposActualizados,
+    });
+    await this.registroActividadRepository.save(registro);
+  }
+
+  /**
    * Actualiza la información de un usuario.
    * @param usuarioId ID del usuario.
    * @param datos Nuevos datos.
@@ -138,6 +169,15 @@ export class UsuarioService {
    */
   async update(usuarioId: number, datos: UpdateUsuarioDto, file?: Express.Multer.File): Promise<ResponseUsuarioDto> {
     const usuario = await this.findEntityById(usuarioId);
+
+    // Guardar datos originales para auditoría
+    const datosOriginales = {
+      usuario_nombre: usuario.usuario_nombre,
+      usuario_apellido1: usuario.usuario_apellido1,
+      usuario_apellido2: usuario.usuario_apellido2,
+      usuario_correo: usuario.usuario_correo,
+      usuario_foto: usuario.usuario_foto,
+    };
 
     // No permitir cambiar correo a uno ya existente
     if (datos.usuario_correo && datos.usuario_correo !== usuario.usuario_correo) {
@@ -151,6 +191,22 @@ export class UsuarioService {
 
     Object.assign(usuario, datos);
     const guardado = await this.usuarioRepository.save(usuario);
+
+    // Registrar cambios para auditoría
+    const cambios: any = {};
+    for (const key in datos) {
+      if (datos[key as keyof typeof datos] !== datosOriginales[key as keyof typeof datosOriginales]) {
+        cambios[key] = {
+          antes: datosOriginales[key as keyof typeof datosOriginales],
+          despues: datos[key as keyof typeof datos],
+        };
+      }
+    }
+
+    if (Object.keys(cambios).length > 0) {
+      await this.registrarActividad(usuarioId, 'actualizacion_perfil', cambios);
+    }
+
     return this.toResponseDto(guardado);
   }
 

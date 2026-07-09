@@ -5,6 +5,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { TokenRecuperacion } from '../../token_recuperacion/entities/token_recuperacion.entity';
+import { RegistroActividad } from './registro-actividad.entity';
 
 export enum Rol {
   CLIENTE = 'cliente',
@@ -42,4 +43,7 @@ export class Usuario {
 
   @OneToMany(() => TokenRecuperacion, (token) => token.usuario)
   tokensRecuperacion: TokenRecuperacion[];
+
+  @OneToMany(() => RegistroActividad, (registro) => registro.usuario)
+  registrosActividad: RegistroActividad[];
 }
