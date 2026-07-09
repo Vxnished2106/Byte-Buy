@@ -8,6 +8,7 @@ import Login from "./pages/Login.tsx";
 import Perfil from "./pages/Perfil.tsx";
 import PerfilInvitado from "./pages/PerfilInvitado.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
+import CambiarContrasena from "./pages/CambiarContrasena.tsx";
 import RequireAuth from "./components/RequireAuth.tsx";
 import RequireAdmin from "./components/RequireAdmin.tsx";
 import Admin from "./admin/admin.tsx";
@@ -28,6 +29,14 @@ createRoot(document.getElementById("root")!).render(
           }
         />
         <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
+        <Route
+          path="/byte&buy/cambiar-contrasena"
+          element={
+            <RequireAuth>
+              <CambiarContrasena />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/byte&buy/admin"
           element={
