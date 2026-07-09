@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuario } from './entities/usuario.entity';
 import { UsuarioService } from './usuario.service';
 import { UsuarioController } from './usuario.controller';
+import { AuthController } from '../auth/auth.controller';
 import { AuthModule } from '../auth/auth.module';
 import { MailModule } from '../mail/mail.module';
 import { TokenRecuperacionModule } from '../token_recuperacion/token_recuperacion.module';
@@ -14,7 +15,7 @@ import { TokenRecuperacionModule } from '../token_recuperacion/token_recuperacio
     MailModule,
     TokenRecuperacionModule
   ],
-  controllers: [UsuarioController],
+  controllers: [UsuarioController, AuthController],
   providers: [UsuarioService],
   exports: [UsuarioService],
 })

@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Lockfile de npm: el proyecto usa pnpm, no se deben mezclar gestores
+package-lock.json
+**/package-lock.json
+
+# pnpm-lock.yaml SOLO de la raiz (la raiz no tiene dependencias reales).
+# Los de byte-and-buy-backend/ y byte-and-buy-frontend/ SI se versionan.
+/pnpm-lock.yaml
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+**/.env
+
+# Compilados / build
+dist/
+**/dist/
+build/
+**/build/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editores / SO
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Cache TypeScript
+*.tsbuildinfo

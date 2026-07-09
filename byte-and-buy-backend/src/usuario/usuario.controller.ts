@@ -21,6 +21,17 @@ export class UsuarioController {
     return this.usuarioService.getOrCreateFromToken(req.user);
   }
 
+  /**
+   * GET /usuarios/perfil
+   * Devuelve el perfil del usuario autenticado (protegido con JWT).
+   * Headers: Authorization: Bearer <token>
+   */
+  @UseGuards(SupabaseAuthGuard)
+  @Get('perfil')
+  async getPerfil(@Request() req: any): Promise<ResponseUsuarioDto> {
+    return this.usuarioService.getOrCreateFromToken(req.user);
+  }
+
   @Get(':id')
   async getUsuario(@Param('id', ParseIntPipe) id: number): Promise<ResponseUsuarioDto> {
     return this.usuarioService.findOne(id);
