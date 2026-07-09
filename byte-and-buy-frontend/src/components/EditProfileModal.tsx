@@ -151,7 +151,7 @@ export default function EditProfileModal({
           </div>
           <p className="change-password">
             ¿Quieres cambiar tu contraseña?{" "}
-            <Link to="/byte&buy/forgot-password">Cambiar contraseña</Link>
+            <Link to="/byte&buy/cambiar-contrasena">Cambiar contraseña</Link>
           </p>
           {error && <p className="error-message">{error}</p>}
           <div className="modal-actions">
