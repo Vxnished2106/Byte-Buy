@@ -64,7 +64,6 @@ export default function Admin() {
         </div>
       </div>
       <section className="stats-section">
-        <h1>Bienvenido al panel de administrador</h1>
       </section>
       <section className="table-section">
         <div className="admin-action-buttons">
