@@ -73,7 +73,7 @@ export default function Login() {
               </div>
             </div>
             <div className="extra-actions">
-              <Link to={"/buy&buy/forgot-password"}>
+              <Link to={"/byte&buy/forgot-password"}>
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
