@@ -135,6 +135,12 @@ header {
     place-items: center;
     border-radius: 5px;
     border: 1px solid #2b2a2a0c;
+    color: #000;
+    background-color: #fff;
+}
+
+.action-buttons button:hover svg{
+    color: var(--links-color);
 }
 .item-container-user {
     position: absolute;
