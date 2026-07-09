@@ -5,15 +5,18 @@ import EyeOutline from "../assets/favicon/openEye";
 import EyeCloseFill from "../assets/favicon/closeEye";
 import Header from "../components/Header";
 import { validarContrasena } from "../utils/validaciones";
+import { useRecuperarContrasena } from "../hooks/useRecuperarContrasena";
 
 export default function ForgotPassword() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [email, setEmail] = useState("");
+  const { step, email, loading, error, solicitar, confirmar } =
+    useRecuperarContrasena();
+  const [emailInput, setEmailInput] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
 
   const validations = validarContrasena(newPassword);
 
@@ -21,24 +24,29 @@ export default function ForgotPassword() {
   const handleShowConfirmPassword = () =>
     setShowConfirmPassword(!showConfirmPassword);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(2);
+    setFormError("");
+    await solicitar(emailInput);
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!codigo.trim()) {
+      setFormError("Ingresa el código que enviamos a tu correo");
+      return;
+    }
     const allValid = validations.every((validation) => validation.completed);
     if (!allValid) {
-      setError("La contraseña no cumple con todos los requisitos");
+      setFormError("La contraseña no cumple con todos los requisitos");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
+      setFormError("Las contraseñas no coinciden");
       return;
     }
-    setError("");
-    setStep(3);
+    setFormError("");
+    await confirmar(codigo, newPassword);
   };
 
   return (
@@ -46,7 +54,6 @@ export default function ForgotPassword() {
       <Header />
       <div className="form-container">
         <form
-          action="post"
           className="forgot-form"
           onSubmit={
             step === 1
@@ -71,14 +78,17 @@ export default function ForgotPassword() {
                     id="email"
                     type="email"
                     placeholder="tu@correo.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
                     required
                   />
                 </div>
-                <button type="submit">Continuar</button>
+                {error && <p className="error-message">{error}</p>}
+                <button type="submit" disabled={loading}>
+                  {loading ? "Enviando..." : "Continuar"}
+                </button>
                 <p className="back-link">
-                  <Link to={"/buy&buy/login"}>Volver a iniciar sesion</Link>
+                  <Link to={"/byte&buy/login"}>Volver a iniciar sesion</Link>
                 </p>
               </div>
             </>
@@ -88,9 +98,22 @@ export default function ForgotPassword() {
             <>
               <div className="form-header">
                 <h3>Crea tu nueva contraseña</h3>
-                <h5>Estamos restableciendo la cuenta de {email}</h5>
+                <h5>Ingresa el código que enviamos a {email}</h5>
               </div>
               <div className="fields">
+                <div className="field">
+                  <label htmlFor="codigo">Código de verificación</label>
+                  <input
+                    id="codigo"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="123456"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="field">
                   <label htmlFor="newPassword">Nueva contraseña</label>
                   <div className="input-with-icon">
@@ -146,8 +169,12 @@ export default function ForgotPassword() {
                     ))}
                   </ul>
                 )}
-                {error && <p className="error-message">{error}</p>}
-                <button type="submit">Restablecer contraseña</button>
+                {(formError || error) && (
+                  <p className="error-message">{formError || error}</p>
+                )}
+                <button type="submit" disabled={loading}>
+                  {loading ? "Restableciendo..." : "Restablecer contraseña"}
+                </button>
                 <p className="back-link">
                   <Link to={"/byte&buy/login"}>Volver a iniciar sesion</Link>
                 </p>
@@ -166,7 +193,7 @@ export default function ForgotPassword() {
                 <p className="success-text">
                   Ya puedes iniciar sesion en Byte&Buy con tu nueva contraseña
                 </p>
-                <Link to={"/buy&buy/login"}>
+                <Link to={"/byte&buy/login"}>
                   <button type="button">Ir a iniciar sesion</button>
                 </Link>
               </div>
