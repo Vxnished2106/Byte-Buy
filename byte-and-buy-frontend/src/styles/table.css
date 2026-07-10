@@ -66,6 +66,11 @@
   background-color: #fafbfe;
 }
 
+.table-row-disabled {
+  opacity: 0.5;
+  color: #9096a8;
+}
+
 .admin-table td {
   padding: 16px;
   font-family: var(--details);

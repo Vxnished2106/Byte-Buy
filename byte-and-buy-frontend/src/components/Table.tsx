@@ -1,19 +1,19 @@
 import React from "react";
 import "../styles/table.css"
-type TableProps = {
+type TableProps<T extends object> = {
   title: string;
   columns_name: string[];
   main_button_title: string;
   onAction_main_button: () => void;
-  data: (string | number)[][];
+  data: T[]
 };
-export default function Table({
+export default function Table<T extends object>({
   title,
   columns_name,
   onAction_main_button,
   main_button_title,
   data,
-}: TableProps) {
+}: TableProps<T>) {
   return (
     <>
       <div className="table-section-header">
@@ -33,17 +33,30 @@ export default function Table({
           </tr>
         </thead>
         <tbody>
-          {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {row.map((cell, cellIndex) => (
-                <td key={cellIndex}>{cell}</td>
+          {data.map((row, rowIndex) => {
+            const isActive = Object.values(row).find(
+              (value) => typeof value === "boolean"
+            );
+            const statusClass =
+              isActive === false ? "table-row table-row-disabled" : "table-row";
+            return (
+            <tr key={rowIndex} className={statusClass}>
+              {Object.values(row).map((cell, cellIndex) => (
+                <td key={cellIndex}>
+                  {typeof cell === "boolean"
+                    ? cell
+                      ? "Activado"
+                      : "Desactivado"
+                    : String(cell)}
+                </td>
               ))}
               <td className="table-actions">
                 <button className="edit-button">Editar</button>
-                <button className="delete-button">Eliminar</button>
+                <button className="delete-button">Desactivar</button>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </>
