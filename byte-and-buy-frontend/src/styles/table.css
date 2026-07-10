@@ -28,8 +28,14 @@
   background-color: #3c4dd0;
 }
 
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .admin-table {
   width: 100%;
+  min-width: max-content;
   border-collapse: collapse;
 }
 
@@ -77,15 +83,23 @@
   font-size: 14px;
   color: #1f2430;
   vertical-align: middle;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.table-actions {
+.admin-table td.table-actions {
   display: flex;
   gap: 8px;
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 .edit-button,
 .delete-button {
+  flex-shrink: 0;
   border: 1px solid #e5e6ef;
   background-color: #fff;
   border-radius: 8px;
@@ -96,6 +110,11 @@
   color: #1f2430;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
+}
+
+.delete-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .edit-button:hover {
