@@ -11,8 +11,29 @@ export default function Admin() {
   const [isProveedores, setIsProveedor] = useState(true);
   const [isProducto, setIsProducto] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
-  const proveedores_columns_name = ["Proveedor", "Contacto"];
+  const proveedores_columns_name = [
+    "Proveedor",
+    "Correo",
+    "Telefono",
+    "Direccion",
+  ];
   const producto_columns_name = ["Producto", "Categoria", "Precio", "Stock"];
+  const proveedores = [
+    {
+      id: 1,
+      nombre: "NVidia",
+      telefono: "+101 56789643",
+      direccion: "Ohaio, USA, wolf street",
+      estado: false,
+    },
+    {
+      id: 2,
+      nombre: "Asus",
+      telefono: "+101 65437890",
+      direccion: "8720 Kato Rd, Fremont, CA 94538",
+      estado: true,
+    },
+  ];
   const handleProveedores = () => {
     setIsProveedor(!isProveedores);
     setIsProducto(!isProducto);
@@ -63,8 +84,7 @@ export default function Admin() {
           )}
         </div>
       </div>
-      <section className="stats-section">
-      </section>
+      <section className="stats-section"></section>
       <section className="table-section">
         <div className="admin-action-buttons">
           <button className="admin-action-button" onClick={handleProductos}>
@@ -75,15 +95,15 @@ export default function Admin() {
           </button>
         </div>
         <div className="table">
-           {isProveedores&&(
+          {isProveedores && (
             <Table
               title="Proveedores"
               main_button_title="Agregar Proveedor"
               columns_name={proveedores_columns_name}
-              data={[]}
+              data={proveedores}
               onAction_main_button={() => console.log("Tabla de proveedores")}
             />
-           )}
+          )}
           {isProducto && (
             <Table
               title="Productos"
