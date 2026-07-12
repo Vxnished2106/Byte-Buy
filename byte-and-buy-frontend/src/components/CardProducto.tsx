@@ -15,7 +15,12 @@ export default function CardProducto({
   return (
     <article className="card">
       <div className="card-img">
-        <img src={imagen} alt="imagen de producto" />
+        <img
+          src={
+            imagen || `https://placehold.co/300x300?text=${categoria}`
+          }
+          alt="imagen de producto"
+        />
       </div>
       <div className="card-body">
         <div className="card-body-titles">
