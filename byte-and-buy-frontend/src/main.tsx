@@ -12,6 +12,7 @@ import CambiarContrasena from "./pages/CambiarContrasena.tsx";
 import RequireAuth from "./components/RequireAuth.tsx";
 import RequireAdmin from "./components/RequireAdmin.tsx";
 import Admin from "./admin/admin.tsx";
+import Productos from "./pages/Productos.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -20,6 +21,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/" element={<App />} />
         <Route path="/byte&buy/login" element={<Login />} />
         <Route path="/byte&buy/register" element={<Register />} />
+        <Route path="/byte&buy/products" element={<Productos/>}/>
         <Route
           path="/byte&buy/perfil"
           element={
