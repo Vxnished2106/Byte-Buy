@@ -3,6 +3,7 @@ export interface productoData {
   producto_nombre: string;
   producto_descripcion: string;
   producto_categoria: string;
+  producto_etiquetas:string[]
   producto_descuento: number;
   producto_impuesto: number;
   producto_imagen: File | string; //Imagen o url de imagen existente
