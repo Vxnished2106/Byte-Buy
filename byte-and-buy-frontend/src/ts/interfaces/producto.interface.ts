@@ -1,12 +1,75 @@
+import type { Categoria } from "./categoria.interface";
+import type { Etiqueta } from "./etiqueta.interface";
+
+export type ProductoEstado = "activo" | "inactivo";
+
+/** Forma que entrega el backend para un producto (sin datos de inventario). */
+export interface Producto {
+  producto_id: number;
+  producto_nombre: string;
+  producto_estado: ProductoEstado;
+  producto_descripcion: string | null;
+  producto_precio: number;
+  producto_impuesto: number;
+  producto_descuento: number;
+  producto_imagen: string | null;
+  producto_banner: string | null;
+  categorias: Categoria[];
+  etiquetas: Etiqueta[];
+}
+
+export interface CreateProducto {
+  producto_nombre: string;
+  producto_descripcion?: string;
+  producto_precio: number;
+  producto_impuesto?: number;
+  producto_descuento?: number;
+  producto_estado?: ProductoEstado;
+  categoria_ids?: number[];
+  etiqueta_ids?: number[];
+}
+
+export type UpdateProducto = Partial<CreateProducto>;
+
+/** Forma que entrega `GET /productos/:id` (detalle público, incluye stock). */
+export interface DetalleProducto extends Producto {
+  stock_actual: number;
+  puedeComprar: boolean;
+}
+
+/**
+ * Fila usada por la tabla del panel de administración (la vista "Productos"
+ * es en realidad producto + inventario combinados). El orden de las
+ * propiedades debe coincidir con `producto_columns_name` en `admin.tsx`, y
+ * `producto_estado` va al final porque `Table.tsx` usa el primer campo
+ * boolean del objeto para la columna "Estados".
+ */
 export interface productoData {
   producto_id: number;
   producto_nombre: string;
   producto_descripcion: string;
+  producto_stock: number;
   producto_categoria: string;
-  producto_etiquetas:string[]
   producto_descuento: number;
   producto_impuesto: number;
-  producto_imagen: File | string; //Imagen o url de imagen existente
-  producto_banner: File | string; //Imagen o url de imagen existente
+  producto_imagen: string;
+  producto_banner: string;
   producto_estado: boolean;
+}
+
+/** Datos editables desde el formulario de producto (crear/editar). */
+export interface ProductoFormValues {
+  producto_id: number;
+  producto_nombre: string;
+  producto_descripcion: string;
+  producto_precio: number;
+  producto_descuento: number;
+  producto_impuesto: number;
+  producto_imagen: File | string;
+  producto_banner: File | string;
+  producto_estado: boolean;
+  categoria_ids: number[];
+  etiqueta_ids: number[];
+  stock_actual: number;
+  stock_minimo: number;
 }
