@@ -7,11 +7,14 @@ import SearchRounded from "../assets/favicon/search";
 import { obtenerPerfil } from "../services/usuario";
 import { logout } from "../services/auth";
 import { useSesion } from "../hooks/useSesion";
+import { useCategoriasCatalogo } from "../hooks/useCategoriasCatalogo";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 
 export default function Header() {
   const navigate = useNavigate();
   const { session } = useSesion();
+  const { categorias: categoriasCatalogo, total: totalCatalogo } =
+    useCategoriasCatalogo();
   const [openCatalogo, setOpenCatalogo] = useState(false);
   const [openPerfil, setOpenPerfil] = useState(false);
   const [product, setProduct] = useState<string>("");
@@ -21,6 +24,7 @@ export default function Header() {
   const handleOpenCatalogo = () => setOpenCatalogo(!openCatalogo);
   const handleOpenPerfil = () => setOpenPerfil(!openPerfil);
   const cerrarMenuPerfil = () => setOpenPerfil(false);
+  const cerrarMenuCatalogo = () => setOpenCatalogo(false);
 
   useEffect(() => {
     if (!session) {
@@ -57,62 +61,6 @@ export default function Header() {
     cerrarMenuPerfil();
     navigate("/");
   };
-  const items = [
-    {
-      id: 1,
-      nombre: "Ver todo",
-      cantidad: 16,
-      link: "/",
-    },
-    {
-      id: 2,
-      nombre: "Audio",
-      cantidad: 3,
-      link: "/",
-    },
-    {
-      id: 3,
-      nombre: "Computación",
-      cantidad: 3,
-      link: "/",
-    },
-    {
-      id: 4,
-      nombre: "Accesorios",
-      cantidad: 3,
-      link: "/",
-    },
-    {
-      id: 5,
-      nombre: "Móviles",
-      cantidad: 1,
-      link: "/",
-    },
-    {
-      id: 6,
-      nombre: "Wearables",
-      cantidad: 1,
-      link: "/",
-    },
-    {
-      id: 7,
-      nombre: "Gaming",
-      cantidad: 2,
-      link: "/",
-    },
-    {
-      id: 8,
-      nombre: "Fotografía",
-      cantidad: 1,
-      link: "/",
-    },
-    {
-      id: 9,
-      nombre: "Hogar",
-      cantidad: 2,
-      link: "/",
-    },
-  ];
   return (
     <header>
       <Link to={"/"} className="link">
@@ -133,10 +81,26 @@ export default function Header() {
         {openCatalogo && (
           <div className="items-container">
             <ul>
-              {items.map((item) => (
-                <li className="items" key={item.id}>
-                  <span className="item-name">{item.nombre}</span>
-                  <span className="item-count">{item.cantidad}</span>
+              <li className="items">
+                <Link
+                  to={"/byte&buy/products"}
+                  className="item-link"
+                  onClick={cerrarMenuCatalogo}
+                >
+                  <span className="item-name">Ver todo</span>
+                  <span className="item-count">{totalCatalogo}</span>
+                </Link>
+              </li>
+              {categoriasCatalogo.map((categoria) => (
+                <li className="items" key={categoria.nombre}>
+                  <Link
+                    to={`/byte&buy/products?categoria=${encodeURIComponent(categoria.nombre)}`}
+                    className="item-link"
+                    onClick={cerrarMenuCatalogo}
+                  >
+                    <span className="item-name">{categoria.nombre}</span>
+                    <span className="item-count">{categoria.cantidad}</span>
+                  </Link>
                 </li>
               ))}
             </ul>
