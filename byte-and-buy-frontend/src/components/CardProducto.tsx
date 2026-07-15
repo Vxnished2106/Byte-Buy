@@ -1,24 +1,26 @@
-import React from "react";
+import { Link } from "react-router";
 import "../styles/cardProduct.css";
-interface CardProducto {
+
+interface CardProductoProps {
+  producto_id: number;
   imagen: string;
   categoria: string;
   nombre_producto: string;
   precio: number;
 }
+
 export default function CardProducto({
+  producto_id,
   imagen,
   categoria,
   nombre_producto,
   precio,
-}: CardProducto) {
+}: CardProductoProps) {
   return (
-    <article className="card">
+    <Link to={`/byte&buy/products/${producto_id}`} className="card">
       <div className="card-img">
         <img
-          src={
-            imagen || `https://placehold.co/300x300?text=${categoria}`
-          }
+          src={imagen || `https://placehold.co/300x300?text=${categoria}`}
           alt="imagen de producto"
         />
       </div>
@@ -28,10 +30,14 @@ export default function CardProducto({
           <h4 className="card-body-title">{nombre_producto}</h4>
         </div>
         <h3 className="card-body-price">${precio}</h3>
-        <button className="add-cart-button" type="submit">
+        <button
+          className="add-cart-button"
+          type="button"
+          onClick={(e) => e.preventDefault()}
+        >
           Agregar al carrito
         </button>
       </div>
-    </article>
+    </Link>
   );
 }
