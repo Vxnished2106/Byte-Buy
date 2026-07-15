@@ -5,7 +5,7 @@ import "../styles/modal-form.css";
 export interface ProveedorModalFormProps {
   initialData?: proveedorData | null;
   onClose: () => void;
-  onSave: (data: proveedorData) => void;
+  onSave: (data: proveedorData) => Promise<void>;
 }
 
 const emptyProveedor: proveedorData = {
@@ -25,6 +25,8 @@ export default function ProveedorModalForm({
   const [form, setForm] = useState<proveedorData>(
     initialData ?? emptyProveedor,
   );
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const isEditing = Boolean(initialData);
 
   const handleChange =
@@ -33,9 +35,17 @@ export default function ProveedorModalForm({
       setForm({ ...form, [field]: e.target.value });
     };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(form);
+    setError(null);
+    setGuardando(true);
+    try {
+      await onSave(form);
+    } catch {
+      setError("No se pudo guardar el proveedor. Intenta nuevamente.");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -57,6 +67,7 @@ export default function ProveedorModalForm({
           </button>
         </div>
         <div className="modal-form-fields">
+          {error && <span className="modal-form-error">{error}</span>}
           <div className="modal-form-field">
             <label htmlFor="proveedor_nombre">Nombre del proveedor</label>
             <input
@@ -103,33 +114,18 @@ export default function ProveedorModalForm({
               required
             />
           </div>
-          <div className="modal-form-field">
-            <label htmlFor="proveedor_estado">Estado</label>
-            <select
-              id="proveedor_estado"
-              value={form.proveedor_estado ? "activo" : "inactivo"}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  proveedor_estado: e.target.value === "activo",
-                })
-              }
-            >
-              <option value="activo">Activado</option>
-              <option value="inactivo">Desactivado</option>
-            </select>
-          </div>
         </div>
         <div className="modal-form-actions">
           <button
             type="button"
             className="modal-form-cancel"
             onClick={onClose}
+            disabled={guardando}
           >
             Cancelar
           </button>
-          <button type="submit" className="modal-form-save">
-            Guardar
+          <button type="submit" className="modal-form-save" disabled={guardando}>
+            {guardando ? "Guardando..." : "Guardar"}
           </button>
         </div>
       </form>

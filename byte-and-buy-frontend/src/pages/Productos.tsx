@@ -1,85 +1,54 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import "../styles/products.css";
 import Header from "../components/Header";
 import CardProducto from "../components/CardProducto";
+import { useCatalogoProductos } from "../hooks/useCatalogoProductos";
 
 export default function Productos() {
-  const categorias = [
-    "Todos",
-    "Audio",
-    "Computacion",
-    "Accesorios",
-    "moviles",
-    "werables",
-    "Gaming",
-    "Fotografia",
-    "Hogar",
-  ];
-  const etiquetas = ["Inalambrico", "Popular", "Premium", "Portatil", "Gaming"];
-  const productosMock = [
-    {
-      imagen:
-        "https://www.steren.cr/media/catalog/product/cache/bb0cad18a6adb5d17b0efd58f4201a2f/image/229539d37/audifonos-bluetooth-multipunto-con-active-noise-cancelling.jpg",
-      categoria: "Audio",
-      nombre_producto: "Audifonos Inalambricos Bluetooth",
-      precio: 25.99,
-      etiquetas: ["Inalambrico", "Popular"],
-    },
-    {
-      imagen: "https://cyberteamcr.com/wp-content/uploads/2024/02/162D6LA-6.webp",
-      categoria: "Computacion",
-      nombre_producto: "Laptop Gamer 16GB RAM",
-      precio: 899.99,
-      etiquetas: ["Premium", "Portatil"],
-    },
-    {
-      imagen: "https://m.media-amazon.com/images/I/61QY3V6A-NL._SY500_.jpg",
-      categoria: "Accesorios",
-      nombre_producto: "Mouse Optico RGB",
-      precio: 15.5,
-      etiquetas: ["Popular"],
-    },
-    {
-      imagen: "https://m.media-amazon.com/images/I/71jbE08QOLL.jpg",
-      categoria: "moviles",
-      nombre_producto: "Smartphone 128GB",
-      precio: 349.0,
-      etiquetas: ["Premium", "Portatil"],
-    },
-    {
-      imagen: "https://walmartcr.vtexassets.com/arquivos/ids/765547/85877_01.jpg?v=638661822772000000",
-      categoria: "werables",
-      nombre_producto: "Smartwatch Deportivo",
-      precio: 59.9,
-      etiquetas: ["Inalambrico", "Popular"],
-    },
-    {
-      imagen: "https://extremetechcr.com/wp-content/uploads/2024/11/34970.jpg",
-      categoria: "Gaming",
-      nombre_producto: "Control Inalambrico para Consola",
-      precio: 34.99,
-      etiquetas: ["Gaming", "Popular"],
-    },
-    {
-      imagen: "https://www.sony.co.cr/image/2ea19010a696190117f57f7a666e7230?fmt=png-alpha&wid=660&hei=660",
-      categoria: "Fotografia",
-      nombre_producto: "Camara Digital 20MP",
-      precio: 199.0,
-      etiquetas: ["Premium"],
-    },
-    {
-      imagen: "https://cr.epaenlinea.com/media/catalog/product/1/0/100012841.jpg_20250715192707642695.jpeg?optimize=medium&bg-color=255,255,255&fit=bounds&height=&width=",
-      categoria: "Hogar",
-      nombre_producto: "Aspiradora Robot Inteligente",
-      precio: 149.99,
-      etiquetas: ["Premium"],
-    },
-  ];
-  const higgerPrice = Math.max(...productosMock.map((prod) => prod.precio));
+  const { productos, loading, error } = useCatalogoProductos();
+  const [searchParams] = useSearchParams();
+  const categoriaDesdeUrl = searchParams.get("categoria");
 
-  const [categoriaActiva, setCategoriaActiva] = useState("Todos");
+  const categorias = useMemo(() => {
+    const nombres = new Set<string>();
+    productos.forEach((producto) =>
+      producto.categorias.forEach((c) => nombres.add(c.categoria_nombre)),
+    );
+    return ["Todos", ...Array.from(nombres)];
+  }, [productos]);
+
+  const etiquetas = useMemo(() => {
+    const nombres = new Set<string>();
+    productos.forEach((producto) =>
+      producto.etiquetas.forEach((e) => nombres.add(e.etiqueta_nombre)),
+    );
+    return Array.from(nombres);
+  }, [productos]);
+
+  const higgerPrice = useMemo(
+    () =>
+      productos.length
+        ? Math.max(...productos.map((prod) => prod.producto_precio))
+        : 0,
+    [productos],
+  );
+
+  const [categoriaActiva, setCategoriaActiva] = useState(
+    categoriaDesdeUrl ?? "Todos",
+  );
   const [etiquetasActivas, setEtiquetasActivas] = useState<string[]>([]);
-  const [precioMaximo, setPrecioMaximo] = useState(higgerPrice);
+
+  // Sincroniza el filtro con el link "?categoria=" del menu del Header
+  // (tambien cubre el caso de navegar de una categoria a otra sin
+  // desmontar la pagina).
+  useEffect(() => {
+    setCategoriaActiva(categoriaDesdeUrl ?? "Todos");
+  }, [categoriaDesdeUrl]);
+  // null = el usuario no ha tocado el slider todavia; se usa higgerPrice
+  // (que solo se conoce tras cargar los productos) como tope por defecto.
+  const [precioMaximo, setPrecioMaximo] = useState<number | null>(null);
+  const precioMaximoActivo = precioMaximo ?? higgerPrice;
 
   const toggleCategoria = (categoria: string) => {
     if (categoria === "Todos") {
@@ -100,18 +69,19 @@ export default function Productos() {
   const limpiarFiltros = () => {
     setCategoriaActiva("Todos");
     setEtiquetasActivas([]);
-    setPrecioMaximo(higgerPrice);
+    setPrecioMaximo(null);
   };
 
-  const productosFiltrados = productosMock.filter((producto) => {
+  const productosFiltrados = productos.filter((producto) => {
     const coincideCategoria =
-      categoriaActiva === "Todos" || producto.categoria === categoriaActiva;
+      categoriaActiva === "Todos" ||
+      producto.categorias.some((c) => c.categoria_nombre === categoriaActiva);
     const coincideEtiqueta =
       etiquetasActivas.length === 0 ||
       producto.etiquetas.some((etiqueta) =>
-        etiquetasActivas.includes(etiqueta)
+        etiquetasActivas.includes(etiqueta.etiqueta_nombre)
       );
-    const coincidePrecio = producto.precio <= precioMaximo;
+    const coincidePrecio = producto.producto_precio <= precioMaximoActivo;
     return coincideCategoria && coincideEtiqueta && coincidePrecio;
   });
 
@@ -139,9 +109,33 @@ export default function Productos() {
       </div>
       <main className="products">
         <section className="products-grid">
-          {productosFiltrados.map((producto, index) => (
-            <CardProducto key={index} {...producto} />
-          ))}
+          {loading && (
+            <p className="products-status-message">Cargando productos...</p>
+          )}
+          {error && (
+            <p className="products-status-message products-status-error">
+              {error}
+            </p>
+          )}
+          {!loading && !error && productosFiltrados.length === 0 && (
+            <p className="products-status-message">
+              No hay productos que coincidan con los filtros.
+            </p>
+          )}
+          {!loading &&
+            !error &&
+            productosFiltrados.map((producto) => (
+              <CardProducto
+                key={producto.producto_id}
+                producto_id={producto.producto_id}
+                imagen={producto.producto_imagen ?? ""}
+                categoria={
+                  producto.categorias[0]?.categoria_nombre ?? "Sin categoria"
+                }
+                nombre_producto={producto.producto_nombre}
+                precio={producto.producto_precio}
+              />
+            ))}
         </section>
         <aside className="filter-section">
           <div className="filter-section">
@@ -189,11 +183,11 @@ export default function Productos() {
               type="range"
               min={0}
               max={higgerPrice}
-              value={precioMaximo}
+              value={precioMaximoActivo}
               onChange={(e) => setPrecioMaximo(Number(e.target.value))}
             />
             <span className="price-range-value">
-              Hasta ${precioMaximo.toFixed(2)}
+              Hasta ${precioMaximoActivo.toFixed(2)}
             </span>
           </div>
         </aside>

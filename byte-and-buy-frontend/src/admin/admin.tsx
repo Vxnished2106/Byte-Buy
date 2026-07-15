@@ -1,25 +1,61 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { useUsuario } from "../hooks/useUsuario";
+import { useProveedores } from "../hooks/useProveedores";
+import { useProductos } from "../hooks/useProductos";
+import { useCategorias } from "../hooks/useCategorias";
+import { useEtiquetas } from "../hooks/useEtiquetas";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 import { logout } from "../services/auth";
 import Table from "../components/Table";
 import ProveedorModalForm from "../components/ProveedorModalForm";
 import ProductoModalForm from "../components/ProductoModalForm";
-import type { proveedorData, productoData } from "../ts/interfaces";
+import CategoriaModalForm from "../components/CategoriaModalForm";
+import EtiquetaModalForm from "../components/EtiquetaModalForm";
+import type {
+  proveedorData,
+  productoData,
+  ProductoFormValues,
+  CreateCategoria,
+  CreateEtiqueta,
+} from "../ts/interfaces";
 import "../styles/admin.css";
 export default function Admin() {
   const navigate = useNavigate();
   const { usuario } = useUsuario();
-  const [isProveedores, setIsProveedor] = useState(true);
-  const [isProducto, setIsProducto] = useState(false);
+  const [vista, setVista] = useState<"proveedores" | "productos">(
+    "proveedores",
+  );
   const [openMenu, setOpenMenu] = useState(false);
   const [showProveedorModal, setShowProveedorModal] = useState(false);
   const [showProductoModal, setShowProductoModal] = useState(false);
+  const [showCategoriaModal, setShowCategoriaModal] = useState(false);
+  const [showEtiquetaModal, setShowEtiquetaModal] = useState(false);
   const [editingProveedor, setEditingProveedor] =
     useState<proveedorData | null>(null);
   const [editingProducto, setEditingProducto] =
-    useState<productoData | null>(null);
+    useState<ProductoFormValues | null>(null);
+
+  const {
+    proveedores,
+    loading: cargandoProveedores,
+    error: errorProveedores,
+    guardar: guardarProveedor,
+    cambiarEstado: cambiarEstadoProveedor,
+  } = useProveedores();
+
+  const {
+    productos,
+    productosCompletos,
+    loading: cargandoProductos,
+    error: errorProductos,
+    guardar: guardarProducto,
+    cambiarEstado: cambiarEstadoProducto,
+    inventarioPorProducto,
+  } = useProductos();
+
+  const { categorias, crear: crearCategoria } = useCategorias();
+  const { etiquetas, crear: crearEtiqueta } = useEtiquetas();
 
   const proveedores_columns_name = [
     "ID",
@@ -40,60 +76,6 @@ export default function Admin() {
     "Banner",
   ];
 
-  const [proveedores, setProveedores] = useState<proveedorData[]>([
-    {
-      proveedor_id: 1,
-      proveedor_nombre: "NVidia",
-      proveedor_correo: "contacto@nvidia.com",
-      proveedor_telefono: "+101 56789643",
-      proveedor_direccion: "Ohaio, USA, wolf street",
-      proveedor_estado: false,
-    },
-    {
-      proveedor_id: 2,
-      proveedor_nombre: "Asus",
-      proveedor_correo: "ventas@asus.com",
-      proveedor_telefono: "+101 65437890",
-      proveedor_direccion: "8720 Kato Rd, Fremont, CA 94538",
-      proveedor_estado: true,
-    },
-  ]);
-
-  const [productos, setProductos] = useState<productoData[]>([
-    {
-      producto_id: 1,
-      producto_nombre: "Auriculares Aura Pro",
-      producto_descripcion: "Auriculares inalambricos con cancelacion de ruido",
-      producto_categoria: "Audio",
-      producto_descuento: 10,
-      producto_impuesto: 13,
-      producto_imagen: "https://placehold.co/80x80",
-      producto_banner: "https://placehold.co/400x120",
-      producto_estado: true,
-    },
-    {
-      producto_id: 2,
-      producto_nombre: "Tarjeta Grafica RTX 5090",
-      producto_descripcion: "Tarjeta grafica de alto rendimiento",
-      producto_categoria: "Componentes",
-      producto_descuento: 0,
-      producto_impuesto: 13,
-      producto_imagen: "https://placehold.co/80x80",
-      producto_banner: "https://placehold.co/400x120",
-      producto_estado: false,
-    },
-  ]);
-
-  const handleProveedores = () => {
-    setIsProveedor(!isProveedores);
-    setIsProducto(!isProducto);
-  };
-
-  const handleProductos = () => {
-    setIsProducto(!isProducto);
-    setIsProveedor(!isProveedores);
-  };
-
   const handleToggleMenu = () => setOpenMenu(!openMenu);
 
   const handleLogout = async (e: React.MouseEvent) => {
@@ -113,18 +95,18 @@ export default function Admin() {
     setShowProveedorModal(true);
   };
 
-  const handleSaveProveedor = (data: proveedorData) => {
-    setProveedores((prev) => {
-      const exists = prev.some((p) => p.proveedor_id === data.proveedor_id);
-      if (exists) {
-        return prev.map((p) =>
-          p.proveedor_id === data.proveedor_id ? data : p,
-        );
-      }
-      const nextId = prev.reduce((max, p) => Math.max(max, p.proveedor_id), 0) + 1;
-      return [...prev, { ...data, proveedor_id: nextId }];
+  const handleSaveProveedor = async (data: proveedorData) => {
+    await guardarProveedor(data.proveedor_id, {
+      proveedor_nombre: data.proveedor_nombre,
+      proveedor_correo: data.proveedor_correo || undefined,
+      proveedor_telefono: data.proveedor_telefono || undefined,
+      proveedor_direccion: data.proveedor_direccion || undefined,
     });
     setShowProveedorModal(false);
+  };
+
+  const handleToggleEstadoProveedor = async (data: proveedorData) => {
+    await cambiarEstadoProveedor(data.proveedor_id);
   };
 
   const handleAddProducto = () => {
@@ -132,21 +114,70 @@ export default function Admin() {
     setShowProductoModal(true);
   };
 
-  const handleEditProducto = (producto: productoData) => {
-    setEditingProducto(producto);
+  const handleEditProducto = (row: productoData) => {
+    const productoCompleto = productosCompletos.find(
+      (p) => p.producto_id === row.producto_id,
+    );
+    if (!productoCompleto) return;
+    const inventario = inventarioPorProducto(row.producto_id);
+    setEditingProducto({
+      producto_id: productoCompleto.producto_id,
+      producto_nombre: productoCompleto.producto_nombre,
+      producto_descripcion: productoCompleto.producto_descripcion ?? "",
+      producto_precio: productoCompleto.producto_precio,
+      producto_descuento: productoCompleto.producto_descuento,
+      producto_impuesto: productoCompleto.producto_impuesto,
+      producto_imagen: productoCompleto.producto_imagen ?? "",
+      producto_banner: productoCompleto.producto_banner ?? "",
+      producto_estado: productoCompleto.producto_estado === "activo",
+      categoria_ids: productoCompleto.categorias.map((c) => c.categoria_id),
+      etiqueta_ids: productoCompleto.etiquetas.map((e) => e.etiqueta_id),
+      stock_actual: inventario?.inventario_stock_actual ?? 0,
+      stock_minimo: inventario?.inventario_stock_minimo ?? 0,
+    });
     setShowProductoModal(true);
   };
 
-  const handleSaveProducto = (data: productoData) => {
-    setProductos((prev) => {
-      const exists = prev.some((p) => p.producto_id === data.producto_id);
-      if (exists) {
-        return prev.map((p) => (p.producto_id === data.producto_id ? data : p));
-      }
-      const nextId = prev.reduce((max, p) => Math.max(max, p.producto_id), 0) + 1;
-      return [...prev, { ...data, producto_id: nextId }];
-    });
+  const handleSaveProducto = async (form: ProductoFormValues) => {
+    const imagen =
+      form.producto_imagen instanceof File ? form.producto_imagen : undefined;
+    const banner =
+      form.producto_banner instanceof File ? form.producto_banner : undefined;
+    await guardarProducto(
+      form.producto_id,
+      {
+        producto_nombre: form.producto_nombre,
+        producto_descripcion: form.producto_descripcion,
+        producto_precio: form.producto_precio,
+        producto_descuento: form.producto_descuento,
+        producto_impuesto: form.producto_impuesto,
+        producto_estado: form.producto_estado ? "activo" : "inactivo",
+        categoria_ids: form.categoria_ids,
+        etiqueta_ids: form.etiqueta_ids,
+      },
+      { stock_actual: form.stock_actual, stock_minimo: form.stock_minimo },
+      imagen,
+      banner,
+    );
     setShowProductoModal(false);
+  };
+
+  const handleToggleEstadoProducto = async (row: productoData) => {
+    await cambiarEstadoProducto(row.producto_id, row.producto_estado);
+  };
+
+  const handleAddCategoria = () => setShowCategoriaModal(true);
+
+  const handleSaveCategoria = async (datos: CreateCategoria, imagen?: File) => {
+    await crearCategoria(datos, imagen);
+    setShowCategoriaModal(false);
+  };
+
+  const handleAddEtiqueta = () => setShowEtiquetaModal(true);
+
+  const handleSaveEtiqueta = async (datos: CreateEtiqueta) => {
+    await crearEtiqueta(datos);
+    setShowEtiquetaModal(false);
   };
 
   const iniciales = usuario
@@ -184,35 +215,79 @@ export default function Admin() {
       <section className="stats-section"></section>
       <section className="table-section">
         <div className="admin-action-buttons">
-          <button className="admin-action-button" onClick={handleProductos}>
+          <button
+            className="admin-action-button"
+            onClick={() => setVista("proveedores")}
+          >
             Proveedores
           </button>
-          <button className="admin-action-button" onClick={handleProveedores}>
+          <button
+            className="admin-action-button"
+            onClick={() => setVista("productos")}
+          >
             Productos
           </button>
+          {vista === "productos" && (
+            <>
+              <button
+                className="admin-action-button"
+                onClick={handleAddCategoria}
+              >
+                Nueva Categoria
+              </button>
+              <button
+                className="admin-action-button"
+                onClick={handleAddEtiqueta}
+              >
+                Nueva Etiqueta
+              </button>
+            </>
+          )}
         </div>
         <div className="table">
-          {isProveedores && (
-            <Table
-              title="Proveedores"
-              main_button_title="Agregar Proveedor"
-              columns_name={proveedores_columns_name}
-              data={proveedores}
-              onAction_main_button={handleAddProveedor}
-              onEdit={handleEditProveedor}
-              onToggleEstado={handleSaveProveedor}
-            />
+          {vista === "proveedores" && (
+            <>
+              {errorProveedores && (
+                <p className="admin-status-message admin-status-error">
+                  {errorProveedores}
+                </p>
+              )}
+              {cargandoProveedores ? (
+                <p className="admin-status-message">Cargando proveedores...</p>
+              ) : (
+                <Table
+                  title="Proveedores"
+                  main_button_title="Agregar Proveedor"
+                  columns_name={proveedores_columns_name}
+                  data={proveedores}
+                  onAction_main_button={handleAddProveedor}
+                  onEdit={handleEditProveedor}
+                  onToggleEstado={handleToggleEstadoProveedor}
+                />
+              )}
+            </>
           )}
-          {isProducto && (
-            <Table
-              title="Productos"
-              main_button_title="Agregar Producto"
-              columns_name={producto_columns_name}
-              data={productos}
-              onAction_main_button={handleAddProducto}
-              onEdit={handleEditProducto}
-              onToggleEstado={handleSaveProducto}
-            />
+          {vista === "productos" && (
+            <>
+              {errorProductos && (
+                <p className="admin-status-message admin-status-error">
+                  {errorProductos}
+                </p>
+              )}
+              {cargandoProductos ? (
+                <p className="admin-status-message">Cargando productos...</p>
+              ) : (
+                <Table
+                  title="Productos"
+                  main_button_title="Agregar Producto"
+                  columns_name={producto_columns_name}
+                  data={productos}
+                  onAction_main_button={handleAddProducto}
+                  onEdit={handleEditProducto}
+                  onToggleEstado={handleToggleEstadoProducto}
+                />
+              )}
+            </>
           )}
         </div>
       </section>
@@ -226,8 +301,22 @@ export default function Admin() {
       {showProductoModal && (
         <ProductoModalForm
           initialData={editingProducto}
+          categorias={categorias}
+          etiquetas={etiquetas}
           onClose={() => setShowProductoModal(false)}
           onSave={handleSaveProducto}
+        />
+      )}
+      {showCategoriaModal && (
+        <CategoriaModalForm
+          onClose={() => setShowCategoriaModal(false)}
+          onSave={handleSaveCategoria}
+        />
+      )}
+      {showEtiquetaModal && (
+        <EtiquetaModalForm
+          onClose={() => setShowEtiquetaModal(false)}
+          onSave={handleSaveEtiqueta}
         />
       )}
     </div>

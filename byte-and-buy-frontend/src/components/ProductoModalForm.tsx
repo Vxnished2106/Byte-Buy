@@ -1,32 +1,29 @@
 import React, { useState } from "react";
-import type { productoData } from "../ts/interfaces";
+import type { Categoria, Etiqueta, ProductoFormValues } from "../ts/interfaces";
 import "../styles/modal-form.css";
 
 export interface ProductoModalFormProps {
-  initialData?: productoData | null;
+  initialData?: ProductoFormValues | null;
+  categorias: Categoria[];
+  etiquetas: Etiqueta[];
   onClose: () => void;
-  onSave: (data: productoData) => void;
+  onSave: (data: ProductoFormValues) => Promise<void>;
 }
 
-const CATEGORIAS = [
-  "Audio",
-  "Componentes",
-  "Perifericos",
-  "Almacenamiento",
-  "Monitores",
-  "Accesorios",
-];
-
-const emptyProducto: productoData = {
+const emptyProducto: ProductoFormValues = {
   producto_id: 0,
   producto_nombre: "",
   producto_descripcion: "",
-  producto_categoria: CATEGORIAS[0],
+  producto_precio: 0,
   producto_descuento: 0,
   producto_impuesto: 0,
   producto_imagen: "",
   producto_banner: "",
   producto_estado: true,
+  categoria_ids: [],
+  etiqueta_ids: [],
+  stock_actual: 0,
+  stock_minimo: 0,
 };
 
 const fileName = (value: File | string) =>
@@ -34,24 +31,38 @@ const fileName = (value: File | string) =>
 
 export default function ProductoModalForm({
   initialData,
+  categorias,
+  etiquetas,
   onClose,
   onSave,
 }: ProductoModalFormProps) {
-  const [form, setForm] = useState<productoData>(
+  const [form, setForm] = useState<ProductoFormValues>(
     initialData ?? emptyProducto,
   );
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const isEditing = Boolean(initialData);
 
   const handleChange =
-    (field: keyof productoData) =>
+    (field: keyof ProductoFormValues) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
 
   const handleNumberChange =
-    (field: keyof productoData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm({ ...form, [field]: Number(e.target.value) });
+    (field: keyof ProductoFormValues) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      setForm({ ...form, [field]: raw === "" ? 0 : Number(raw) });
     };
+
+  // Muestra vacio en vez de "0": si el input parte en 0 y el usuario escribe
+  // un digito, el navegador lo antepone ("0" + "1" tipeado = "01"); como
+  // Number("01") === 1 es el mismo valor que React ya tenia, no vuelve a
+  // pintar el input y el cero queda pegado visualmente aunque el estado ya
+  // sea el numero correcto. Al no haber ningun caracter previo, ese problema
+  // no ocurre.
+  const numeroInput = (valor: number) => (valor === 0 ? "" : valor);
 
   const handleFileChange =
     (field: "producto_imagen" | "producto_banner") =>
@@ -61,9 +72,41 @@ export default function ProductoModalForm({
       setForm({ ...form, [field]: file });
     };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCategoriaToggle = (categoria_id: number) => {
+    setForm((prev) => {
+      const seleccionado = prev.categoria_ids.includes(categoria_id);
+      return {
+        ...prev,
+        categoria_ids: seleccionado
+          ? prev.categoria_ids.filter((id) => id !== categoria_id)
+          : [...prev.categoria_ids, categoria_id],
+      };
+    });
+  };
+
+  const handleEtiquetaToggle = (etiqueta_id: number) => {
+    setForm((prev) => {
+      const seleccionado = prev.etiqueta_ids.includes(etiqueta_id);
+      return {
+        ...prev,
+        etiqueta_ids: seleccionado
+          ? prev.etiqueta_ids.filter((id) => id !== etiqueta_id)
+          : [...prev.etiqueta_ids, etiqueta_id],
+      };
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(form);
+    setError(null);
+    setGuardando(true);
+    try {
+      await onSave(form);
+    } catch {
+      setError("No se pudo guardar el producto. Intenta nuevamente.");
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -85,6 +128,7 @@ export default function ProductoModalForm({
           </button>
         </div>
         <div className="modal-form-fields">
+          {error && <span className="modal-form-error">{error}</span>}
           <div className="modal-form-field">
             <label htmlFor="producto_nombre">Nombre del producto</label>
             <input
@@ -111,18 +155,17 @@ export default function ProductoModalForm({
           </div>
           <div className="modal-form-row">
             <div className="modal-form-field">
-              <label htmlFor="producto_categoria">Categoria</label>
-              <select
-                id="producto_categoria"
-                value={form.producto_categoria}
-                onChange={handleChange("producto_categoria")}
-              >
-                {CATEGORIAS.map((categoria) => (
-                  <option key={categoria} value={categoria}>
-                    {categoria}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="producto_precio">Precio</label>
+              <input
+                id="producto_precio"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={numeroInput(form.producto_precio)}
+                onChange={handleNumberChange("producto_precio")}
+                required
+              />
             </div>
             <div className="modal-form-field">
               <label htmlFor="producto_estado">Estado</label>
@@ -141,6 +184,46 @@ export default function ProductoModalForm({
               </select>
             </div>
           </div>
+          <div className="modal-form-field">
+            <label>Categorias</label>
+            <div className="modal-form-checkbox-group">
+              {categorias.map((categoria) => (
+                <label
+                  key={categoria.categoria_id}
+                  className="modal-form-checkbox"
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.categoria_ids.includes(
+                      categoria.categoria_id,
+                    )}
+                    onChange={() =>
+                      handleCategoriaToggle(categoria.categoria_id)
+                    }
+                  />
+                  {categoria.categoria_nombre}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="modal-form-field">
+            <label>Etiquetas</label>
+            <div className="modal-form-checkbox-group">
+              {etiquetas.map((etiqueta) => (
+                <label
+                  key={etiqueta.etiqueta_id}
+                  className="modal-form-checkbox"
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.etiqueta_ids.includes(etiqueta.etiqueta_id)}
+                    onChange={() => handleEtiquetaToggle(etiqueta.etiqueta_id)}
+                  />
+                  {etiqueta.etiqueta_nombre}
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="modal-form-row">
             <div className="modal-form-field">
               <label htmlFor="producto_descuento">Descuento (%)</label>
@@ -149,7 +232,7 @@ export default function ProductoModalForm({
                 type="number"
                 min={0}
                 placeholder="0"
-                value={form.producto_descuento}
+                value={numeroInput(form.producto_descuento)}
                 onChange={handleNumberChange("producto_descuento")}
                 required
               />
@@ -161,8 +244,34 @@ export default function ProductoModalForm({
                 type="number"
                 min={0}
                 placeholder="0"
-                value={form.producto_impuesto}
+                value={numeroInput(form.producto_impuesto)}
                 onChange={handleNumberChange("producto_impuesto")}
+                required
+              />
+            </div>
+          </div>
+          <div className="modal-form-row">
+            <div className="modal-form-field">
+              <label htmlFor="stock_actual">Stock actual</label>
+              <input
+                id="stock_actual"
+                type="number"
+                min={0}
+                placeholder="0"
+                value={numeroInput(form.stock_actual)}
+                onChange={handleNumberChange("stock_actual")}
+                required
+              />
+            </div>
+            <div className="modal-form-field">
+              <label htmlFor="stock_minimo">Stock minimo</label>
+              <input
+                id="stock_minimo"
+                type="number"
+                min={0}
+                placeholder="0"
+                value={numeroInput(form.stock_minimo)}
+                onChange={handleNumberChange("stock_minimo")}
                 required
               />
             </div>
@@ -203,11 +312,12 @@ export default function ProductoModalForm({
             type="button"
             className="modal-form-cancel"
             onClick={onClose}
+            disabled={guardando}
           >
             Cancelar
           </button>
-          <button type="submit" className="modal-form-save">
-            Guardar
+          <button type="submit" className="modal-form-save" disabled={guardando}>
+            {guardando ? "Guardando..." : "Guardar"}
           </button>
         </div>
       </form>
