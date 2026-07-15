@@ -234,7 +234,6 @@ export default function ProductoModalForm({
                 placeholder="0"
                 value={numeroInput(form.producto_descuento)}
                 onChange={handleNumberChange("producto_descuento")}
-                required
               />
             </div>
             <div className="modal-form-field">
@@ -246,7 +245,6 @@ export default function ProductoModalForm({
                 placeholder="0"
                 value={numeroInput(form.producto_impuesto)}
                 onChange={handleNumberChange("producto_impuesto")}
-                required
               />
             </div>
           </div>
@@ -260,7 +258,6 @@ export default function ProductoModalForm({
                 placeholder="0"
                 value={numeroInput(form.stock_actual)}
                 onChange={handleNumberChange("stock_actual")}
-                required
               />
             </div>
             <div className="modal-form-field">
@@ -272,7 +269,6 @@ export default function ProductoModalForm({
                 placeholder="0"
                 value={numeroInput(form.stock_minimo)}
                 onChange={handleNumberChange("stock_minimo")}
-                required
               />
             </div>
           </div>
