@@ -8,6 +8,12 @@ import { AuthModule } from './auth/auth.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { MailModule } from './mail/mail.module';
 import { TokenRecuperacionModule } from './token_recuperacion/token_recuperacion.module';
+import { CategoriaModule } from './categoria/categoria.module';
+import { EtiquetaModule } from './etiqueta/etiqueta.module';
+import { ProductoModule } from './producto/producto.module';
+import { ProveedorModule } from './proveedor/proveedor.module';
+import { InventarioModule } from './inventario/inventario.module';
+import { ProductoProveedorModule } from './producto_proveedor/producto_proveedor.module';
 
 @Module({
   imports: [
@@ -34,6 +40,12 @@ import { TokenRecuperacionModule } from './token_recuperacion/token_recuperacion
     UsuarioModule,
     MailModule,
     TokenRecuperacionModule,
+    CategoriaModule,
+    EtiquetaModule,
+    ProductoModule,
+    ProveedorModule,
+    InventarioModule,
+    ProductoProveedorModule
   ],
   controllers: [AppController],
   providers: [AppService],
