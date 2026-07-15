@@ -127,6 +127,110 @@ header {
 .search-bar-container{
     position: relative;
 }
+.search-bar-button{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 40px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+.search-bar-button .search{
+    position: static;
+}
+.search-suggestions {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    width: 400px;
+    max-height: 380px;
+    overflow-y: auto;
+    background-color: var(--bb-surface);
+    border-radius: 14px;
+    border: 1px solid var(--bb-border);
+    box-shadow: 0 12px 30px rgba(35, 37, 47, 0.12);
+    padding: 8px;
+    z-index: 20;
+}
+.search-suggestions ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+.suggestion-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    background: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    color: inherit;
+    transition: background-color .15s ease;
+}
+.suggestion-link:hover {
+    background-color: var(--bb-bg-2);
+}
+.suggestion-image {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background-color: var(--bb-bg-2);
+    overflow: hidden;
+}
+.suggestion-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.suggestion-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+.suggestion-name {
+    font-size: 14px;
+    color: var(--bb-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.suggestion-price {
+    font-size: 13px;
+    color: var(--bb-text-4);
+}
+.suggestion-ver-todo {
+    width: 100%;
+    padding: 10px 8px;
+    margin-top: 4px;
+    border: none;
+    border-top: 1px solid var(--bb-border);
+    background: none;
+    color: var(--links-color);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+}
+.suggestion-empty {
+    padding: 12px 8px;
+    font-size: 14px;
+    color: var(--bb-text-4);
+    text-align: center;
+}
 .search-bar-container input:focus{
     outline: none;
 }
