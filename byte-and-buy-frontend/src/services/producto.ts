@@ -86,6 +86,7 @@ export async function crearProducto(
   const formData = construirFormData(datos, imagen, banner);
   const { data } = await api.post<Producto>("/productos", formData, {
     headers: { "Content-Type": undefined },
+    timeout: 60000, // subidas a Supabase Storage pueden tardar más que una petición JSON normal
   });
   return normalizarProducto(data);
 }
@@ -101,7 +102,10 @@ export async function editarProducto(
   const { data } = await api.patch<Producto>(
     `/productos/${producto_id}`,
     formData,
-    { headers: { "Content-Type": undefined } },
+    {
+      headers: { "Content-Type": undefined },
+      timeout: 60000, // subidas a Supabase Storage pueden tardar más que una petición JSON normal
+    },
   );
   return normalizarProducto(data);
 }
