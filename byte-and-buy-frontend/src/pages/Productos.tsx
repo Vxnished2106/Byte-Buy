@@ -9,6 +9,7 @@ export default function Productos() {
   const { productos, loading, error } = useCatalogoProductos();
   const [searchParams] = useSearchParams();
   const categoriaDesdeUrl = searchParams.get("categoria");
+  const busquedaDesdeUrl = searchParams.get("busqueda");
 
   const categorias = useMemo(() => {
     const nombres = new Set<string>();
@@ -38,6 +39,7 @@ export default function Productos() {
     categoriaDesdeUrl ?? "Todos",
   );
   const [etiquetasActivas, setEtiquetasActivas] = useState<string[]>([]);
+  const [busqueda, setBusqueda] = useState(busquedaDesdeUrl ?? "");
 
   // Sincroniza el filtro con el link "?categoria=" del menu del Header
   // (tambien cubre el caso de navegar de una categoria a otra sin
@@ -45,6 +47,11 @@ export default function Productos() {
   useEffect(() => {
     setCategoriaActiva(categoriaDesdeUrl ?? "Todos");
   }, [categoriaDesdeUrl]);
+  // Sincroniza el termino de busqueda con el "?busqueda=" de la barra
+  // de busqueda del Header.
+  useEffect(() => {
+    setBusqueda(busquedaDesdeUrl ?? "");
+  }, [busquedaDesdeUrl]);
   // null = el usuario no ha tocado el slider todavia; se usa higgerPrice
   // (que solo se conoce tras cargar los productos) como tope por defecto.
   const [precioMaximo, setPrecioMaximo] = useState<number | null>(null);
@@ -70,7 +77,10 @@ export default function Productos() {
     setCategoriaActiva("Todos");
     setEtiquetasActivas([]);
     setPrecioMaximo(null);
+    setBusqueda("");
   };
+
+  const terminoBusqueda = busqueda.trim().toLowerCase();
 
   const productosFiltrados = productos.filter((producto) => {
     const coincideCategoria =
@@ -82,7 +92,21 @@ export default function Productos() {
         etiquetasActivas.includes(etiqueta.etiqueta_nombre)
       );
     const coincidePrecio = producto.producto_precio <= precioMaximoActivo;
-    return coincideCategoria && coincideEtiqueta && coincidePrecio;
+    const coincideBusqueda =
+      !terminoBusqueda ||
+      producto.producto_nombre.toLowerCase().includes(terminoBusqueda) ||
+      (producto.producto_descripcion ?? "")
+        .toLowerCase()
+        .includes(terminoBusqueda) ||
+      producto.categorias.some((c) =>
+        c.categoria_nombre.toLowerCase().includes(terminoBusqueda),
+      ) ||
+      producto.etiquetas.some((e) =>
+        e.etiqueta_nombre.toLowerCase().includes(terminoBusqueda),
+      );
+    return (
+      coincideCategoria && coincideEtiqueta && coincidePrecio && coincideBusqueda
+    );
   });
 
   return (

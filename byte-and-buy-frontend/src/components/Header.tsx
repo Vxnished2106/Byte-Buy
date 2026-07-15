@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import User from "../assets/favicon/user";
 import Cart from "../assets/favicon/cart";
 import "../styles/header.css";
@@ -8,16 +8,21 @@ import { obtenerPerfil } from "../services/usuario";
 import { logout } from "../services/auth";
 import { useSesion } from "../hooks/useSesion";
 import { useCategoriasCatalogo } from "../hooks/useCategoriasCatalogo";
+import { useCatalogoProductos } from "../hooks/useCatalogoProductos";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
+
+const MAX_SUGERENCIAS = 6;
 
 export default function Header() {
   const navigate = useNavigate();
   const { session } = useSesion();
   const { categorias: categoriasCatalogo, total: totalCatalogo } =
     useCategoriasCatalogo();
+  const { productos } = useCatalogoProductos();
   const [openCatalogo, setOpenCatalogo] = useState(false);
   const [openPerfil, setOpenPerfil] = useState(false);
   const [product, setProduct] = useState<string>("");
+  const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [inicialesUsuario, setInicialesUsuario] = useState("");
   const [fotoUsuario, setFotoUsuario] = useState<string | null>(null);
@@ -65,6 +70,47 @@ export default function Header() {
     cerrarMenuPerfil();
     navigate("/");
   };
+
+  const handleBuscar = (e: React.FormEvent) => {
+    e.preventDefault();
+    irAResultados(product);
+  };
+
+  const irAResultados = (termino: string) => {
+    const valor = termino.trim();
+    setMostrarSugerencias(false);
+    navigate(
+      valor
+        ? `/byte&buy/products?busqueda=${encodeURIComponent(valor)}`
+        : "/byte&buy/products",
+    );
+  };
+
+  const terminoBusqueda = product.trim().toLowerCase();
+
+  const sugerencias = useMemo(() => {
+    if (!terminoBusqueda) return [];
+    return productos
+      .filter(
+        (producto) =>
+          producto.producto_nombre.toLowerCase().includes(terminoBusqueda) ||
+          (producto.producto_descripcion ?? "")
+            .toLowerCase()
+            .includes(terminoBusqueda) ||
+          producto.categorias.some((c) =>
+            c.categoria_nombre.toLowerCase().includes(terminoBusqueda),
+          ) ||
+          producto.etiquetas.some((e) =>
+            e.etiqueta_nombre.toLowerCase().includes(terminoBusqueda),
+          ),
+      )
+      .slice(0, MAX_SUGERENCIAS);
+  }, [productos, terminoBusqueda]);
+
+  const handleSeleccionarSugerencia = (productoId: number) => {
+    setMostrarSugerencias(false);
+    navigate(`/byte&buy/products/${productoId}`);
+  };
   return (
     <header>
       <Link to={"/"} className="link">
@@ -110,15 +156,72 @@ export default function Header() {
             </ul>
           </div>
         )}
-        <div className="search-bar-container">
-          <SearchRounded />
+        <form className="search-bar-container" onSubmit={handleBuscar}>
+          <button type="submit" className="search-bar-button" aria-label="Buscar">
+            <SearchRounded />
+          </button>
           <input
             className="search-bar"
             placeholder="Buscar productos, marcas, categorias..."
             value={product}
             onChange={(e) => setProduct(e.target.value)}
+            onFocus={() => setMostrarSugerencias(true)}
+            onBlur={() =>
+              setTimeout(() => setMostrarSugerencias(false), 150)
+            }
           />
-        </div>
+          {mostrarSugerencias && terminoBusqueda && (
+            <div className="search-suggestions">
+              {sugerencias.length > 0 ? (
+                <>
+                  <ul>
+                    {sugerencias.map((producto) => (
+                      <li key={producto.producto_id} className="suggestion-item">
+                        <button
+                          type="button"
+                          className="suggestion-link"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() =>
+                            handleSeleccionarSugerencia(producto.producto_id)
+                          }
+                        >
+                          <span className="suggestion-image">
+                            {producto.producto_imagen && (
+                              <img
+                                src={producto.producto_imagen}
+                                alt={producto.producto_nombre}
+                              />
+                            )}
+                          </span>
+                          <span className="suggestion-info">
+                            <span className="suggestion-name">
+                              {producto.producto_nombre}
+                            </span>
+                            <span className="suggestion-price">
+                              ${producto.producto_precio.toFixed(2)}
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    className="suggestion-ver-todo"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => irAResultados(product)}
+                  >
+                    Ver todos los resultados
+                  </button>
+                </>
+              ) : (
+                <p className="suggestion-empty">
+                  No se encontraron productos
+                </p>
+              )}
+            </div>
+          )}
+        </form>
       </div>
       <div className="action-buttons">
         <div className="user-menu">
