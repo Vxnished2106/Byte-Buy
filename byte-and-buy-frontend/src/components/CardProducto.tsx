@@ -22,6 +22,7 @@ export default function CardProducto({
         <img
           src={imagen || `https://placehold.co/300x300?text=${categoria}`}
           alt="imagen de producto"
+          loading="lazy"
         />
       </div>
       <div className="card-body">

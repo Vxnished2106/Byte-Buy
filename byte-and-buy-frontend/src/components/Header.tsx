@@ -190,6 +190,7 @@ export default function Header() {
                               <img
                                 src={producto.producto_imagen}
                                 alt={producto.producto_nombre}
+                                loading="lazy"
                               />
                             )}
                           </span>
@@ -235,7 +236,7 @@ export default function Header() {
                   <div className="perfil-info">
                     <div className="icon-user">
                       {fotoUsuario ? (
-                        <img src={fotoUsuario} alt="Foto de perfil" />
+                        <img src={fotoUsuario} alt="Foto de perfil" loading="lazy" />
                       ) : (
                         inicialesUsuario
                       )}

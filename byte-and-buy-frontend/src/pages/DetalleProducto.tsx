@@ -51,7 +51,7 @@ export default function DetalleProducto() {
 
         {producto.producto_banner && (
           <div className="detalle-producto-banner">
-            <img src={producto.producto_banner} alt="" />
+            <img src={producto.producto_banner} alt="" loading="lazy" />
           </div>
         )}
 
@@ -63,6 +63,7 @@ export default function DetalleProducto() {
                 `https://placehold.co/500x500?text=${producto.producto_nombre}`
               }
               alt={producto.producto_nombre}
+              loading="lazy"
             />
           </div>
 

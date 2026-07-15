@@ -135,7 +135,7 @@ export default function Perfil() {
             <div className="banner-info-left">
               <div className="perfil-bubble">
                 {profile.foto ? (
-                  <img src={profile.foto} alt="Foto de perfil" />
+                  <img src={profile.foto} alt="Foto de perfil" loading="lazy" />
                 ) : (
                   <h2>{iniciales}</h2>
                 )}

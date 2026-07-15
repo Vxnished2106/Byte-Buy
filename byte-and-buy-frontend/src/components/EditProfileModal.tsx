@@ -84,7 +84,7 @@ export default function EditProfileModal({
           <div className="modal-avatar">
             <div className="modal-avatar-preview">
               {fotoPreview ? (
-                <img src={fotoPreview} alt="Foto de perfil" />
+                <img src={fotoPreview} alt="Foto de perfil" loading="lazy" />
               ) : (
                 <span>{iniciales}</span>
               )}
