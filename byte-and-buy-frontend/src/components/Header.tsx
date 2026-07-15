@@ -20,6 +20,7 @@ export default function Header() {
   const [product, setProduct] = useState<string>("");
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [inicialesUsuario, setInicialesUsuario] = useState("");
+  const [fotoUsuario, setFotoUsuario] = useState<string | null>(null);
   const autenticado = !!session;
   const handleOpenCatalogo = () => setOpenCatalogo(!openCatalogo);
   const handleOpenPerfil = () => setOpenPerfil(!openPerfil);
@@ -30,6 +31,7 @@ export default function Header() {
     if (!session) {
       setNombreUsuario("");
       setInicialesUsuario("");
+      setFotoUsuario(null);
       return;
     }
 
@@ -43,11 +45,13 @@ export default function Header() {
         setInicialesUsuario(
           obtenerIniciales(usuario.usuario_nombre, usuario.usuario_apellido1),
         );
+        setFotoUsuario(usuario.usuario_foto ?? null);
       })
       .catch(() => {
         if (vigente) {
           setNombreUsuario("");
           setInicialesUsuario("");
+          setFotoUsuario(null);
         }
       });
 
@@ -126,7 +130,13 @@ export default function Header() {
               {autenticado ? (
                 <>
                   <div className="perfil-info">
-                    <div className="icon-user">{inicialesUsuario}</div>
+                    <div className="icon-user">
+                      {fotoUsuario ? (
+                        <img src={fotoUsuario} alt="Foto de perfil" />
+                      ) : (
+                        inicialesUsuario
+                      )}
+                    </div>
                     <div className="perfil-text">
                       <span className="name">{nombreUsuario}</span>
                       <Link
