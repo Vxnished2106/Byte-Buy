@@ -71,6 +71,18 @@
     gap: 24px;
 }
 
+.products-status-message {
+    grid-column: 1 / -1;
+    font-family: var(--text);
+    font-size: 14px;
+    color: var(--bb-text-3);
+}
+
+.products-status-error {
+    color: #e5484d;
+    font-weight: 600;
+}
+
 .filter-section {
     position: sticky;
     top: 100px;

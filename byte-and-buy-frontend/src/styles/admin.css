@@ -151,3 +151,14 @@
   padding: 24px 28px;
   box-shadow: 0 4px 18px rgba(17, 24, 39, 0.06);
 }
+
+.admin-status-message {
+  font-family: var(--details);
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.admin-status-error {
+  color: #e5484d;
+  font-weight: 600;
+}

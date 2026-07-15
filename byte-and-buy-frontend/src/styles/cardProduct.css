@@ -9,6 +9,8 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    color: inherit;
+    text-decoration: none;
     transition: transform .3s ease, box-shadow .3s ease;
 }
 

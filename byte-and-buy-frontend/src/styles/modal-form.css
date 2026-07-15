@@ -135,6 +135,27 @@
   color: #e5484d;
 }
 
+.modal-form-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.modal-form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--details);
+  font-size: 13px;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.modal-form-checkbox input {
+  width: auto;
+  height: auto;
+}
+
 .modal-form-actions {
   display: flex;
   gap: 12px;
