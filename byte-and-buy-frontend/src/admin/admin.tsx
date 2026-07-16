@@ -53,6 +53,7 @@ export default function Admin() {
     guardar: guardarProducto,
     cambiarEstado: cambiarEstadoProducto,
     inventarioPorProducto,
+    proveedoresPorProducto,
   } = useProductos();
 
   const { categorias, crear: crearCategoria } = useCategorias();
@@ -75,6 +76,8 @@ export default function Admin() {
     "Stock",
     "Stock Minimo",
     "Categoria",
+    "Proveedor",
+    "Precio de compra",
     "Descuento",
     "Impuesto",
     "Imagen",
@@ -125,6 +128,7 @@ export default function Admin() {
     );
     if (!productoCompleto) return;
     const inventario = inventarioPorProducto(row.producto_id);
+    const asignacionProveedor = proveedoresPorProducto(row.producto_id)[0];
     setEditingProducto({
       producto_id: productoCompleto.producto_id,
       producto_nombre: productoCompleto.producto_nombre,
@@ -139,6 +143,8 @@ export default function Admin() {
       etiqueta_ids: productoCompleto.etiquetas.map((e) => e.etiqueta_id),
       stock_actual: inventario?.inventario_stock_actual ?? 0,
       stock_minimo: inventario?.inventario_stock_minimo ?? 0,
+      proveedor_id: asignacionProveedor?.proveedor_id ?? 0,
+      precio_compra: asignacionProveedor?.producto_proveedor_precio ?? 0,
     });
     setShowProductoModal(true);
   };
@@ -161,6 +167,9 @@ export default function Admin() {
         etiqueta_ids: form.etiqueta_ids,
       },
       { stock_actual: form.stock_actual, stock_minimo: form.stock_minimo },
+      form.proveedor_id
+        ? { proveedor_id: form.proveedor_id, precio_compra: form.precio_compra }
+        : null,
       imagen,
       banner,
     );
@@ -330,6 +339,7 @@ export default function Admin() {
           initialData={editingProducto}
           categorias={categorias}
           etiquetas={etiquetas}
+          proveedores={proveedores}
           onClose={() => setShowProductoModal(false)}
           onSave={handleSaveProducto}
         />
