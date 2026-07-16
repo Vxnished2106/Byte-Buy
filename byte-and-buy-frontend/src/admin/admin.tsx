@@ -80,8 +80,6 @@ export default function Admin() {
     "Precio de compra",
     "Descuento",
     "Impuesto",
-    "Imagen",
-    "Banner",
   ];
 
   const handleToggleMenu = () => setOpenMenu(!openMenu);
@@ -321,6 +319,7 @@ export default function Admin() {
                   onAction_main_button={handleAddProducto}
                   onEdit={handleEditProducto}
                   onToggleEstado={handleToggleEstadoProducto}
+                  hideToggleEstado
                 />
               )}
             </>
