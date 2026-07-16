@@ -226,21 +226,7 @@ export default function Admin() {
           )}
         </div>
       </div>
-      <section className="stats-section">
-        {vista === "productos" && alertasStock.length > 0 && (
-          <div className="stock-alert-banner">
-            <span className="stock-alert-count">
-              {alertasStock.length} producto
-              {alertasStock.length === 1 ? "" : "s"} con stock bajo
-            </span>
-            {nombresStockBajo.length > 0 && (
-              <span className="stock-alert-list">
-                {nombresStockBajo.join(", ")}
-              </span>
-            )}
-          </div>
-        )}
-      </section>
+      <section className="stats-section"></section>
       <section className="table-section">
         <div className="admin-action-buttons">
           <button
@@ -269,6 +255,19 @@ export default function Admin() {
               >
                 Nueva Etiqueta
               </button>
+              {alertasStock.length > 0 && (
+                <div className="stock-alert-banner">
+                  <span className="stock-alert-count">
+                    {alertasStock.length} producto
+                    {alertasStock.length === 1 ? "" : "s"} con stock bajo
+                  </span>
+                  {nombresStockBajo.length > 0 && (
+                    <span className="stock-alert-list">
+                      {nombresStockBajo.join(", ")}
+                    </span>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
