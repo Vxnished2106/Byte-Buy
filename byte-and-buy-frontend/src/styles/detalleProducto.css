@@ -153,6 +153,13 @@
     color: #e5484d;
 }
 
+.detalle-producto-stock-bajo {
+    font-family: var(--details);
+    font-size: 13px;
+    font-weight: 600;
+    color: #b45309;
+}
+
 .detalle-producto-descripcion {
     font-family: var(--text);
     font-size: 15px;
