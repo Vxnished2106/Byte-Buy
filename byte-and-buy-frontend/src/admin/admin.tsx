@@ -5,6 +5,7 @@ import { useProveedores } from "../hooks/useProveedores";
 import { useProductos } from "../hooks/useProductos";
 import { useCategorias } from "../hooks/useCategorias";
 import { useEtiquetas } from "../hooks/useEtiquetas";
+import { useAlertasStock } from "../hooks/useAlertasStock";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 import { logout } from "../services/auth";
 import Table from "../components/Table";
@@ -56,6 +57,8 @@ export default function Admin() {
 
   const { categorias, crear: crearCategoria } = useCategorias();
   const { etiquetas, crear: crearEtiqueta } = useEtiquetas();
+  const { alertas: alertasStock, recargar: recargarAlertasStock } =
+    useAlertasStock();
 
   const proveedores_columns_name = [
     "ID",
@@ -161,6 +164,7 @@ export default function Admin() {
       imagen,
       banner,
     );
+    await recargarAlertasStock();
     setShowProductoModal(false);
   };
 
@@ -181,6 +185,14 @@ export default function Admin() {
     await crearEtiqueta(datos);
     setShowEtiquetaModal(false);
   };
+
+  const nombresStockBajo = alertasStock
+    .map(
+      (inv) =>
+        productosCompletos.find((p) => p.producto_id === inv.producto_id)
+          ?.producto_nombre,
+    )
+    .filter((nombre): nombre is string => Boolean(nombre));
 
   const iniciales = usuario
     ? obtenerIniciales(usuario.usuario_nombre, usuario.usuario_apellido1)
@@ -214,7 +226,21 @@ export default function Admin() {
           )}
         </div>
       </div>
-      <section className="stats-section"></section>
+      <section className="stats-section">
+        {vista === "productos" && alertasStock.length > 0 && (
+          <div className="stock-alert-banner">
+            <span className="stock-alert-count">
+              {alertasStock.length} producto
+              {alertasStock.length === 1 ? "" : "s"} con stock bajo
+            </span>
+            {nombresStockBajo.length > 0 && (
+              <span className="stock-alert-list">
+                {nombresStockBajo.join(", ")}
+              </span>
+            )}
+          </div>
+        )}
+      </section>
       <section className="table-section">
         <div className="admin-action-buttons">
           <button
