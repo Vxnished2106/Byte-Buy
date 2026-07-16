@@ -158,6 +158,29 @@
   color: #4b5563;
 }
 
+.stock-alert-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background-color: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-family: var(--details);
+  font-size: 14px;
+}
+
+.stock-alert-count {
+  font-weight: 700;
+  color: #b45309;
+}
+
+.stock-alert-list {
+  color: #92400e;
+}
+
 .admin-status-error {
   color: #e5484d;
   font-weight: 600;
