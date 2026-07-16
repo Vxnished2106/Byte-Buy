@@ -4,10 +4,20 @@ import Header from "../components/Header";
 import { useDetalleProducto } from "../hooks/useDetalleProducto";
 import "../styles/detalleProducto.css";
 
+// Umbral de "quedan pocas unidades". El backend no expone el stock mínimo
+// real de cada producto en el detalle público (ese dato vive en el
+// inventario, solo accesible para admin), así que se usa un umbral fijo.
+const STOCK_BAJO_UMBRAL = 5;
+
 export default function DetalleProducto() {
   const { id } = useParams<{ id: string }>();
   const producto_id = id ? Number(id) : undefined;
   const { producto, loading, error } = useDetalleProducto(producto_id);
+
+  const stockBajo = useMemo(() => {
+    if (!producto || !producto.puedeComprar) return false;
+    return producto.stock_actual <= STOCK_BAJO_UMBRAL;
+  }, [producto]);
 
   const precioConDescuento = useMemo(() => {
     if (!producto || !producto.producto_descuento) return null;
@@ -122,6 +132,12 @@ export default function DetalleProducto() {
                 ? `En stock (${producto.stock_actual} disponibles)`
                 : "Agotado"}
             </p>
+
+            {stockBajo && (
+              <p className="detalle-producto-stock-bajo">
+                ¡Quedan pocas unidades! Solo {producto.stock_actual} en stock.
+              </p>
+            )}
 
             {producto.producto_descripcion && (
               <p className="detalle-producto-descripcion">

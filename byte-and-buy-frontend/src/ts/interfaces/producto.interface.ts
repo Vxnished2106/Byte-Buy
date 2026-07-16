@@ -37,6 +37,15 @@ export interface DetalleProducto extends Producto {
   puedeComprar: boolean;
 }
 
+/** Forma que entrega `GET /productos/catalogo` (listado público liviano con disponibilidad). */
+export interface ProductoCatalogo {
+  producto_id: number;
+  producto_nombre: string;
+  producto_precio: number;
+  producto_imagen: string | null;
+  disponible: boolean;
+}
+
 /**
  * Fila usada por la tabla del panel de administración (la vista "Productos"
  * es en realidad producto + inventario combinados). El orden de las

@@ -7,6 +7,12 @@ export async function listarInventario(): Promise<Inventario[]> {
   return data;
 }
 
+/** Lista los productos cuyo stock actual llegó o bajó del mínimo configurado. */
+export async function obtenerAlertasStock(): Promise<Inventario[]> {
+  const { data } = await api.get<Inventario[]>("/inventarios/alertas-stock");
+  return data;
+}
+
 /** Crea el registro de inventario de un producto. */
 export async function crearInventario(
   datos: CreateInventario,

@@ -3,6 +3,7 @@ import type {
   CreateProducto,
   DetalleProducto,
   Producto,
+  ProductoCatalogo,
   UpdateProducto,
 } from "../ts/interfaces";
 
@@ -39,6 +40,12 @@ export async function listarProductos(filtros?: {
     },
   });
   return data.map(normalizarProducto);
+}
+
+/** Lista el catálogo público liviano, con disponibilidad de stock por producto. */
+export async function obtenerCatalogo(): Promise<ProductoCatalogo[]> {
+  const { data } = await api.get<ProductoCatalogo[]>("/productos/catalogo");
+  return data;
 }
 
 /** Obtiene el detalle público de un producto activo, incluido su stock. */
