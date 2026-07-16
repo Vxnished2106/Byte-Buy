@@ -292,14 +292,20 @@ export default function ProductoModalForm({
                 }
               >
                 <option value={0}>Sin proveedor</option>
-                {proveedores.map((proveedor) => (
-                  <option
-                    key={proveedor.proveedor_id}
-                    value={proveedor.proveedor_id}
-                  >
-                    {proveedor.proveedor_nombre}
-                  </option>
-                ))}
+                {proveedores
+                  .filter(
+                    (proveedor) =>
+                      proveedor.proveedor_estado ||
+                      proveedor.proveedor_id === form.proveedor_id,
+                  )
+                  .map((proveedor) => (
+                    <option
+                      key={proveedor.proveedor_id}
+                      value={proveedor.proveedor_id}
+                    >
+                      {proveedor.proveedor_nombre}
+                    </option>
+                  ))}
               </select>
             </div>
             <div className="modal-form-field">
