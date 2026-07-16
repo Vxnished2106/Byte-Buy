@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type {
   Categoria,
   Etiqueta,
@@ -34,9 +34,6 @@ const emptyProducto: ProductoFormValues = {
   precio_compra: 0,
 };
 
-const fileName = (value: File | string) =>
-  value instanceof File ? value.name : value;
-
 export default function ProductoModalForm({
   initialData,
   categorias,
@@ -50,7 +47,27 @@ export default function ProductoModalForm({
   );
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imagenPreview, setImagenPreview] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const isEditing = Boolean(initialData);
+
+  useEffect(() => {
+    if (form.producto_imagen instanceof File) {
+      const url = URL.createObjectURL(form.producto_imagen);
+      setImagenPreview(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setImagenPreview(form.producto_imagen || null);
+  }, [form.producto_imagen]);
+
+  useEffect(() => {
+    if (form.producto_banner instanceof File) {
+      const url = URL.createObjectURL(form.producto_banner);
+      setBannerPreview(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setBannerPreview(form.producto_banner || null);
+  }, [form.producto_banner]);
 
   const handleChange =
     (field: keyof ProductoFormValues) =>
@@ -332,10 +349,12 @@ export default function ProductoModalForm({
                 accept="image/*"
                 onChange={handleFileChange("producto_imagen")}
               />
-              {form.producto_imagen && (
-                <span className="modal-form-preview">
-                  {fileName(form.producto_imagen)}
-                </span>
+              {imagenPreview && (
+                <img
+                  src={imagenPreview}
+                  alt="Vista previa de la imagen del producto"
+                  className="modal-form-image-preview"
+                />
               )}
             </div>
             <div className="modal-form-field">
@@ -346,10 +365,12 @@ export default function ProductoModalForm({
                 accept="image/*"
                 onChange={handleFileChange("producto_banner")}
               />
-              {form.producto_banner && (
-                <span className="modal-form-preview">
-                  {fileName(form.producto_banner)}
-                </span>
+              {bannerPreview && (
+                <img
+                  src={bannerPreview}
+                  alt="Vista previa del banner del producto"
+                  className="modal-form-image-preview"
+                />
               )}
             </div>
           </div>
