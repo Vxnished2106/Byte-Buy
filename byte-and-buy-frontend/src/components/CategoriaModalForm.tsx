@@ -25,6 +25,18 @@ export default function CategoriaModalForm({
     setImagen(e.target.files?.[0]);
   };
 
+  const handleInvalid = (e: React.InvalidEvent<HTMLInputElement>) => {
+    if (e.currentTarget.validity.valueMissing) {
+      e.currentTarget.setCustomValidity("Por favor ingresa el nombre de la categoria.");
+    } else {
+      e.currentTarget.setCustomValidity("");
+    }
+  };
+
+  const clearValidity = (e: React.FormEvent<HTMLInputElement>) => {
+    e.currentTarget.setCustomValidity("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -68,6 +80,8 @@ export default function CategoriaModalForm({
               onChange={(e) =>
                 setForm({ ...form, categoria_nombre: e.target.value })
               }
+              onInvalid={handleInvalid}
+              onInput={clearValidity}
               required
             />
           </div>

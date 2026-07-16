@@ -15,6 +15,18 @@ export default function EtiquetaModalForm({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleInvalid = (e: React.InvalidEvent<HTMLInputElement>) => {
+    if (e.currentTarget.validity.valueMissing) {
+      e.currentTarget.setCustomValidity("Por favor ingresa el nombre de la etiqueta.");
+    } else {
+      e.currentTarget.setCustomValidity("");
+    }
+  };
+
+  const clearValidity = (e: React.FormEvent<HTMLInputElement>) => {
+    e.currentTarget.setCustomValidity("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -57,6 +69,8 @@ export default function EtiquetaModalForm({
               maxLength={50}
               value={etiquetaNombre}
               onChange={(e) => setEtiquetaNombre(e.target.value)}
+              onInvalid={handleInvalid}
+              onInput={clearValidity}
               required
             />
           </div>

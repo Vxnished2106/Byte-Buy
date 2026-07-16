@@ -35,6 +35,29 @@ export default function ProveedorModalForm({
       setForm({ ...form, [field]: e.target.value });
     };
 
+  const requiredMessages: Partial<Record<keyof proveedorData, string>> = {
+    proveedor_nombre: "Por favor ingresa el nombre del proveedor.",
+    proveedor_correo: "Por favor ingresa un correo electronico valido.",
+    proveedor_telefono: "Por favor ingresa el telefono del proveedor.",
+    proveedor_direccion: "Por favor ingresa la direccion del proveedor.",
+  };
+
+  const handleInvalid =
+    (field: keyof proveedorData) =>
+    (e: React.InvalidEvent<HTMLInputElement>) => {
+      if (e.currentTarget.validity.valueMissing) {
+        e.currentTarget.setCustomValidity(requiredMessages[field] ?? "Este campo es obligatorio.");
+      } else if (e.currentTarget.validity.typeMismatch) {
+        e.currentTarget.setCustomValidity("El formato ingresado no es valido.");
+      } else {
+        e.currentTarget.setCustomValidity("");
+      }
+    };
+
+  const clearValidity = (e: React.FormEvent<HTMLInputElement>) => {
+    e.currentTarget.setCustomValidity("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -76,6 +99,8 @@ export default function ProveedorModalForm({
               placeholder="Ej. Nvidia"
               value={form.proveedor_nombre}
               onChange={handleChange("proveedor_nombre")}
+              onInvalid={handleInvalid("proveedor_nombre")}
+              onInput={clearValidity}
               required
             />
           </div>
@@ -88,6 +113,8 @@ export default function ProveedorModalForm({
                 placeholder="proveedor@correo.com"
                 value={form.proveedor_correo}
                 onChange={handleChange("proveedor_correo")}
+                onInvalid={handleInvalid("proveedor_correo")}
+                onInput={clearValidity}
                 required
               />
             </div>
@@ -99,6 +126,8 @@ export default function ProveedorModalForm({
                 placeholder="+101 65437786"
                 value={form.proveedor_telefono}
                 onChange={handleChange("proveedor_telefono")}
+                onInvalid={handleInvalid("proveedor_telefono")}
+                onInput={clearValidity}
                 required
               />
             </div>
@@ -111,6 +140,8 @@ export default function ProveedorModalForm({
               placeholder="Ohaio, USA, wolf street"
               value={form.proveedor_direccion}
               onChange={handleChange("proveedor_direccion")}
+              onInvalid={handleInvalid("proveedor_direccion")}
+              onInput={clearValidity}
               required
             />
           </div>

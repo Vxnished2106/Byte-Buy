@@ -75,6 +75,29 @@ export default function ProductoModalForm({
       setForm({ ...form, [field]: e.target.value });
     };
 
+  const requiredMessages: Partial<Record<keyof ProductoFormValues, string>> = {
+    producto_nombre: "Por favor ingresa el nombre del producto.",
+    producto_descripcion: "Por favor ingresa la descripcion del producto.",
+    producto_precio: "Por favor ingresa el precio del producto.",
+    precio_compra: "Por favor ingresa el precio de compra del producto.",
+  };
+
+  const handleInvalid =
+    (field: keyof ProductoFormValues) =>
+    (e: React.InvalidEvent<HTMLInputElement>) => {
+      if (e.currentTarget.validity.valueMissing) {
+        e.currentTarget.setCustomValidity(requiredMessages[field] ?? "Este campo es obligatorio.");
+      } else if (e.currentTarget.validity.rangeUnderflow) {
+        e.currentTarget.setCustomValidity("El valor no puede ser negativo.");
+      } else {
+        e.currentTarget.setCustomValidity("");
+      }
+    };
+
+  const clearValidity = (e: React.FormEvent<HTMLInputElement>) => {
+    e.currentTarget.setCustomValidity("");
+  };
+
   const handleNumberChange =
     (field: keyof ProductoFormValues) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,6 +186,8 @@ export default function ProductoModalForm({
               placeholder="Ej. Auriculares Aura Pro"
               value={form.producto_nombre}
               onChange={handleChange("producto_nombre")}
+              onInvalid={handleInvalid("producto_nombre")}
+              onInput={clearValidity}
               required
             />
           </div>
@@ -176,6 +201,8 @@ export default function ProductoModalForm({
               placeholder="Descripcion de componentes"
               value={form.producto_descripcion}
               onChange={handleChange("producto_descripcion")}
+              onInvalid={handleInvalid("producto_descripcion")}
+              onInput={clearValidity}
               required
             />
           </div>
@@ -190,6 +217,8 @@ export default function ProductoModalForm({
                 placeholder="0.00"
                 value={numeroInput(form.producto_precio)}
                 onChange={handleNumberChange("producto_precio")}
+                onInvalid={handleInvalid("producto_precio")}
+                onInput={clearValidity}
                 required
               />
             </div>
@@ -335,6 +364,8 @@ export default function ProductoModalForm({
                 placeholder="0.00"
                 value={numeroInput(form.precio_compra)}
                 onChange={handleNumberChange("precio_compra")}
+                onInvalid={handleInvalid("precio_compra")}
+                onInput={clearValidity}
                 disabled={!form.proveedor_id}
                 required={Boolean(form.proveedor_id)}
               />
