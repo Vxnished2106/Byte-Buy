@@ -1,11 +1,13 @@
 .admin-panel-container {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-direction: column;
   position: relative;
+  padding-top: 190px;
+  padding-bottom: 40px;
 }
 
 .admin-panel-header {
@@ -113,8 +115,8 @@
 }
 
 .table-section {
-  width: 90%;
-  max-width: 1200px;
+  width: 96vw;
+  max-width: none;
   display: flex;
   flex-direction: column;
   gap: 16px;
