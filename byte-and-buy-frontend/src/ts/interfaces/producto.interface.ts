@@ -65,8 +65,6 @@ export interface productoData {
   producto_precio_compra: string;
   producto_descuento: number;
   producto_impuesto: number;
-  producto_imagen: string;
-  producto_banner: string;
   producto_estado: boolean;
 }
 
