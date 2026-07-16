@@ -8,6 +8,7 @@ type TableProps<T extends object> = {
   onEdit?: (row: T) => void;
   onToggleEstado?: (row: T) => void;
   data: T[]
+  hideToggleEstado?: boolean;
 };
 export default function Table<T extends object>({
   title,
@@ -17,6 +18,7 @@ export default function Table<T extends object>({
   onEdit,
   onToggleEstado,
   data,
+  hideToggleEstado,
 }: TableProps<T>) {
   return (
     <>
@@ -43,8 +45,15 @@ export default function Table<T extends object>({
               ([, value]) => typeof value === "boolean"
             );
             const isActive = estadoEntry?.[1] as boolean | undefined;
-            const statusClass =
-              isActive === false ? "table-row table-row-disabled" : "table-row";
+            const sinStock =
+              "producto_stock" in row && (row as Record<string, unknown>).producto_stock === 0;
+            const statusClass = [
+              "table-row",
+              isActive === false ? "table-row-disabled" : "",
+              sinStock ? "table-row-sin-stock" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
             const handleToggleEstado = () => {
               if (!estadoEntry) return;
               const [estadoKey, estadoValue] = estadoEntry;
@@ -71,13 +80,15 @@ export default function Table<T extends object>({
                 >
                   Editar
                 </button>
-                <button
-                  className="delete-button"
-                  onClick={handleToggleEstado}
-                  disabled={!estadoEntry}
-                >
-                  {isActive === false ? "Activar" : "Desactivar"}
-                </button>
+                {!hideToggleEstado && (
+                  <button
+                    className="delete-button"
+                    onClick={handleToggleEstado}
+                    disabled={!estadoEntry}
+                  >
+                    {isActive === false ? "Activar" : "Desactivar"}
+                  </button>
+                )}
               </td>
             </tr>
             );

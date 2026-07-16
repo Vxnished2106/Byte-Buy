@@ -77,6 +77,12 @@
   color: #9096a8;
 }
 
+.table-row-sin-stock td {
+  opacity: 0.5;
+  color: #9096a8;
+  background-color: #f1f2f6;
+}
+
 .admin-table td {
   padding: 16px;
   font-family: var(--details);
