@@ -77,9 +77,6 @@ function App() {
                 <Link to="/byte&buy/products" className="cta-button primary">
                   Ver Productos
                 </Link>
-                <Link to="/byte&buy/register" className="cta-button secondary">
-                  Crear Cuenta
-                </Link>
               </div>
             </div>
           </div>
