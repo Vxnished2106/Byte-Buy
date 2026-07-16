@@ -35,6 +35,14 @@ export default function Productos() {
     [productos],
   );
 
+  const lowerPrice = useMemo(
+    () =>
+      productos.length
+        ? Math.min(...productos.map((prod) => prod.producto_precio))
+        : 0,
+    [productos],
+  );
+
   const [categoriaActiva, setCategoriaActiva] = useState(
     categoriaDesdeUrl ?? "Todos",
   );
@@ -205,14 +213,19 @@ export default function Productos() {
             <h6>Rango de precio</h6>
             <input
               type="range"
-              min={0}
+              min={lowerPrice}
               max={higgerPrice}
               value={precioMaximoActivo}
               onChange={(e) => setPrecioMaximo(Number(e.target.value))}
             />
-            <span className="price-range-value">
-              Hasta ${precioMaximoActivo.toFixed(2)}
-            </span>
+            <div className="price-range-labels">
+              <span className="price-range-min-label">
+                Desde ${lowerPrice.toFixed(2)}
+              </span>
+              <span className="price-range-value">
+                Hasta ${precioMaximoActivo.toFixed(2)}
+              </span>
+            </div>
           </div>
         </aside>
       </main>

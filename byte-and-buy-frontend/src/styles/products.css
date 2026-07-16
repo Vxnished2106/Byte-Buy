@@ -198,12 +198,23 @@
     margin-top: 8px;
 }
 
-.price-range-value {
-    display: block;
+.price-range-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 10px;
+}
+
+.price-range-value {
     font-family: var(--details);
     font-size: 13px;
     color: var(--bb-text-2);
+}
+
+.price-range-min-label {
+    font-family: var(--details);
+    font-size: 12px;
+    color: var(--bb-text-3);
 }
 
 @media (max-width: 900px) {
