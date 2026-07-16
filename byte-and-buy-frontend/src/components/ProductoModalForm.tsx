@@ -317,7 +317,7 @@ export default function ProductoModalForm({
               />
             </div>
           </div>
-          <div className="modal-form-row">
+          <div className="modal-form-column">
             <div className="modal-form-field">
               <label htmlFor="producto_imagen">Imagen de producto</label>
               <input

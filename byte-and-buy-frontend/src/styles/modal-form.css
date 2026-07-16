@@ -75,6 +75,12 @@
   gap: 18px;
 }
 
+.modal-form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .modal-form-field label {
   font-family: var(--details);
   font-size: 13px;
