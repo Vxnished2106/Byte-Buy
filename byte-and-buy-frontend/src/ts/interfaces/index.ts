@@ -4,6 +4,7 @@ export * from "./categoria.interface"
 export * from "./etiqueta.interface"
 export * from "./producto.interface"
 export * from "./inventario.interface"
+export * from "./producto_proveedor.interface"
 export * from "./token-recuperacion.interface";
 export * from "./auth.interface";
 export * from "./recuperacion-contrasena.interface";

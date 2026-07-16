@@ -1,15 +1,26 @@
 import { useCallback, useEffect, useState } from "react";
 import { crearInventario, editarInventario, listarInventario } from "../services/inventario";
 import { crearProducto, editarProducto, listarProductos } from "../services/producto";
+import {
+  actualizarPrecioCompra,
+  asignarProveedor,
+  eliminarAsignacionProveedor,
+  listarProveedoresPorProducto,
+} from "../services/producto-proveedor";
 import type {
   CreateProducto,
   Inventario,
   Producto,
+  ProductoProveedor,
   productoData,
   UpdateProducto,
 } from "../ts/interfaces";
 
-function toRow(producto: Producto, inventario?: Inventario): productoData {
+function toRow(
+  producto: Producto,
+  inventario?: Inventario,
+  asignaciones: ProductoProveedor[] = [],
+): productoData {
   return {
     producto_id: producto.producto_id,
     producto_nombre: producto.producto_nombre,
@@ -20,6 +31,16 @@ function toRow(producto: Producto, inventario?: Inventario): productoData {
     producto_categoria:
       producto.categorias?.map((c) => c.categoria_nombre).join(", ") ||
       "Sin categoria",
+    producto_proveedor:
+      asignaciones
+        .map((a) => a.proveedor?.proveedor_nombre)
+        .filter(Boolean)
+        .join(", ") || "Sin proveedor",
+    producto_precio_compra: asignaciones.length
+      ? asignaciones
+          .map((a) => `$${a.producto_proveedor_precio}`)
+          .join(", ")
+      : "-",
     producto_descuento: producto.producto_descuento,
     producto_impuesto: producto.producto_impuesto,
     producto_imagen: producto.producto_imagen ?? "",
@@ -36,6 +57,9 @@ function toRow(producto: Producto, inventario?: Inventario): productoData {
 export function useProductos() {
   const [productosCompletos, setProductosCompletos] = useState<Producto[]>([]);
   const [inventarios, setInventarios] = useState<Inventario[]>([]);
+  const [asignacionesProveedor, setAsignacionesProveedor] = useState<
+    ProductoProveedor[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +73,13 @@ export function useProductos() {
       ]);
       setProductosCompletos(listaProductos);
       setInventarios(listaInventarios);
+
+      // No existe un endpoint que liste todas las asignaciones producto-
+      // proveedor de una vez, así que se consulta una por producto.
+      const listasProveedor = await Promise.all(
+        listaProductos.map((p) => listarProveedoresPorProducto(p.producto_id)),
+      );
+      setAsignacionesProveedor(listasProveedor.flat());
     } catch {
       setError("No se pudieron cargar los productos");
     } finally {
@@ -66,11 +97,18 @@ export function useProductos() {
     [inventarios],
   );
 
+  const proveedoresPorProducto = useCallback(
+    (producto_id: number) =>
+      asignacionesProveedor.filter((a) => a.producto_id === producto_id),
+    [asignacionesProveedor],
+  );
+
   const guardar = useCallback(
     async (
       producto_id: number,
       datos: CreateProducto | UpdateProducto,
       stock: { stock_actual: number; stock_minimo: number },
+      proveedor: { proveedor_id: number; precio_compra: number } | null,
       imagen?: File,
       banner?: File,
     ) => {
@@ -93,9 +131,47 @@ export function useProductos() {
           inventario_stock_minimo: stock.stock_minimo,
         });
       }
+
+      // Se asume un solo proveedor "actual" por producto: la primera
+      // asignación activa que ya exista para él.
+      const asignacionExistente = proveedoresPorProducto(
+        productoGuardado.producto_id,
+      )[0];
+
+      if (proveedor) {
+        if (!asignacionExistente) {
+          await asignarProveedor({
+            producto_id: productoGuardado.producto_id,
+            proveedor_id: proveedor.proveedor_id,
+            producto_proveedor_precio: proveedor.precio_compra,
+          });
+        } else if (asignacionExistente.proveedor_id !== proveedor.proveedor_id) {
+          await eliminarAsignacionProveedor(
+            asignacionExistente.producto_proveedor_id,
+          );
+          await asignarProveedor({
+            producto_id: productoGuardado.producto_id,
+            proveedor_id: proveedor.proveedor_id,
+            producto_proveedor_precio: proveedor.precio_compra,
+          });
+        } else if (
+          asignacionExistente.producto_proveedor_precio !==
+          proveedor.precio_compra
+        ) {
+          await actualizarPrecioCompra(
+            asignacionExistente.producto_proveedor_id,
+            proveedor.precio_compra,
+          );
+        }
+      } else if (asignacionExistente) {
+        await eliminarAsignacionProveedor(
+          asignacionExistente.producto_proveedor_id,
+        );
+      }
+
       await cargar();
     },
-    [cargar, inventarioPorProducto],
+    [cargar, inventarioPorProducto, proveedoresPorProducto],
   );
 
   const cambiarEstado = useCallback(
@@ -109,7 +185,11 @@ export function useProductos() {
   );
 
   const productos: productoData[] = productosCompletos.map((producto) =>
-    toRow(producto, inventarioPorProducto(producto.producto_id)),
+    toRow(
+      producto,
+      inventarioPorProducto(producto.producto_id),
+      proveedoresPorProducto(producto.producto_id),
+    ),
   );
 
   return {
@@ -120,6 +200,7 @@ export function useProductos() {
     guardar,
     cambiarEstado,
     inventarioPorProducto,
+    proveedoresPorProducto,
     recargar: cargar,
   };
 }

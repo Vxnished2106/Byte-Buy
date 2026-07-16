@@ -1,11 +1,17 @@
 import React, { useState } from "react";
-import type { Categoria, Etiqueta, ProductoFormValues } from "../ts/interfaces";
+import type {
+  Categoria,
+  Etiqueta,
+  ProductoFormValues,
+  proveedorData,
+} from "../ts/interfaces";
 import "../styles/modal-form.css";
 
 export interface ProductoModalFormProps {
   initialData?: ProductoFormValues | null;
   categorias: Categoria[];
   etiquetas: Etiqueta[];
+  proveedores: proveedorData[];
   onClose: () => void;
   onSave: (data: ProductoFormValues) => Promise<void>;
 }
@@ -24,6 +30,8 @@ const emptyProducto: ProductoFormValues = {
   etiqueta_ids: [],
   stock_actual: 0,
   stock_minimo: 0,
+  proveedor_id: 0,
+  precio_compra: 0,
 };
 
 const fileName = (value: File | string) =>
@@ -33,6 +41,7 @@ export default function ProductoModalForm({
   initialData,
   categorias,
   etiquetas,
+  proveedores,
   onClose,
   onSave,
 }: ProductoModalFormProps) {
@@ -269,6 +278,42 @@ export default function ProductoModalForm({
                 placeholder="0"
                 value={numeroInput(form.stock_minimo)}
                 onChange={handleNumberChange("stock_minimo")}
+              />
+            </div>
+          </div>
+          <div className="modal-form-row">
+            <div className="modal-form-field">
+              <label htmlFor="proveedor_id">Proveedor</label>
+              <select
+                id="proveedor_id"
+                value={form.proveedor_id}
+                onChange={(e) =>
+                  setForm({ ...form, proveedor_id: Number(e.target.value) })
+                }
+              >
+                <option value={0}>Sin proveedor</option>
+                {proveedores.map((proveedor) => (
+                  <option
+                    key={proveedor.proveedor_id}
+                    value={proveedor.proveedor_id}
+                  >
+                    {proveedor.proveedor_nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-form-field">
+              <label htmlFor="precio_compra">Precio de compra</label>
+              <input
+                id="precio_compra"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                value={numeroInput(form.precio_compra)}
+                onChange={handleNumberChange("precio_compra")}
+                disabled={!form.proveedor_id}
+                required={Boolean(form.proveedor_id)}
               />
             </div>
           </div>

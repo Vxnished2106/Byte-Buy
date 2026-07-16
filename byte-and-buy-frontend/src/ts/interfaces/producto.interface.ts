@@ -61,6 +61,8 @@ export interface productoData {
   producto_stock: number;
   producto_stock_minimo: number;
   producto_categoria: string;
+  producto_proveedor: string;
+  producto_precio_compra: string;
   producto_descuento: number;
   producto_impuesto: number;
   producto_imagen: string;
@@ -83,4 +85,6 @@ export interface ProductoFormValues {
   etiqueta_ids: number[];
   stock_actual: number;
   stock_minimo: number;
+  proveedor_id: number;
+  precio_compra: number;
 }
