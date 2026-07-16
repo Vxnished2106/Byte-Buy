@@ -43,8 +43,6 @@ function toRow(
       : "-",
     producto_descuento: producto.producto_descuento,
     producto_impuesto: producto.producto_impuesto,
-    producto_imagen: producto.producto_imagen ?? "",
-    producto_banner: producto.producto_banner ?? "",
     producto_estado: producto.producto_estado === "activo",
   };
 }
