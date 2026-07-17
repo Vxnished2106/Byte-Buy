@@ -15,6 +15,7 @@ import { ProveedorModule } from './proveedor/proveedor.module';
 import { InventarioModule } from './inventario/inventario.module';
 import { ProductoProveedorModule } from './producto_proveedor/producto_proveedor.module';
 import { CarritoModule } from './carrito/carrito.module';
+import { PagoModule } from './pago/pago.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { CarritoModule } from './carrito/carrito.module';
     ProveedorModule,
     InventarioModule,
     ProductoProveedorModule,
-    CarritoModule
+    CarritoModule,
+    PagoModule
   ],
   controllers: [AppController],
   providers: [AppService],
