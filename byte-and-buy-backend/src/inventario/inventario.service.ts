@@ -119,6 +119,34 @@ export class InventarioService {
   }
 
 
+  /**
+   * Verifica si un producto tiene stock suficiente para la cantidad pedida.
+   * Lo consume el módulo de carrito para validar la disponibilidad antes de
+   * agregar o actualizar ítems. Si el producto no tiene inventario registrado
+   * se considera no disponible (stock 0).
+   */
+  async verificarDisponibilidad(
+    producto_id: number,
+    cantidad: number,
+  ): Promise<{ disponible: boolean; stock_actual: number }> {
+
+    const inventario =
+      await this.inventarioRepository.findOne({
+        where: {
+          producto_id,
+        },
+      });
+
+    const stock_actual =
+      inventario?.inventario_stock_actual ?? 0;
+
+    return {
+      disponible: stock_actual >= cantidad,
+      stock_actual,
+    };
+  }
+
+
   async editarInventario(
     inventario_id: number,
     datos: UpdateInventarioDto,
