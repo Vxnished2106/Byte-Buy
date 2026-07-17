@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   Put,
   Delete,
@@ -28,6 +29,13 @@ export class CarritoController {
   private async obtenerUsuarioId(req: any): Promise<number> {
     const usuario = await this.usuarioService.getOrCreateFromToken(req.user);
     return usuario.usuario_id;
+  }
+
+  @Get()
+  async obtenerCarrito(@Request() req: any) {
+    return this.carritoService.obtenerCarritoConSubtotales(
+      await this.obtenerUsuarioId(req),
+    );
   }
 
   @Post('items')
