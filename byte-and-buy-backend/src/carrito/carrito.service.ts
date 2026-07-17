@@ -12,6 +12,10 @@ import { Producto } from '../producto/entities/producto.entity';
 import { InventarioService } from '../inventario/inventario.service';
 import { AgregarItemDto } from './dto/agregar-item.dto';
 import { ActualizarItemDto } from './dto/actualizar-item.dto';
+import {
+  ResponseCarritoDto,
+  ResponseCarritoItemDto,
+} from './dto/response-carrito.dto';
 
 @Injectable()
 export class CarritoService {
@@ -126,6 +130,56 @@ export class CarritoService {
     }
 
     return this.obtenerOCrearCarrito(usuario_id);
+  }
+
+  /**
+   * Devuelve el carrito del usuario con el cálculo de subtotales por ítem y
+   * el total. El descuento y el impuesto del producto se aplican como
+   * porcentaje sobre el precio unitario.
+   */
+  async obtenerCarritoConSubtotales(
+    usuario_id: number,
+  ): Promise<ResponseCarritoDto> {
+    const carrito = await this.obtenerOCrearCarrito(usuario_id);
+
+    const items: ResponseCarritoItemDto[] = (carrito.items ?? []).map(
+      (item) => {
+        // Los decimales de TypeORM llegan como string; se normalizan a number.
+        const precio_unitario = Number(item.producto.producto_precio);
+        const descuento = Number(item.producto.producto_descuento);
+        const impuesto = Number(item.producto.producto_impuesto);
+
+        const precio_final_unitario =
+          precio_unitario * (1 - descuento / 100) * (1 + impuesto / 100);
+        const subtotal = precio_final_unitario * item.cantidad;
+
+        return {
+          producto_id: item.producto_id,
+          producto_nombre: item.producto.producto_nombre,
+          precio_unitario: this.redondear(precio_unitario),
+          descuento,
+          impuesto,
+          precio_final_unitario: this.redondear(precio_final_unitario),
+          cantidad: item.cantidad,
+          subtotal: this.redondear(subtotal),
+        };
+      },
+    );
+
+    const total = this.redondear(
+      items.reduce((suma, item) => suma + item.subtotal, 0),
+    );
+
+    return {
+      carrito_id: carrito.carrito_id,
+      items,
+      total,
+    };
+  }
+
+  /** Redondea a 2 decimales para montos monetarios. */
+  private redondear(valor: number): number {
+    return Math.round(valor * 100) / 100;
   }
 
   /**
