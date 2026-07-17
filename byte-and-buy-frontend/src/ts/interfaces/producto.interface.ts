@@ -1,6 +1,7 @@
 import type { Categoria } from "./categoria.interface";
 import type { Etiqueta } from "./etiqueta.interface";
 
+/** Estado de publicación de un producto. */
 export type ProductoEstado = "activo" | "inactivo";
 
 /** Forma que entrega el backend para un producto (sin datos de inventario). */
@@ -18,6 +19,7 @@ export interface Producto {
   etiquetas: Etiqueta[];
 }
 
+/** Datos enviados al backend para crear un producto. */
 export interface CreateProducto {
   producto_nombre: string;
   producto_descripcion?: string;
@@ -29,6 +31,7 @@ export interface CreateProducto {
   etiqueta_ids?: number[];
 }
 
+/** Datos editables de un producto (todos los campos de `CreateProducto` son opcionales). */
 export type UpdateProducto = Partial<CreateProducto>;
 
 /** Forma que entrega `GET /productos/:id` (detalle público, incluye stock). */

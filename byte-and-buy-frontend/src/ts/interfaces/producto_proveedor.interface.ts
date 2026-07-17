@@ -1,3 +1,4 @@
+/** Estado de una asignación producto-proveedor. */
 export type ProductoProveedorEstado = "activo" | "inactivo";
 
 /** Forma que entrega el backend para una asignación producto-proveedor. */
@@ -16,6 +17,7 @@ export interface ProductoProveedor {
   };
 }
 
+/** Datos enviados al backend para asignar un proveedor a un producto (con su precio de compra). */
 export interface AsignarProveedor {
   producto_id: number;
   proveedor_id: number;
