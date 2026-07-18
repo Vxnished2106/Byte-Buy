@@ -45,7 +45,10 @@ export default function Header() {
       .then((usuario) => {
         if (!vigente) return;
         setNombreUsuario(
-          obtenerNombreCompleto(usuario.usuario_nombre, usuario.usuario_apellido1),
+          obtenerNombreCompleto(
+            usuario.usuario_nombre,
+            usuario.usuario_apellido1,
+          ),
         );
         setInicialesUsuario(
           obtenerIniciales(usuario.usuario_nombre, usuario.usuario_apellido1),
@@ -114,11 +117,10 @@ export default function Header() {
   return (
     <header>
       <Link to={"/"} className="link">
-      <h4 className="title">
-        
-        <span className="B">B</span>yte<span>&</span>
-        <span className="B">B</span>uy
-      </h4>
+        <h4 className="title">
+          <span className="B">B</span>yte<span>&</span>
+          <span className="B">B</span>uy
+        </h4>
       </Link>
       <div className="search-options">
         <button
@@ -157,7 +159,11 @@ export default function Header() {
           </div>
         )}
         <form className="search-bar-container" onSubmit={handleBuscar}>
-          <button type="submit" className="search-bar-button" aria-label="Buscar">
+          <button
+            type="submit"
+            className="search-bar-button"
+            aria-label="Buscar"
+          >
             <SearchRounded />
           </button>
           <input
@@ -166,9 +172,7 @@ export default function Header() {
             value={product}
             onChange={(e) => setProduct(e.target.value)}
             onFocus={() => setMostrarSugerencias(true)}
-            onBlur={() =>
-              setTimeout(() => setMostrarSugerencias(false), 150)
-            }
+            onBlur={() => setTimeout(() => setMostrarSugerencias(false), 150)}
           />
           {mostrarSugerencias && terminoBusqueda && (
             <div className="search-suggestions">
@@ -176,7 +180,10 @@ export default function Header() {
                 <>
                   <ul>
                     {sugerencias.map((producto) => (
-                      <li key={producto.producto_id} className="suggestion-item">
+                      <li
+                        key={producto.producto_id}
+                        className="suggestion-item"
+                      >
                         <button
                           type="button"
                           className="suggestion-link"
@@ -216,9 +223,7 @@ export default function Header() {
                   </button>
                 </>
               ) : (
-                <p className="suggestion-empty">
-                  No se encontraron productos
-                </p>
+                <p className="suggestion-empty">No se encontraron productos</p>
               )}
             </div>
           )}
@@ -236,7 +241,11 @@ export default function Header() {
                   <div className="perfil-info">
                     <div className="icon-user">
                       {fotoUsuario ? (
-                        <img src={fotoUsuario} alt="Foto de perfil" loading="lazy" />
+                        <img
+                          src={fotoUsuario}
+                          alt="Foto de perfil"
+                          loading="lazy"
+                        />
                       ) : (
                         inicialesUsuario
                       )}
@@ -298,7 +307,9 @@ export default function Header() {
           )}
         </div>
         <button className="action-button cart">
-          <Cart />
+          <Link to={"/byte&buy/carrito"}>
+            <Cart />
+          </Link>
         </button>
       </div>
     </header>
