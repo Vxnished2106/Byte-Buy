@@ -87,7 +87,7 @@ export default function Carrito() {
                   <h5 className="total-title">Total</h5>
                   <span className="total-value">{total}</span>
                 </div>
-                <Link to={"/"} className="pay-button">
+                <Link to={"/byte&buy/pago"} className="pay-button">
                   Proceder al pago
                 </Link>
               </div>
