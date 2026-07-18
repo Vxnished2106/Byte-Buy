@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import Header from "../components/Header";
-import "../styles/payment.css";
+import "../styles/pago.css";
 
 type MetodoPagoId = "tarjeta" | "paypal" | "gift-card";
 
