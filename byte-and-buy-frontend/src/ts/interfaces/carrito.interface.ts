@@ -1,4 +1,4 @@
-import type { CarritoItem } from "./CarritoItem"
+import type { CarritoItem } from "./carritoItem.interface"
 
 /**
  * Forma del carrito de un usuario.

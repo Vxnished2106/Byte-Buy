@@ -15,6 +15,7 @@ import Admin from "./admin/admin.tsx";
 import Productos from "./pages/Productos.tsx";
 import DetalleProducto from "./pages/DetalleProducto.tsx";
 import Carrito from "./pages/Carrito.tsx";
+import Pago from "./pages/Pago.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -36,6 +37,11 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/byte&buy/carrito" element={
           <RequireAuth fallback={<PerfilInvitado/>}>
             <Carrito/>
+          </RequireAuth>
+        }/>
+        <Route path="/byte&buy/pago" element={
+          <RequireAuth fallback={<PerfilInvitado/>}>
+            <Pago/>
           </RequireAuth>
         }/>
         <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
