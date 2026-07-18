@@ -1,3 +1,4 @@
+/** Forma que entrega el backend para una categoría de producto. */
 export interface Categoria {
   categoria_id: number;
   categoria_nombre: string;

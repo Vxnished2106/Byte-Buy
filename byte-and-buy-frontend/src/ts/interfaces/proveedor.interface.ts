@@ -1,3 +1,4 @@
+/** Estado de un proveedor. */
 export type ProveedorEstado = "activo" | "inactivo";
 
 /** Forma que entrega/recibe el backend para un proveedor. */
@@ -11,6 +12,7 @@ export interface Proveedor {
   cantidad_productos?: number;
 }
 
+/** Datos enviados al backend para crear un proveedor. */
 export interface CreateProveedor {
   proveedor_nombre: string;
   proveedor_correo?: string;
@@ -18,6 +20,7 @@ export interface CreateProveedor {
   proveedor_direccion?: string;
 }
 
+/** Datos editables de un proveedor (todos los campos de `CreateProveedor` son opcionales). */
 export type UpdateProveedor = Partial<CreateProveedor>;
 
 /**

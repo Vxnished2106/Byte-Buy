@@ -1,4 +1,5 @@
 import "./App.css";
+import CarritoItem from "./components/CarritoItem";
 import Header from "./components/Header";
 import { Link } from "react-router";
 
@@ -6,19 +7,23 @@ function App() {
   const categoriasDestacadas = [
     {
       nombre: "Electrónica",
-      imagen: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=600&fit=crop",
     },
     {
       nombre: "Moda",
-      imagen: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=600&fit=crop",
     },
     {
       nombre: "Hogar",
-      imagen: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=600&fit=crop",
     },
     {
       nombre: "Deportes",
-      imagen: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=600&fit=crop",
     },
   ];
 
@@ -27,26 +32,30 @@ function App() {
       id: 1,
       nombre: "Smartphone X Pro",
       precio: 1299.99,
-      imagen: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=600&fit=crop",
       descuento: 15,
     },
     {
       id: 2,
       nombre: "Zapatillas Running",
       precio: 189.99,
-      imagen: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=600&fit=crop",
     },
     {
       id: 3,
       nombre: "Lámpara de Escritorio",
       precio: 59.99,
-      imagen: "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=600&h=600&fit=crop",
     },
     {
       id: 4,
       nombre: "Audífonos Inalámbricos",
       precio: 149.99,
-      imagen: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop",
+      imagen:
+        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop",
       descuento: 10,
     },
   ];
@@ -144,7 +153,6 @@ function App() {
             ))}
           </div>
         </section>
-
 
       </main>
 
