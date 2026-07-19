@@ -1,173 +1,388 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import Header from "../components/Header";
+import { useCarrito } from "../hooks/useCarrito";
+import { useMetodosPago } from "../hooks/useMetodosPago";
+import { usePago } from "../hooks/usePago";
+import { calcularCostoEnvio } from "../utils/carrito";
 import "../styles/pago.css";
 
-type MetodoPagoId = "tarjeta" | "paypal" | "gift-card";
+/**
+ * El pago está simulado: no se valida si la tarjeta es real (algoritmo de
+ * Luhn) ni su marca, solo el formato de lo que el usuario ingresa en cada
+ * formulario (según el método elegido, detectado por su nombre).
+ */
+function esMetodoTarjeta(nombre: string): boolean {
+  return /tarjeta(?!.*regalo)/i.test(nombre);
+}
 
-const metodosPago: {
-  id: MetodoPagoId;
-  titulo: string;
-  subtitulo: string;
-}[] = [
-  {
-    id: "tarjeta",
-    titulo: "Tarjeta de crédito / débito",
-    subtitulo: "Visa, Mastercard, Amex",
-  },
-  {
-    id: "paypal",
-    titulo: "PayPal",
-    subtitulo: "Serás redirigido a PayPal",
-  },
-  {
-    id: "gift-card",
-    titulo: "Tarjeta de regalo",
-    subtitulo: "Canjea tu código Byte&Buy",
-  },
-];
+function esMetodoPaypal(nombre: string): boolean {
+  return /paypal/i.test(nombre);
+}
+
+function esMetodoGiftCard(nombre: string): boolean {
+  return /gift[\s-]?card|tarjeta de regalo/i.test(nombre);
+}
+
+const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const REGEX_VENCIMIENTO = /^(0[1-9]|1[0-2])\/\d{2}(\d{2})?$/;
+
+/** Solo valida el formato del número (13 a 19 dígitos): no es una validación real de tarjeta. */
+function validarNumeroTarjeta(numero: string): boolean {
+  return /^\d{13,19}$/.test(numero.replace(/[\s-]/g, ""));
+}
+
+function validarVencimientoTarjeta(fecha: string): boolean {
+  return REGEX_VENCIMIENTO.test(fecha.trim());
+}
+
+function validarCvv(cvv: string): boolean {
+  return /^\d{3,4}$/.test(cvv.trim());
+}
+
+/** Valida el formato del correo de PayPal (no hay verificación real de la cuenta). */
+function validarCorreoPaypal(correo: string): boolean {
+  return REGEX_CORREO.test(correo.trim());
+}
+
+/**
+ * Valida el código de tarjeta de regalo: 16 caracteres alfanuméricos, sin
+ * contar espacios o guiones separadores (ej. "XXXX-XXXX-XXXX-XXXX").
+ */
+function validarCodigoGiftCard(codigo: string): boolean {
+  return /^[A-Za-z0-9]{16}$/.test(codigo.replace(/[\s-]/g, ""));
+}
 
 export default function Pago() {
-  const [metodoPago, setMetodoPago] = useState<MetodoPagoId>("tarjeta");
+  const {
+    carrito,
+    loading: carritoCargando,
+    eliminarProducto,
+  } = useCarrito();
+  const { metodos, loading: metodosCargando, error: errorMetodos } =
+    useMetodosPago();
+  const { pagar, procesando, error: errorPago } = usePago();
 
-  const items = [
-    {
-      id: 1,
-      nombre: "Auriculares Aura Pro",
-      cantidad: 1,
-      precio: 249,
-      imagen: "",
-    },
-  ];
-
-  const subtotal = items.reduce(
-    (acumulador, item) => acumulador + item.precio * item.cantidad,
-    0,
-  );
-  const envio = 15;
+  const items = carrito?.items ?? [];
+  const subtotal = carrito?.total ?? 0;
+  const envio = calcularCostoEnvio(items);
   const total = subtotal + envio;
+
+  const [metodoPagoId, setMetodoPagoId] = useState<number | null>(null);
+  const [numeroTarjeta, setNumeroTarjeta] = useState("");
+  const [titular, setTitular] = useState("");
+  const [vencimiento, setVencimiento] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [correoPaypal, setCorreoPaypal] = useState("");
+  const [codigoGiftCard, setCodigoGiftCard] = useState("");
+  const [errorFormulario, setErrorFormulario] = useState<string | null>(null);
+  const [ventaExitosaId, setVentaExitosaId] = useState<number | null>(null);
+
+  // Mientras el usuario no elija explícitamente, se usa el primer método
+  // cargado como selección por defecto (derivado, sin useEffect).
+  const metodoPagoIdEfectivo = metodoPagoId ?? metodos[0]?.metodo_pago_id ?? null;
+  const metodoSeleccionado = metodos.find(
+    (m) => m.metodo_pago_id === metodoPagoIdEfectivo,
+  );
+  const esTarjeta = metodoSeleccionado
+    ? esMetodoTarjeta(metodoSeleccionado.metodo_pago_nombre)
+    : false;
+  const esPaypal = metodoSeleccionado
+    ? esMetodoPaypal(metodoSeleccionado.metodo_pago_nombre)
+    : false;
+  const esGiftCard = metodoSeleccionado
+    ? esMetodoGiftCard(metodoSeleccionado.metodo_pago_nombre)
+    : false;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!carrito || items.length === 0 || !metodoSeleccionado) return;
+    setErrorFormulario(null);
+
+    // El pago es simulado: solo se valida el formato de lo ingresado (no si
+    // la tarjeta es real, ni su marca, ni si la cuenta de PayPal existe).
+    let detalle: Record<string, unknown> | undefined;
+    if (esTarjeta) {
+      if (!titular.trim()) {
+        setErrorFormulario("Ingresa el nombre del titular");
+        return;
+      }
+      if (!validarNumeroTarjeta(numeroTarjeta)) {
+        setErrorFormulario("El número de tarjeta debe tener entre 13 y 19 dígitos");
+        return;
+      }
+      if (!validarVencimientoTarjeta(vencimiento)) {
+        setErrorFormulario("La fecha de vencimiento debe tener el formato MM/AA");
+        return;
+      }
+      if (!validarCvv(cvv)) {
+        setErrorFormulario("El CVV debe tener 3 o 4 dígitos");
+        return;
+      }
+      detalle = {
+        numero_tarjeta_ultimos4: numeroTarjeta.replace(/[\s-]/g, "").slice(-4),
+      };
+    } else if (esPaypal) {
+      if (!validarCorreoPaypal(correoPaypal)) {
+        setErrorFormulario("Ingresa un correo de PayPal válido");
+        return;
+      }
+      detalle = { correo_paypal: correoPaypal.trim() };
+    } else if (esGiftCard) {
+      if (!validarCodigoGiftCard(codigoGiftCard)) {
+        setErrorFormulario(
+          "El código de la tarjeta de regalo debe tener 16 caracteres",
+        );
+        return;
+      }
+      detalle = {
+        codigo_gift_card_ultimos4: codigoGiftCard
+          .replace(/[\s-]/g, "")
+          .slice(-4),
+      };
+    }
+
+    try {
+      const { venta } = await pagar({
+        carrito_id: carrito.carrito_id,
+        monto: total,
+        metodo_pago_id: metodoSeleccionado.metodo_pago_id,
+        detalle,
+      });
+
+      // La venta ya quedó registrada: se vacía el carrito para reflejar la compra.
+      await Promise.all(
+        items.map((item) => eliminarProducto(item.producto_id)),
+      );
+      setVentaExitosaId(venta.venta_id);
+    } catch {
+      // El mensaje de error ya queda expuesto en `errorPago`.
+    }
+  };
+
+  if (ventaExitosaId !== null) {
+    return (
+      <>
+        <Header />
+        <main className="payment-container">
+          <section className="payment-method-section">
+            <h2>¡Compra realizada!</h2>
+            <p className="payment-info-box">
+              Tu pedido #{ventaExitosaId} fue registrado correctamente.
+            </p>
+            <Link to="/byte&buy/products" className="continue-button-link">
+              Seguir comprando
+            </Link>
+          </section>
+        </main>
+      </>
+    );
+  }
+
+  if (carritoCargando || metodosCargando) {
+    return (
+      <>
+        <Header />
+        <main className="payment-container">
+          <p className="payment-status">Cargando...</p>
+        </main>
+      </>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <>
+        <Header />
+        <main className="payment-container">
+          <div className="cart-empty">
+            <h3>Tu carrito está vacío</h3>
+            <p>Agrega productos antes de continuar al pago.</p>
+            <Link to="/byte&buy/products" className="cart-empty-button">
+              Explorar catálogo
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
       <main className="payment-container">
-        <section className="payment-method-section">
+        <form className="payment-method-section" onSubmit={handleSubmit}>
           <h2>Método de pago</h2>
 
-          <div className="payment-options">
-            {metodosPago.map((metodo) => (
-              <label
-                key={metodo.id}
-                className={`payment-option ${
-                  metodoPago === metodo.id ? "selected" : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="metodoPago"
-                  value={metodo.id}
-                  checked={metodoPago === metodo.id}
-                  onChange={() => setMetodoPago(metodo.id)}
-                />
-                <div className="payment-option-info">
-                  <span className="payment-option-title">
-                    {metodo.titulo}
-                  </span>
-                  <span className="payment-option-subtitle">
-                    {metodo.subtitulo}
-                  </span>
-                </div>
-                {metodo.id === "tarjeta" && metodoPago === "tarjeta" && (
-                  <span className="payment-option-hint">•••• 4242</span>
-                )}
-              </label>
-            ))}
-          </div>
+          {errorMetodos && <p className="payment-error">{errorMetodos}</p>}
 
-          {metodoPago === "tarjeta" && (
-            <div className="card-form">
-              <div className="form-group">
-                <label htmlFor="numero-tarjeta">Número de tarjeta</label>
-                <input
-                  id="numero-tarjeta"
-                  type="text"
-                  placeholder="0000 0000 0000 0000"
-                />
+          {metodos.length === 0 ? (
+            <p className="payment-info-box">
+              No hay métodos de pago disponibles por el momento.
+            </p>
+          ) : (
+            <>
+              <div className="payment-options">
+                {metodos.map((metodo) => (
+                  <label
+                    key={metodo.metodo_pago_id}
+                    className={`payment-option ${
+                      metodoPagoIdEfectivo === metodo.metodo_pago_id ? "selected" : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="metodoPago"
+                      value={metodo.metodo_pago_id}
+                      checked={metodoPagoIdEfectivo === metodo.metodo_pago_id}
+                      onChange={() => setMetodoPagoId(metodo.metodo_pago_id)}
+                    />
+                    <div className="payment-option-info">
+                      <span className="payment-option-title">
+                        {metodo.metodo_pago_nombre}
+                      </span>
+                    </div>
+                  </label>
+                ))}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="titular">Titular</label>
-                <input
-                  id="titular"
-                  type="text"
-                  placeholder="Nombre en la tarjeta"
-                />
-              </div>
+              {esTarjeta && (
+                <div className="card-form">
+                  <div className="form-group">
+                    <label htmlFor="numero-tarjeta">Número de tarjeta</label>
+                    <input
+                      id="numero-tarjeta"
+                      type="text"
+                      placeholder="0000 0000 0000 0000"
+                      value={numeroTarjeta}
+                      onChange={(e) => setNumeroTarjeta(e.target.value)}
+                      required
+                    />
+                  </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="vencimiento">Vencimiento</label>
-                  <input id="vencimiento" type="text" placeholder="MM / AA" />
+                  <div className="form-group">
+                    <label htmlFor="titular">Titular</label>
+                    <input
+                      id="titular"
+                      type="text"
+                      placeholder="Nombre en la tarjeta"
+                      value={titular}
+                      onChange={(e) => setTitular(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="vencimiento">Vencimiento</label>
+                      <input
+                        id="vencimiento"
+                        type="text"
+                        placeholder="MM/AA"
+                        value={vencimiento}
+                        onChange={(e) => setVencimiento(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="cvv">CVV</label>
+                      <input
+                        id="cvv"
+                        type="text"
+                        placeholder="123"
+                        value={cvv}
+                        onChange={(e) => setCvv(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="cvv">CVV</label>
-                  <input id="cvv" type="text" placeholder="123" />
+              )}
+
+              {esPaypal && (
+                <div className="card-form">
+                  <div className="form-group">
+                    <label htmlFor="correo-paypal">Correo de PayPal</label>
+                    <input
+                      id="correo-paypal"
+                      type="email"
+                      placeholder="tu@paypal.com"
+                      value={correoPaypal}
+                      onChange={(e) => setCorreoPaypal(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <p className="payment-info-box">
+                    Al continuar, se verificará el correo de tu cuenta de
+                    PayPal para procesar el pago.
+                  </p>
                 </div>
-              </div>
-            </div>
+              )}
+
+              {esGiftCard && (
+                <div className="card-form">
+                  <div className="form-group">
+                    <label htmlFor="codigo-gift-card">
+                      Código de tarjeta de regalo
+                    </label>
+                    <input
+                      id="codigo-gift-card"
+                      type="text"
+                      placeholder="XXXX-XXXX-XXXX-XXXX"
+                      value={codigoGiftCard}
+                      onChange={(e) => setCodigoGiftCard(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <p className="payment-info-box">
+                    Introduce el código de 16 caracteres que aparece al
+                    reverso de tu tarjeta.
+                  </p>
+                </div>
+              )}
+
+              {!esTarjeta && !esPaypal && !esGiftCard && metodoSeleccionado && (
+                <p className="payment-info-box">
+                  Tu pedido se procesará mediante{" "}
+                  {metodoSeleccionado.metodo_pago_nombre}.
+                </p>
+              )}
+            </>
           )}
 
-          {metodoPago === "paypal" && (
-            <div className="card-form">
-              <div className="form-group">
-                <label htmlFor="correo-paypal">Correo de PayPal</label>
-                <input
-                  id="correo-paypal"
-                  type="email"
-                  placeholder="tu@paypal.com"
-                />
-              </div>
-
-              <p className="payment-info-box">
-                Al continuar, se abrirá una ventana segura de PayPal para
-                autorizar el pago.
-              </p>
-            </div>
+          {errorFormulario && (
+            <p className="payment-error">{errorFormulario}</p>
           )}
+          {errorPago && <p className="payment-error">{errorPago}</p>}
 
-          {metodoPago === "gift-card" && (
-            <div className="card-form">
-              <div className="form-group">
-                <label htmlFor="codigo-gift-card">
-                  Código de tarjeta de regalo
-                </label>
-                <input
-                  id="codigo-gift-card"
-                  type="text"
-                  placeholder="XXXX - XXXX - XXXX - XXXX"
-                />
-              </div>
+          <button
+            type="submit"
+            className="continue-button"
+            disabled={procesando || !metodoSeleccionado}
+          >
+            {procesando ? "Procesando..." : "Continuar al pedido"}
+          </button>
 
-              <p className="payment-info-box">
-                Introduce el código de 16 dígitos que aparece al reverso de tu
-                tarjeta.
-              </p>
-            </div>
-          )}
-        </section>
+          <Link to="/byte&buy/carrito" className="back-link">
+            ← Volver al carrito
+          </Link>
+        </form>
 
         <section className="order-summary">
           <h4>Tu pedido</h4>
 
           <div className="order-items">
             {items.map((item) => (
-              <div className="order-item" key={item.id}>
+              <div className="order-item" key={item.producto_id}>
                 <div className="order-item-image">
-                  {item.imagen && <img src={item.imagen} alt={item.nombre} />}
                   <span className="order-item-qty">{item.cantidad}</span>
                 </div>
-                <span className="order-item-name">{item.nombre}</span>
-                <span className="order-item-price">${item.precio}</span>
+                <span className="order-item-name">{item.producto_nombre}</span>
+                <span className="order-item-price">
+                  ${item.subtotal.toFixed(2)}
+                </span>
               </div>
             ))}
           </div>
@@ -176,27 +391,19 @@ export default function Pago() {
 
           <div className="summary-row">
             <span>Subtotal</span>
-            <span>${subtotal}</span>
+            <span>${subtotal.toFixed(2)}</span>
           </div>
           <div className="summary-row">
             <span>Envío</span>
-            <span>${envio}</span>
+            <span>{envio === 0 ? "Gratis" : `$${envio.toFixed(2)}`}</span>
           </div>
 
           <span className="separator"></span>
 
           <div className="summary-total">
             <span>Total</span>
-            <span>${total}</span>
+            <span>${total.toFixed(2)}</span>
           </div>
-
-          <button type="button" className="continue-button">
-            Continuar al pedido
-          </button>
-
-          <Link to="/byte&buy/carrito" className="back-link">
-            ← Volver al carrito
-          </Link>
         </section>
       </main>
     </>

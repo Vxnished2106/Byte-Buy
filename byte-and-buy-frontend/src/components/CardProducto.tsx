@@ -1,4 +1,7 @@
-import { Link } from "react-router";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { useCarrito } from "../hooks/useCarrito";
+import { useSesion } from "../hooks/useSesion";
 import "../styles/cardProduct.css";
 
 interface CardProductoProps {
@@ -16,6 +19,26 @@ export default function CardProducto({
   nombre_producto,
   precio,
 }: CardProductoProps) {
+  const navigate = useNavigate();
+  const { session } = useSesion();
+  const { agregarProducto, actualizandoProductoId } = useCarrito();
+  const [error, setError] = useState<string | null>(null);
+  const agregando = actualizandoProductoId === producto_id;
+
+  const handleAgregar = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!session) {
+      navigate("/byte&buy/login");
+      return;
+    }
+    setError(null);
+    try {
+      await agregarProducto(producto_id, 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo agregar");
+    }
+  };
+
   return (
     <Link to={`/byte&buy/products/${producto_id}`} className="card">
       <div className="card-img">
@@ -31,12 +54,14 @@ export default function CardProducto({
           <h4 className="card-body-title">{nombre_producto}</h4>
         </div>
         <h3 className="card-body-price">${precio}</h3>
+        {error && <p className="add-cart-error">{error}</p>}
         <button
           className="add-cart-button"
           type="button"
-          onClick={(e) => e.preventDefault()}
+          disabled={agregando}
+          onClick={handleAgregar}
         >
-          Agregar al carrito
+          {agregando ? "Agregando..." : "Agregar al carrito"}
         </button>
       </div>
     </Link>
