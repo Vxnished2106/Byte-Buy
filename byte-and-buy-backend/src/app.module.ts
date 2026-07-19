@@ -16,6 +16,8 @@ import { InventarioModule } from './inventario/inventario.module';
 import { ProductoProveedorModule } from './producto_proveedor/producto_proveedor.module';
 import { CarritoModule } from './carrito/carrito.module';
 import { PagoModule } from './pago/pago.module';
+import { VentaModule } from './venta/venta.module';
+import { MetodoPagoModule } from './metodo_pago/metodo_pago.module';
 
 @Module({
   imports: [
@@ -49,7 +51,9 @@ import { PagoModule } from './pago/pago.module';
     InventarioModule,
     ProductoProveedorModule,
     CarritoModule,
-    PagoModule
+    PagoModule,
+    VentaModule,
+    MetodoPagoModule
   ],
   controllers: [AppController],
   providers: [AppService],
