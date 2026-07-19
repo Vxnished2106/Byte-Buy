@@ -7,15 +7,18 @@ import SearchRounded from "../assets/favicon/search";
 import { obtenerPerfil } from "../services/usuario";
 import { logout } from "../services/auth";
 import { useSesion } from "../hooks/useSesion";
+import { useCarrito } from "../hooks/useCarrito";
 import { useCategoriasCatalogo } from "../hooks/useCategoriasCatalogo";
 import { useCatalogoProductos } from "../hooks/useCatalogoProductos";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
+import { Rol } from "../ts/interfaces";
 
 const MAX_SUGERENCIAS = 6;
 
 export default function Header() {
   const navigate = useNavigate();
   const { session } = useSesion();
+  const { cantidadTotal } = useCarrito();
   const { categorias: categoriasCatalogo, total: totalCatalogo } =
     useCategoriasCatalogo();
   const { productos } = useCatalogoProductos();
@@ -26,6 +29,7 @@ export default function Header() {
   const [nombreUsuario, setNombreUsuario] = useState("");
   const [inicialesUsuario, setInicialesUsuario] = useState("");
   const [fotoUsuario, setFotoUsuario] = useState<string | null>(null);
+  const [esAdmin, setEsAdmin] = useState(false);
   const autenticado = !!session;
   const handleOpenCatalogo = () => setOpenCatalogo(!openCatalogo);
   const handleOpenPerfil = () => setOpenPerfil(!openPerfil);
@@ -37,6 +41,7 @@ export default function Header() {
       setNombreUsuario("");
       setInicialesUsuario("");
       setFotoUsuario(null);
+      setEsAdmin(false);
       return;
     }
 
@@ -54,12 +59,14 @@ export default function Header() {
           obtenerIniciales(usuario.usuario_nombre, usuario.usuario_apellido1),
         );
         setFotoUsuario(usuario.usuario_foto ?? null);
+        setEsAdmin(usuario.usuario_rol === Rol.ADMIN);
       })
       .catch(() => {
         if (vigente) {
           setNombreUsuario("");
           setInicialesUsuario("");
           setFotoUsuario(null);
+          setEsAdmin(false);
         }
       });
 
@@ -273,6 +280,15 @@ export default function Header() {
                     <Link to={"/"} className="link" onClick={cerrarMenuPerfil}>
                       Mis pedidos
                     </Link>
+                    {esAdmin && (
+                      <Link
+                        to={"/byte&buy/admin"}
+                        className="link"
+                        onClick={cerrarMenuPerfil}
+                      >
+                        Volver al panel de administracion
+                      </Link>
+                    )}
                   </div>
                   <div className="divider" />
                   <div className="sesion-actions">
@@ -309,6 +325,11 @@ export default function Header() {
         <button className="action-button cart">
           <Link to={"/byte&buy/carrito"}>
             <Cart />
+            {cantidadTotal > 0 && (
+              <span className="cart-badge">
+                {cantidadTotal > 99 ? "99+" : cantidadTotal}
+              </span>
+            )}
           </Link>
         </button>
       </div>
