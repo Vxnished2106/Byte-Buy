@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Usuario } from '../../usuario/entities/usuario.entity';
 import { CarritoItem } from './carrito-item.entity';
+import { Venta } from '../../venta/entities/venta.entity';
 
 @Entity('carrito')
 export class Carrito {
@@ -32,4 +33,7 @@ export class Carrito {
 
   @UpdateDateColumn()
   carrito_fecha_actualizacion: Date;
+
+  @OneToMany(() => Venta, (venta) => venta.carrito)
+  ventas: Venta[];
 }
