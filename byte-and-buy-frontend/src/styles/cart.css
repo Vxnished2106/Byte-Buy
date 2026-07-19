@@ -12,6 +12,19 @@
   align-items: start;
 }
 
+.cart-status {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  font-family: var(--text);
+  font-size: 15px;
+  color: var(--bb-text-3);
+}
+
+.cart-status-error {
+  color: #ef4444;
+}
+
 .car-conatiner h2 {
   grid-area: title;
   font-family: var(--titles);

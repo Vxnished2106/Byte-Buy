@@ -286,11 +286,17 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  margin-bottom: 16px;
+  margin-top: 20px;
+  margin-bottom: 26px;
 }
 
 .continue-button:hover {
   background-color: #000;
+}
+
+.continue-button:disabled {
+  opacity: .6;
+  cursor: default;
 }
 
 .back-link {
@@ -304,6 +310,44 @@
 
 .back-link:hover {
   color: var(--bb-ink);
+}
+
+.payment-status {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  font-family: var(--text);
+  font-size: 15px;
+  color: var(--bb-text-3);
+}
+
+.payment-error {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background-color: #fef2f2;
+  color: #ef4444;
+  font-family: var(--text);
+  font-size: 13px;
+}
+
+.continue-button-link {
+  display: block;
+  width: fit-content;
+  height: 46px;
+  line-height: 46px;
+  padding: 0 24px;
+  border-radius: 10px;
+  background-color: var(--bb-ink);
+  color: #fff;
+  font-family: var(--titles);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.continue-button-link:hover {
+  background-color: #000;
 }
 
 @media (max-width: 800px) {
