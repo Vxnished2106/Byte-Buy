@@ -6,7 +6,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  background-color: var(--bb-bg-1);
+  background: url(../assets/BackgroundFormpng.png) center center/cover no-repeat;
 }
 
 .login-form {
