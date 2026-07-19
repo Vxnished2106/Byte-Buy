@@ -1,7 +1,9 @@
-import { useMemo } from "react";
-import { Link, useParams } from "react-router";
+import { useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
 import Header from "../components/Header";
 import { useDetalleProducto } from "../hooks/useDetalleProducto";
+import { useCarrito } from "../hooks/useCarrito";
+import { useSesion } from "../hooks/useSesion";
 import "../styles/detalleProducto.css";
 
 // Umbral de "quedan pocas unidades". El backend no expone el stock mínimo
@@ -13,6 +15,27 @@ export default function DetalleProducto() {
   const { id } = useParams<{ id: string }>();
   const producto_id = id ? Number(id) : undefined;
   const { producto, loading, error } = useDetalleProducto(producto_id);
+  const navigate = useNavigate();
+  const { session } = useSesion();
+  const { agregarProducto, actualizandoProductoId } = useCarrito();
+  const [errorCarrito, setErrorCarrito] = useState<string | null>(null);
+  const agregando = actualizandoProductoId === producto_id;
+
+  const handleAgregarAlCarrito = async () => {
+    if (!producto_id) return;
+    if (!session) {
+      navigate("/byte&buy/login");
+      return;
+    }
+    setErrorCarrito(null);
+    try {
+      await agregarProducto(producto_id, 1);
+    } catch (err) {
+      setErrorCarrito(
+        err instanceof Error ? err.message : "No se pudo agregar el producto",
+      );
+    }
+  };
 
   const stockBajo = useMemo(() => {
     if (!producto || !producto.puedeComprar) return false;
@@ -158,12 +181,21 @@ export default function DetalleProducto() {
               </div>
             )}
 
+            {errorCarrito && (
+              <p className="detalle-producto-status-error">{errorCarrito}</p>
+            )}
+
             <button
               className="detalle-producto-add-cart"
               type="button"
-              disabled={!producto.puedeComprar}
+              disabled={!producto.puedeComprar || agregando}
+              onClick={handleAgregarAlCarrito}
             >
-              {producto.puedeComprar ? "Agregar al carrito" : "Agotado"}
+              {!producto.puedeComprar
+                ? "Agotado"
+                : agregando
+                  ? "Agregando..."
+                  : "Agregar al carrito"}
             </button>
           </div>
         </div>

@@ -254,6 +254,36 @@ header {
 .action-buttons button:hover svg{
     color: var(--links-color);
 }
+
+.action-button.cart {
+    position: relative;
+}
+
+.action-button.cart a {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background-color: var(--links-color);
+    color: #fff;
+    font-family: var(--details);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
 .item-container-user {
     position: absolute;
     top: 55px;

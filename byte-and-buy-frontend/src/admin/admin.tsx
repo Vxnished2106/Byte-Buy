@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useUsuario } from "../hooks/useUsuario";
 import { useProveedores } from "../hooks/useProveedores";
 import { useProductos } from "../hooks/useProductos";
@@ -222,6 +222,13 @@ export default function Admin() {
           </div>
           {openMenu && (
             <div className="admin-menu">
+              <Link
+                to="/"
+                className="admin-menu-item"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Ir a la tienda
+              </Link>
               <button
                 type="button"
                 className="admin-menu-item"

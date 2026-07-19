@@ -1,48 +1,61 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import CarritoItem from "../components/CarritoItem";
 import Header from "../components/Header";
-import { Link } from "react-router";
+import { useCarrito } from "../hooks/useCarrito";
+import { obtenerCatalogo } from "../services/producto";
+import { calcularCostoEnvio } from "../utils/carrito";
 import "../styles/cart.css";
 
 export default function Carrito() {
-  const products = [
-    {
-      id: 1,
-      nombre_producto: "SmartPhone",
-      categoria: "Telefono",
-      imagen: "https://www.intelec.co.cr/wp-content/uploads/2026/02/S948-N.jpg",
-      precio: 2500,
-    },
+  const {
+    carrito,
+    loading,
+    error,
+    actualizandoProductoId,
+    cambiarCantidad,
+    eliminarProducto,
+  } = useCarrito();
 
-    {
-      id: 2,
-      nombre_producto: "Playstation 5",
-      categoria: "Consolas",
-      imagen:
-        "https://extremetechcr.com/wp-content/uploads/2025/11/HYPERX-98.jpg",
-      precio: 500,
-    },
-    {
-      id: 3,
-      nombre_producto: "SmartWatch",
-      categoria: "Reloj",
-      imagen:
-        "https://walmartcr.vtexassets.com/arquivos/ids/765547/85877_01.jpg?v=638661822772000000",
-      precio: 250,
-    },
-  ];
-  const subtotal = products.reduce(
-    (acumulador, producto) => acumulador + producto.precio,
-    0,
-  );
-  const envioGratis = products.length >= 3;
-  const precioEnvio = envioGratis ? 0 : 15;
+  // El carrito (`ResponseCarritoItemDto`) no trae imagen del producto, así
+  // que se resuelve aparte con el catálogo público para poder mostrarla.
+  const [imagenesPorProducto, setImagenesPorProducto] = useState<
+    Record<number, string | null>
+  >({});
+
+  useEffect(() => {
+    let vigente = true;
+    obtenerCatalogo()
+      .then((catalogo) => {
+        if (!vigente) return;
+        setImagenesPorProducto(
+          Object.fromEntries(
+            catalogo.map((p) => [p.producto_id, p.producto_imagen]),
+          ),
+        );
+      })
+      .catch(() => {
+        // Sin imágenes el carrito sigue siendo usable (placeholder por nombre).
+      });
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  const items = carrito?.items ?? [];
+  const subtotal = carrito?.total ?? 0;
+  const precioEnvio = calcularCostoEnvio(items);
   const total = subtotal + precioEnvio;
+
   return (
     <>
       <Header />
       <main className="car-conatiner">
-        {products.length === 0 ? (
+        {loading ? (
+          <p className="cart-status">Cargando carrito...</p>
+        ) : error ? (
+          <p className="cart-status cart-status-error">{error}</p>
+        ) : items.length === 0 ? (
           <div className="cart-empty">
             <h3>Tu carrito está vacío</h3>
             <p>Descubre lo último en tecnología.</p>
@@ -54,13 +67,22 @@ export default function Carrito() {
           <>
             <h2>Tu carrito</h2>
             <section className="cart-items-section">
-              {products.map((producto) => (
+              {items.map((item) => (
                 <CarritoItem
-                  key={producto.id}
-                  nombre_producto={producto.nombre_producto}
-                  categoria={producto.categoria}
-                  imagen={producto.imagen}
-                  precio={producto.precio}
+                  key={item.producto_id}
+                  producto_id={item.producto_id}
+                  producto_nombre={item.producto_nombre}
+                  producto_imagen={imagenesPorProducto[item.producto_id]}
+                  precio_unitario={item.precio_unitario}
+                  descuento={item.descuento}
+                  precio_final_unitario={item.precio_final_unitario}
+                  cantidad={item.cantidad}
+                  subtotal={item.subtotal}
+                  actualizando={actualizandoProductoId === item.producto_id}
+                  onCambiarCantidad={(cantidad) =>
+                    cambiarCantidad(item.producto_id, cantidad)
+                  }
+                  onEliminar={() => eliminarProducto(item.producto_id)}
                 />
               ))}
             </section>
@@ -70,22 +92,19 @@ export default function Carrito() {
                 <div className="count">
                   <div className="subtotal">
                     <span className="count-title">Subtotal</span>
-                    <span className="count-value">${subtotal}</span>
+                    <span className="count-value">${subtotal.toFixed(2)}</span>
                   </div>
                   <div className="delivery">
                     <span className="count-title">Envio</span>
                     <span className="count-value">
-                      {precioEnvio === 0 ? "Gratis" : precioEnvio}
+                      {precioEnvio === 0 ? "Gratis" : `$${precioEnvio.toFixed(2)}`}
                     </span>
                   </div>
                 </div>
-                <span
-                  className="
-                separator"
-                ></span>
+                <span className="separator"></span>
                 <div className="total">
                   <h5 className="total-title">Total</h5>
-                  <span className="total-value">{total}</span>
+                  <span className="total-value">${total.toFixed(2)}</span>
                 </div>
                 <Link to={"/byte&buy/pago"} className="pay-button">
                   Proceder al pago

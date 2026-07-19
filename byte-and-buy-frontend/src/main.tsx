@@ -16,52 +16,55 @@ import Productos from "./pages/Productos.tsx";
 import DetalleProducto from "./pages/DetalleProducto.tsx";
 import Carrito from "./pages/Carrito.tsx";
 import Pago from "./pages/Pago.tsx";
+import { CarritoProvider } from "./context/CarritoContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/byte&buy/login" element={<Login />} />
-        <Route path="/byte&buy/register" element={<Register />} />
-        <Route path="/byte&buy/products" element={<Productos />} />
-        <Route path="/byte&buy/products/:id" element={<DetalleProducto />} />
-        <Route
-          path="/byte&buy/perfil"
-          element={
-            <RequireAuth fallback={<PerfilInvitado />}>
-              <Perfil />
+      <CarritoProvider>
+        <Routes>
+          <Route path="/" element={<App />} />
+          <Route path="/byte&buy/login" element={<Login />} />
+          <Route path="/byte&buy/register" element={<Register />} />
+          <Route path="/byte&buy/products" element={<Productos />} />
+          <Route path="/byte&buy/products/:id" element={<DetalleProducto />} />
+          <Route
+            path="/byte&buy/perfil"
+            element={
+              <RequireAuth fallback={<PerfilInvitado />}>
+                <Perfil />
+              </RequireAuth>
+            }
+          />
+          <Route path="/byte&buy/carrito" element={
+            <RequireAuth fallback={<PerfilInvitado/>}>
+              <Carrito/>
             </RequireAuth>
-          }
-        />
-        <Route path="/byte&buy/carrito" element={
-          <RequireAuth fallback={<PerfilInvitado/>}>
-            <Carrito/>
-          </RequireAuth>
-        }/>
-        <Route path="/byte&buy/pago" element={
-          <RequireAuth fallback={<PerfilInvitado/>}>
-            <Pago/>
-          </RequireAuth>
-        }/>
-        <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
-        <Route
-          path="/byte&buy/cambiar-contrasena"
-          element={
-            <RequireAuth>
-              <CambiarContrasena />
+          }/>
+          <Route path="/byte&buy/pago" element={
+            <RequireAuth fallback={<PerfilInvitado/>}>
+              <Pago/>
             </RequireAuth>
-          }
-        />
-        <Route
-          path="/byte&buy/admin"
-          element={
-            <RequireAdmin>
-              <Admin />
-            </RequireAdmin>
-          }
-        />
-      </Routes>
+          }/>
+          <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
+          <Route
+            path="/byte&buy/cambiar-contrasena"
+            element={
+              <RequireAuth>
+                <CambiarContrasena />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/byte&buy/admin"
+            element={
+              <RequireAdmin>
+                <Admin />
+              </RequireAdmin>
+            }
+          />
+        </Routes>
+      </CarritoProvider>
     </BrowserRouter>
   </StrictMode>,
 );
