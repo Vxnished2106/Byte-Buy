@@ -14,7 +14,7 @@ export function useDetalleProducto(producto_id?: number) {
       setLoading(false);
       return;
     }
-
+    //Vigente = true, quiere decir que aun se esta en esa pantalla, se usa para cuando se cambie de pantalla la peticion no se guarde en un componente ya desmontado
     let vigente = true;
     setLoading(true);
     setError(null);
