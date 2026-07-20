@@ -1,14 +1,6 @@
-import axios from "axios";
 import api from "./api";
+import { errorDelBackend } from "./errores";
 import type { CreateMetodoPago, MetodoPago, UpdateMetodoPago } from "../ts/interfaces";
-
-function errorDelBackend(error: unknown, fallback: string): Error {
-  if (axios.isAxiosError(error)) {
-    const mensaje = error.response?.data?.message;
-    if (mensaje) return new Error(Array.isArray(mensaje) ? mensaje[0] : mensaje);
-  }
-  return new Error(fallback);
-}
 
 /** Lista los métodos de pago disponibles (usado en el checkout y el panel admin). */
 export async function listarMetodosPago(): Promise<MetodoPago[]> {

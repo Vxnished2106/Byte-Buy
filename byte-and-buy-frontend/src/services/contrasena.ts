@@ -1,14 +1,6 @@
-import axios from "axios";
 import api from "./api";
+import { errorDelBackend } from "./errores";
 import type { CambiarContrasena, ConfirmarRecuperacionData } from "../ts/interfaces";
-
-function errorDelBackend(error: unknown, fallback: string): Error {
-  if (axios.isAxiosError(error)) {
-    const mensaje = error.response?.data?.message;
-    if (mensaje) return new Error(Array.isArray(mensaje) ? mensaje[0] : mensaje);
-  }
-  return new Error(fallback);
-}
 
 /** Cambia la contraseña del usuario autenticado, validando la contraseña actual. */
 export async function cambiarContrasena(datos: CambiarContrasena): Promise<void> {

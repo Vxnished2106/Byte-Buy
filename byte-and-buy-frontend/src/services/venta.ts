@@ -1,14 +1,6 @@
-import axios from "axios";
 import api from "./api";
+import { errorDelBackend } from "./errores";
 import type { CreateVenta, UpdateVenta, Venta } from "../ts/interfaces";
-
-function errorDelBackend(error: unknown, fallback: string): Error {
-  if (axios.isAxiosError(error)) {
-    const mensaje = error.response?.data?.message;
-    if (mensaje) return new Error(Array.isArray(mensaje) ? mensaje[0] : mensaje);
-  }
-  return new Error(fallback);
-}
 
 /**
  * Registra una venta a partir del carrito actual. El backend resuelve el
