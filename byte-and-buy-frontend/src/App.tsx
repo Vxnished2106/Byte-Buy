@@ -3,6 +3,10 @@ import CarritoItem from "./components/CarritoItem";
 import Header from "./components/Header";
 import { Link } from "react-router";
 
+/**
+ * Página principal de la aplicación.
+ * Muestra el hero, categorías destacadas, productos populares y el footer.
+ */
 function App() {
   const categoriasDestacadas = [
     {

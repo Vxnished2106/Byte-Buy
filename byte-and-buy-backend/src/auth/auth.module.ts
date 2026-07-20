@@ -5,6 +5,10 @@ import { SupabaseService } from './supabase-storage/supabase.service';
 import { FileUploadService } from './supabase-storage/file-upload.service';
 import { SupabaseAuthService } from './supabase-auth/auth-password.service';
 
+/**
+ * Módulo de autenticación.
+ * Proporciona servicios y guardias para la autenticación con Supabase y manejo de archivos.
+ */
 @Module({
   imports: [ConfigModule],
   providers: [

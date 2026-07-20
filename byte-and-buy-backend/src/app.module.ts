@@ -19,6 +19,11 @@ import { PagoModule } from './pago/pago.module';
 import { VentaModule } from './venta/venta.module';
 import { MetodoPagoModule } from './metodo_pago/metodo_pago.module';
 
+/**
+ * Módulo principal de la aplicación NestJS.
+ * Configura la conexión a la base de datos MySQL, importa todos los módulos de funcionalidad,
+ * y configura módulos globales como ConfigModule y ScheduleModule.
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({

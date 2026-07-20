@@ -1,3 +1,6 @@
+/**
+ * Servicio para la gestión de inventarios
+ */
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -9,6 +12,9 @@ import { CreateInventarioDto } from './dto/create-inventario.dto';
 import { UpdateInventarioDto } from './dto/update-inventario.dto';
 import { ResponseInventarioDto } from './dto/response-inventario.dto';
 
+/**
+ * Servicio que maneja la lógica de negocio para los inventarios
+ */
 @Injectable()
 export class InventarioService {
 
@@ -20,6 +26,11 @@ export class InventarioService {
     private readonly productoRepository: Repository<Producto>,
   ) {}
 
+  /**
+   * Convierte una entidad Inventario a un DTO de respuesta
+   * @param inventario - Entidad Inventario a convertir
+   * @returns DTO de respuesta con los datos del inventario
+   */
   private toResponseDto(inventario: Inventario): ResponseInventarioDto {
     return {
       inventario_id: inventario.inventario_id,
@@ -30,6 +41,13 @@ export class InventarioService {
     };
   }
 
+  /**
+   * Registra un nuevo inventario para un producto
+   * @param datos - Datos del inventario a crear
+   * @returns DTO de respuesta con el inventario creado
+   * @throws BadRequestException si el stock inicial es negativo o el producto ya tiene inventario
+   * @throws NotFoundException si el producto no existe
+   */
   async registrarInventario(
     datos: CreateInventarioDto,
   ): Promise<ResponseInventarioDto> {
@@ -71,7 +89,10 @@ export class InventarioService {
     );
   }
 
-
+  /**
+   * Lista todos los inventarios ordenados por stock actual
+   * @returns Lista de DTOs de inventarios
+   */
   async mostrarInventario(): Promise<ResponseInventarioDto[]> {
 
     const inventarios = await this.inventarioRepository.find({
@@ -86,7 +107,12 @@ export class InventarioService {
     );
   }
 
-
+  /**
+   * Obtiene un inventario por su identificador
+   * @param inventario_id - Identificador del inventario
+   * @returns DTO de respuesta con el inventario
+   * @throws NotFoundException si el inventario no existe
+   */
   async obtenerInventario(
     inventario_id: number,
   ): Promise<ResponseInventarioDto> {
@@ -96,7 +122,12 @@ export class InventarioService {
     );
   }
 
-
+  /**
+   * Obtiene un inventario por el identificador del producto
+   * @param producto_id - Identificador del producto
+   * @returns DTO de respuesta con el inventario
+   * @throws NotFoundException si el inventario no existe
+   */
   async findByProducto(
     producto_id: number,
   ): Promise<ResponseInventarioDto> {
@@ -118,17 +149,19 @@ export class InventarioService {
     return this.toResponseDto(inventario);
   }
 
-
   /**
    * Verifica si un producto tiene stock suficiente para la cantidad pedida.
    * Lo consume el módulo de carrito para validar la disponibilidad antes de
    * agregar o actualizar ítems. Si el producto no tiene inventario registrado
    * se considera no disponible (stock 0).
+   * @param producto_id - Identificador del producto
+   * @param cantidad - Cantidad a verificar
+   * @returns Objeto con la disponibilidad y el stock actual
    */
   async verificarDisponibilidad(
     producto_id: number,
     cantidad: number,
-  ): Promise<{ disponible: boolean; stock_actual: number }> {
+  ): Promise<{disponible: boolean; stock_actual: number}> {
 
     const inventario =
       await this.inventarioRepository.findOne({
@@ -146,7 +179,14 @@ export class InventarioService {
     };
   }
 
-
+  /**
+   * Edita un inventario existente
+   * @param inventario_id - Identificador del inventario a editar
+   * @param datos - Datos del inventario a actualizar
+   * @returns DTO de respuesta con el inventario actualizado
+   * @throws NotFoundException si el inventario no existe
+   * @throws BadRequestException si el stock es negativo
+   */
   async editarInventario(
     inventario_id: number,
     datos: UpdateInventarioDto,
@@ -154,7 +194,6 @@ export class InventarioService {
 
     const inventario =
       await this.findEntity(inventario_id);
-
 
     if (
       datos.inventario_stock_actual !== undefined &&
@@ -165,7 +204,6 @@ export class InventarioService {
       );
     }
 
-
     Object.assign(
       inventario,
       datos,
@@ -174,13 +212,19 @@ export class InventarioService {
     inventario.inventario_fecha_actualizacion =
       new Date();
 
-
     return this.toResponseDto(
       await this.inventarioRepository.save(inventario),
     );
   }
 
-
+  /**
+   * Aumenta el stock de un producto
+   * @param producto_id - Identificador del producto
+   * @param cantidad - Cantidad a aumentar
+   * @returns DTO de respuesta con el inventario actualizado
+   * @throws BadRequestException si la cantidad es menor o igual a cero
+   * @throws NotFoundException si el inventario no existe
+   */
   async aumentarStock(
     producto_id: number,
     cantidad: number,
@@ -195,19 +239,24 @@ export class InventarioService {
     const inventario =
       await this.obtenerEntidadPorProducto(producto_id);
 
-
     inventario.inventario_stock_actual += cantidad;
 
     inventario.inventario_fecha_actualizacion =
       new Date();
-
 
     return this.toResponseDto(
       await this.inventarioRepository.save(inventario),
     );
   }
 
-
+  /**
+   * Descuenta el stock de un producto
+   * @param producto_id - Identificador del producto
+   * @param cantidad - Cantidad a descontar
+   * @returns DTO de respuesta con el inventario actualizado
+   * @throws BadRequestException si la cantidad es menor o igual a cero o el stock es insuficiente
+   * @throws NotFoundException si el inventario no existe
+   */
   async descontarStock(
     producto_id: number,
     cantidad: number,
@@ -219,10 +268,8 @@ export class InventarioService {
       );
     }
 
-
     const inventario =
       await this.obtenerEntidadPorProducto(producto_id);
-
 
     if (
       inventario.inventario_stock_actual < cantidad
@@ -232,26 +279,28 @@ export class InventarioService {
       );
     }
 
-
     inventario.inventario_stock_actual -= cantidad;
 
     inventario.inventario_fecha_actualizacion =
       new Date();
-
 
     return this.toResponseDto(
       await this.inventarioRepository.save(inventario),
     );
   }
 
-
+  /**
+   * Verifica si un producto tiene stock igual o menor al mínimo
+   * @param producto_id - Identificador del producto
+   * @returns Objeto con la alerta de stock mínimo
+   * @throws NotFoundException si el inventario no existe
+   */
   async verificarStockMinimo(
     producto_id: number,
-  ): Promise<{ alerta: boolean }> {
+  ): Promise<{alerta: boolean}> {
 
     const inventario =
       await this.obtenerEntidadPorProducto(producto_id);
-
 
     return {
       alerta:
@@ -260,7 +309,10 @@ export class InventarioService {
     };
   }
 
-
+  /**
+   * Obtiene los productos con stock igual o menor al mínimo
+   * @returns Lista de DTOs de inventarios con stock mínimo
+   */
   async obtenerProductosStockMinimo(): Promise<ResponseInventarioDto[]> {
 
     const inventarios =
@@ -275,13 +327,15 @@ export class InventarioService {
         )
         .getMany();
 
-
     return inventarios.map(i =>
       this.toResponseDto(i),
     );
   }
 
-
+  /**
+   * Lista todos los inventarios ordenados por stock actual
+   * @returns Lista de DTOs de inventarios
+   */
   async listarInventarioPorStock(): Promise<ResponseInventarioDto[]> {
 
     const inventarios =
@@ -292,13 +346,17 @@ export class InventarioService {
         },
       });
 
-
     return inventarios.map(i =>
       this.toResponseDto(i),
     );
   }
 
-
+  /**
+   * Obtiene la entidad de inventario por el identificador del producto
+   * @param producto_id - Identificador del producto
+   * @returns Entidad de inventario
+   * @throws NotFoundException si el inventario no existe
+   */
   private async obtenerEntidadPorProducto(
     producto_id: number,
   ): Promise<Inventario> {
@@ -310,18 +368,21 @@ export class InventarioService {
         },
       });
 
-
     if (!inventario) {
       throw new NotFoundException(
         'Inventario no encontrado',
       );
     }
 
-
     return inventario;
   }
 
-
+  /**
+   * Obtiene la entidad de inventario por su identificador
+   * @param inventario_id - Identificador del inventario
+   * @returns Entidad de inventario
+   * @throws NotFoundException si el inventario no existe
+   */
   async findEntity(
     inventario_id: number,
   ): Promise<Inventario> {
@@ -333,13 +394,11 @@ export class InventarioService {
         },
       });
 
-
     if (!inventario) {
       throw new NotFoundException(
         'Inventario no encontrado',
       );
     }
-
 
     return inventario;
   }

@@ -7,6 +7,10 @@ import { Rol } from '../usuario/entities/usuario.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SupabaseAuthGuard } from '../auth/supabase-auth/supabase-auth.guard';
 
+/**
+ * Controlador de categorías.
+ * Maneja las rutas relacionadas con la gestión de categorías de productos.
+ */
 @Controller('categorias')
 export class CategoriaController {
   constructor(
@@ -14,6 +18,11 @@ export class CategoriaController {
     private readonly usuarioService: UsuarioService,
   ) { }
 
+  /**
+   * Valida que el usuario autenticado tenga rol de administrador.
+   * @param req Request con el usuario autenticado.
+   * @throws ForbiddenException Si el usuario no es administrador.
+   */
   private async validarAdmin(req: any): Promise<void> {
     const usuario = await this.usuarioService.getOrCreateFromToken(req.user);
 
@@ -24,11 +33,22 @@ export class CategoriaController {
     }
   }
 
+  /**
+   * Obtiene todas las categorías.
+   * @returns Lista de categorías.
+   */
   @Get()
   async mostrarCategorias(): Promise<ResponseCategoriaDto[]> {
     return this.categoriaService.mostrarCategorias();
   }
 
+  /**
+   * Registra una nueva categoría (solo para administradores).
+   * @param req Request con el usuario autenticado.
+   * @param datos Datos de la categoría.
+   * @param file Imagen de la categoría (opcional).
+   * @returns Categoría registrada.
+   */
   @UseGuards(SupabaseAuthGuard)
   @Post('registrar')
   @UseInterceptors(FileInterceptor('categoria_imagen'))

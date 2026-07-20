@@ -4,14 +4,26 @@ import { useCarrito } from "../hooks/useCarrito";
 import { useSesion } from "../hooks/useSesion";
 import "../styles/cardProduct.css";
 
+/**
+ * Props para el componente CardProducto.
+ */
 interface CardProductoProps {
+  /** ID del producto. */
   producto_id: number;
+  /** URL de la imagen del producto. */
   imagen: string;
+  /** Nombre de la categoría del producto. */
   categoria: string;
+  /** Nombre del producto. */
   nombre_producto: string;
+  /** Precio del producto. */
   precio: number;
 }
 
+/**
+ * Componente de tarjeta de producto para el catálogo.
+ * Muestra la imagen, categoría, nombre, precio y botón para agregar al carrito.
+ */
 export default function CardProducto({
   producto_id,
   imagen,

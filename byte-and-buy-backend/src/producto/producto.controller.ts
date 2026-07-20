@@ -1,3 +1,6 @@
+/**
+ * Controlador para la gestión de productos
+ */
 import {
   Controller,
   Get,
@@ -29,7 +32,9 @@ import { ResponseCatalogoProductoDto } from './dto/response-catalogo-producto.dt
 import { SupabaseAuthGuard } from '../auth/supabase-auth/supabase-auth.guard';
 import { Rol } from '../usuario/entities/usuario.entity';
 
-
+/**
+ * Controlador que maneja las peticiones HTTP para la gestión de productos
+ */
 @Controller('productos')
 export class ProductoController {
 
@@ -38,6 +43,11 @@ export class ProductoController {
     private readonly usuarioService: UsuarioService,
   ) { }
 
+  /**
+   * Valida que el usuario autenticado tenga rol de administrador
+   * @param req - Objeto de solicitud HTTP
+   * @throws ForbiddenException si el usuario no es administrador
+   */
   private async validarAdmin(req: any): Promise<void> {
     const usuario = await this.usuarioService.getOrCreateFromToken(req.user);
 
@@ -49,13 +59,23 @@ export class ProductoController {
   }
 
   /**
-   * Catálogo de productos
+   * Obtiene el catálogo de productos activos
+   * @returns Lista de DTOs de catálogo de productos
    */
   @Get('catalogo')
   async catalogo(): Promise<ResponseCatalogoProductoDto[]> {
     return this.productoService.mostrarCatalogo();
   }
 
+  /**
+   * Filtra productos activos según diferentes criterios
+   * @param categoria_ids - Identificadores de categorías separados por coma (opcional)
+   * @param etiqueta_ids - Identificadores de etiquetas separados por coma (opcional)
+   * @param nombre - Nombre o parte del nombre para filtrar (opcional)
+   * @param min - Precio mínimo para filtrar (opcional)
+   * @param max - Precio máximo para filtrar (opcional)
+   * @returns Lista de DTOs de productos que cumplen con los filtros
+   */
   @Get('filtro')
   async filtrarProductos(
     @Query('categoria_ids') categoria_ids?: string,
@@ -75,7 +95,12 @@ export class ProductoController {
   }
 
   /**
-   * Crear producto
+   * Crea un nuevo producto (solo para administradores)
+   * @param req - Objeto de solicitud HTTP
+   * @param datos - Datos del producto a crear
+   * @param files - Archivos de imagen y banner del producto (opcionales)
+   * @returns DTO de respuesta con el producto creado
+   * @throws ForbiddenException si el usuario no es administrador
    */
   @UseGuards(SupabaseAuthGuard)
   @Post()
@@ -113,7 +138,13 @@ export class ProductoController {
   }
 
   /**
-   * Editar producto
+   * Edita un producto existente (solo para administradores)
+   * @param req - Objeto de solicitud HTTP
+   * @param producto_id - Identificador del producto a editar
+   * @param datos - Datos del producto a actualizar
+   * @param files - Nuevos archivos de imagen y banner del producto (opcionales)
+   * @returns DTO de respuesta con el producto actualizado
+   * @throws ForbiddenException si el usuario no es administrador
    */
   @UseGuards(SupabaseAuthGuard)
   @Patch(':id')
@@ -151,7 +182,9 @@ export class ProductoController {
   }
 
   /**
-   * Detalle de producto
+   * Obtiene los detalles de un producto activo
+   * @param producto_id - Identificador del producto
+   * @returns DTO de respuesta con los detalles del producto
    */
   @Get(':id')
   async detalleProducto(

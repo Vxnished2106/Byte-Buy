@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+/**
+ * Servicio para la conexión con Supabase.
+ * Proporciona el cliente de Supabase para acceder a auth y storage.
+ */
 @Injectable()
 export class SupabaseService {
   private supabase: SupabaseClient;
@@ -18,6 +22,10 @@ export class SupabaseService {
     this.supabase = createClient(supabaseUrl, supabaseKey);
   }
 
+  /**
+   * Obtiene el cliente de Supabase.
+   * @returns Cliente de Supabase.
+   */
   get client() {
     return this.supabase;
   }

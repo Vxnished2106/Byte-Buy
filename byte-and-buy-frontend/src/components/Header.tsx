@@ -13,8 +13,13 @@ import { useCatalogoProductos } from "../hooks/useCatalogoProductos";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 import { Rol } from "../ts/interfaces";
 
+/** Cantidad máxima de sugerencias de búsqueda a mostrar. */
 const MAX_SUGERENCIAS = 6;
 
+/**
+ * Componente de encabezado.
+ * Muestra el logo, menú de catálogo, barra de búsqueda, menú de usuario y botón del carrito.
+ */
 export default function Header() {
   const navigate = useNavigate();
   const { session } = useSesion();

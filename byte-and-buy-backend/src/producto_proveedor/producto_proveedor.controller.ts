@@ -1,3 +1,6 @@
+/**
+ * Controlador para la gestión de relaciones producto-proveedor
+ */
 import { Controller, Get, Post, Patch, Delete, Param, Body, ParseIntPipe, UseGuards, Request, ForbiddenException } from '@nestjs/common';
 
 import { ProductoProveedorService } from './producto-proveedor.service';
@@ -9,7 +12,9 @@ import { UsuarioService } from '../usuario/usuario.service';
 import { Rol } from '../usuario/entities/usuario.entity';
 import { ProductoProveedorEstado } from './entities/producto_proveedor.entity';
 
-
+/**
+ * Controlador que maneja las peticiones HTTP para la gestión de relaciones entre productos y proveedores
+ */
 @Controller('producto-proveedor')
 @UseGuards(SupabaseAuthGuard)
 export class ProductoProveedorController {
@@ -19,7 +24,11 @@ export class ProductoProveedorController {
     private readonly usuarioService: UsuarioService,
   ) {}
 
-
+  /**
+   * Valida que el usuario autenticado tenga rol de administrador
+   * @param req - Objeto de solicitud HTTP
+   * @throws ForbiddenException si el usuario no es administrador
+   */
   private async validarAdmin(req:any):Promise<void>{
 
     const usuario =
@@ -34,7 +43,13 @@ export class ProductoProveedorController {
     }
   }
 
-
+  /**
+   * Asigna un proveedor a un producto
+   * @param req - Objeto de solicitud HTTP
+   * @param datos - Datos de la relación producto-proveedor a crear
+   * @returns DTO de respuesta con la relación creada
+   * @throws ForbiddenException si el usuario no es administrador
+   */
   @Post('asignar')
   async asignarProveedor(
     @Request() req:any,
@@ -46,8 +61,13 @@ export class ProductoProveedorController {
     return this.productoProveedorService.asignarProveedor(datos);
   }
 
-
-
+  /**
+   * Lista los proveedores asociados a un producto
+   * @param req - Objeto de solicitud HTTP
+   * @param producto_id - Identificador del producto
+   * @returns Lista de DTOs de respuesta con los proveedores del producto
+   * @throws ForbiddenException si el usuario no es administrador
+   */
   @Get('producto/:producto_id')
   async listarProveedoresPorProducto(
     @Request() req:any,
@@ -61,8 +81,14 @@ export class ProductoProveedorController {
     );
   }
 
-
-
+  /**
+   * Actualiza el precio de compra de un producto en un proveedor
+   * @param req - Objeto de solicitud HTTP
+   * @param producto_proveedor_id - Identificador de la relación producto-proveedor
+   * @param body - Datos con el nuevo precio
+   * @returns DTO de respuesta con la relación actualizada
+   * @throws ForbiddenException si el usuario no es administrador
+   */
   @Patch(':producto_proveedor_id/precio')
   async actualizarPrecioCompra(
     @Request() req:any,
@@ -78,8 +104,14 @@ export class ProductoProveedorController {
     );
   }
 
-
-
+  /**
+   * Cambia el estado de una relación producto-proveedor
+   * @param req - Objeto de solicitud HTTP
+   * @param producto_proveedor_id - Identificador de la relación producto-proveedor
+   * @param body - Datos con el nuevo estado
+   * @returns DTO de respuesta con la relación actualizada
+   * @throws ForbiddenException si el usuario no es administrador
+   */
   @Patch(':producto_proveedor_id/estado')
   async cambiarEstado(
     @Request() req:any,
@@ -95,8 +127,12 @@ export class ProductoProveedorController {
     );
   }
 
-
-
+  /**
+   * Elimina una relación producto-proveedor
+   * @param req - Objeto de solicitud HTTP
+   * @param producto_proveedor_id - Identificador de la relación producto-proveedor
+   * @throws ForbiddenException si el usuario no es administrador
+   */
   @Delete(':producto_proveedor_id')
   async eliminarAsignacion(
     @Request() req:any,

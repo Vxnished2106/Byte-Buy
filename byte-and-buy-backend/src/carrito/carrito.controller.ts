@@ -1,3 +1,6 @@
+/**
+ * Controlador para la gestión del carrito de compras
+ */
 import {
   Controller,
   Get,
@@ -17,6 +20,9 @@ import { SupabaseAuthGuard } from '../auth/supabase-auth/supabase-auth.guard';
 import { AgregarItemDto } from './dto/agregar-item.dto';
 import { ActualizarItemDto } from './dto/actualizar-item.dto';
 
+/**
+ * Controlador que maneja las peticiones HTTP para el carrito de compras
+ */
 @Controller('carrito')
 @UseGuards(SupabaseAuthGuard)
 export class CarritoController {
@@ -25,12 +31,21 @@ export class CarritoController {
     private readonly usuarioService: UsuarioService,
   ) {}
 
-  /** Resuelve el usuario de BD a partir del token de Supabase. */
+  /**
+   * Resuelve el usuario de BD a partir del token de Supabase.
+   * @param req - Objeto de solicitud HTTP
+   * @returns Identificador del usuario
+   */
   private async obtenerUsuarioId(req: any): Promise<number> {
     const usuario = await this.usuarioService.getOrCreateFromToken(req.user);
     return usuario.usuario_id;
   }
 
+  /**
+   * Obtiene el carrito del usuario
+   * @param req - Objeto de solicitud HTTP
+   * @returns Carrito con subtotales y total
+   */
   @Get()
   async obtenerCarrito(@Request() req: any) {
     return this.carritoService.obtenerCarritoConSubtotales(
@@ -38,6 +53,12 @@ export class CarritoController {
     );
   }
 
+  /**
+   * Agrega un ítem al carrito
+   * @param req - Objeto de solicitud HTTP
+   * @param dto - Datos del producto a agregar
+   * @returns Carrito actualizado
+   */
   @Post('items')
   async agregarItem(
     @Request() req: any,
@@ -49,6 +70,13 @@ export class CarritoController {
     );
   }
 
+  /**
+   * Actualiza la cantidad de un ítem del carrito
+   * @param req - Objeto de solicitud HTTP
+   * @param producto_id - Identificador del producto
+   * @param dto - Datos con la nueva cantidad
+   * @returns Carrito actualizado
+   */
   @Put('items/:producto_id')
   async actualizarItem(
     @Request() req: any,
@@ -62,6 +90,12 @@ export class CarritoController {
     );
   }
 
+  /**
+   * Elimina un ítem del carrito
+   * @param req - Objeto de solicitud HTTP
+   * @param producto_id - Identificador del producto
+   * @returns Carrito actualizado
+   */
   @Delete('items/:producto_id')
   async eliminarItem(
     @Request() req: any,

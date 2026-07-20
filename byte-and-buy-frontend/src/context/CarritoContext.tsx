@@ -10,10 +10,13 @@ import type { Carrito } from "../ts/interfaces";
 import { CarritoContext } from "./carritoContextValue";
 
 /**
+ * Proveedor de contexto del carrito de compras.
  * Mantiene el carrito del usuario autenticado en un solo lugar, para que el
  * header (burbuja de cantidad), el catálogo (botón "Agregar al carrito") y
  * la página del carrito siempre muestren el mismo estado sin tener que
  * volver a montarse entre ellos.
+ *
+ * @param children Componentes hijos que tendrán acceso al contexto.
  */
 export function CarritoProvider({ children }: { children: ReactNode }) {
   const { session, loading: sesionCargando } = useSesion();

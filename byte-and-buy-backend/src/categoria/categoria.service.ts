@@ -12,6 +12,10 @@ import { UpdateCategoriaDto } from './dto/update-categoria.dto';
 import { ResponseCategoriaDto } from './dto/response-categoria.dto';
 import { FileUploadService } from '../auth/supabase-storage/file-upload.service';
 
+/**
+ * Servicio de categorías.
+ * Contiene la lógica para la gestión de categorías de productos.
+ */
 @Injectable()
 export class CategoriaService {
   constructor(
@@ -20,6 +24,11 @@ export class CategoriaService {
     private readonly fileUploadService: FileUploadService,
   ) {}
 
+  /**
+   * Convierte una entidad Categoria a su DTO de respuesta.
+   * @param categoria Entidad Categoria.
+   * @returns DTO de respuesta.
+   */
   private toResponseDto(categoria: Categoria): ResponseCategoriaDto {
     return {
       categoria_id: categoria.categoria_id,
@@ -30,7 +39,8 @@ export class CategoriaService {
   }
 
   /**
-   * Mostrar categorías
+   * Obtiene todas las categorías ordenadas por nombre.
+   * @returns Lista de categorías.
    */
   async mostrarCategorias(): Promise<ResponseCategoriaDto[]> {
     const categorias = await this.categoriaRepository.find({
@@ -43,7 +53,11 @@ export class CategoriaService {
   }
 
   /**
-   * Registrar categoría
+   * Registra una nueva categoría.
+   * @param datos Datos de la categoría.
+   * @param imagen Imagen de la categoría (opcional).
+   * @returns Categoría registrada.
+   * @throws BadRequestException Si ya existe una categoría con el mismo nombre.
    */
   async registrarCategoria(
     datos: CreateCategoriaDto,
@@ -76,7 +90,13 @@ export class CategoriaService {
   }
 
   /**
-   * Editar categoría
+   * Edita una categoría existente.
+   * @param categoria_id ID de la categoría.
+   * @param datos Nuevos datos de la categoría.
+   * @param imagen Nueva imagen de la categoría (opcional).
+   * @returns Categoría editada.
+   * @throws NotFoundException Si la categoría no existe.
+   * @throws BadRequestException Si ya existe una categoría con el mismo nombre.
    */
   async editarCategoria(
     categoria_id: number,
@@ -127,7 +147,10 @@ export class CategoriaService {
   }
 
   /**
-   * Obtener una categoría
+   * Obtiene una categoría por su ID.
+   * @param categoria_id ID de la categoría.
+   * @returns DTO de la categoría.
+   * @throws NotFoundException Si la categoría no existe.
    */
   async obtenerCategoria(
     categoria_id: number,
@@ -148,7 +171,10 @@ export class CategoriaService {
   }
 
   /**
-   * Obtener la entidad
+   * Obtiene la entidad de una categoría por su ID.
+   * @param categoria_id ID de la categoría.
+   * @returns Entidad Categoria.
+   * @throws NotFoundException Si la categoría no existe.
    */
   async findEntity(
     categoria_id: number,

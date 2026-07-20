@@ -7,7 +7,10 @@ import { Proveedor, ProveedorEstado } from './entities/proveedor.entity';
 import { CreateProveedorDto } from './dto/create-proveedor.dto';
 import { ResponseProveedorDto } from './dto/response-proveedor.dto';
 
-
+/**
+ * Servicio para la gestión de proveedores.
+ * Contiene métodos para crear, editar, cambiar estado y listar proveedores.
+ */
 @Injectable()
 export class ProveedorService {
 
@@ -16,7 +19,12 @@ export class ProveedorService {
     private readonly proveedorRepository: Repository<Proveedor>,
   ) { }
 
-
+  /**
+   * Convierte una entidad Proveedor a un DTO de respuesta.
+   * @param proveedor - Entidad Proveedor a convertir
+   * @param cantidad_productos - Cantidad de productos asociados al proveedor (opcional)
+   * @returns DTO de respuesta con los datos del proveedor
+   */
   private toResponseDto(
     proveedor: Proveedor,
     cantidad_productos?: number,
@@ -228,6 +236,13 @@ export class ProveedorService {
     return proveedor;
   }
 
+  /**
+   * Valida que un proveedor exista y esté activo.
+   * @param proveedor_id - ID del proveedor a validar
+   * @returns true si el proveedor existe y está activo
+   * @throws NotFoundException si el proveedor no existe
+   * @throws BadRequestException si el proveedor está inactivo
+   */
   async validarProveedorActivo(
     proveedor_id: number,
   ): Promise<boolean> {
@@ -258,6 +273,12 @@ export class ProveedorService {
     return true;
   }
 
+  /**
+   * Cambia el estado de un proveedor (activo ↔ inactivo).
+   * @param proveedor_id - ID del proveedor a modificar
+   * @returns DTO de respuesta con el proveedor actualizado
+   * @throws NotFoundException si el proveedor no existe
+   */
   async cambiarEstadoProveedor(
     proveedor_id: number,
   ): Promise<ResponseProveedorDto> {
@@ -294,6 +315,12 @@ export class ProveedorService {
     );
   }
 
+  /**
+   * Lista los proveedores, con filtros opcionales por nombre y estado.
+   * @param nombre - Filtro por nombre del proveedor (opcional)
+   * @param estado - Filtro por estado del proveedor (opcional)
+   * @returns Lista de DTOs de respuesta con los proveedores
+   */
   async mostrarProveedores(
     nombre?: string,
     estado?: ProveedorEstado,

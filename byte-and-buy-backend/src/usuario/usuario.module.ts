@@ -9,6 +9,10 @@ import { AuthModule } from '../auth/auth.module';
 import { MailModule } from '../mail/mail.module';
 import { TokenRecuperacionModule } from '../token_recuperacion/token_recuperacion.module';
 
+/**
+ * Módulo de usuarios.
+ * Contiene la lógica para la gestión de usuarios, autenticación y recuperación de contraseña.
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Usuario, RegistroActividad]),

@@ -16,6 +16,10 @@ import { SupabaseService } from '../auth/supabase-storage/supabase.service';
 import { TokenRecuperacionService } from '../token_recuperacion/token_recuperacion.service';
 import { MailService } from '../mail/mail.service';
 
+/**
+ * Servicio de usuarios.
+ * Contiene la lógica de negocio para la gestión de usuarios, autenticación y recuperación de contraseña.
+ */
 @Injectable()
 export class UsuarioService {
   constructor(

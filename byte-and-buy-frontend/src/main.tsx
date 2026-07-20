@@ -18,6 +18,10 @@ import Carrito from "./pages/Carrito.tsx";
 import Pago from "./pages/Pago.tsx";
 import { CarritoProvider } from "./context/CarritoContext.tsx";
 
+/**
+ * Punto de entrada principal de la aplicación frontend.
+ * Configura React Strict Mode, Router y proveedores de contexto.
+ */
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>

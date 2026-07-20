@@ -3,6 +3,10 @@ import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader } from 'jose';
 
+/**
+ * Guardia de autenticación para Supabase.
+ * Valida el token JWT de Supabase y agrega la información del usuario al request.
+ */
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
   private jwks: any;
@@ -14,6 +18,12 @@ export class SupabaseAuthGuard implements CanActivate {
     this.jwks = createRemoteJWKSet(jwksUrl);
   }
 
+  /**
+   * Valida el token JWT y permite el acceso si es válido.
+   * @param context Contexto de ejecución de NestJS.
+   * @returns true si el token es válido.
+   * @throws UnauthorizedException Si el token es inválido, expirado o no está presente.
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const authHeader = request.headers['authorization'];

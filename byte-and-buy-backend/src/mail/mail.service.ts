@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
+/**
+ * Servicio de correo electrónico.
+ * Contiene la lógica para enviar correos electrónicos.
+ */
 @Injectable()
 export class MailService {
+  /** Transportador de nodemailer para enviar correos. */
   private transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -11,6 +16,11 @@ export class MailService {
     },
   });
 
+  /**
+   * Envía un correo con un código de recuperación de contraseña.
+   * @param email Correo electrónico del destinatario.
+   * @param codigo Código de recuperación.
+   */
   async enviarCodigo(email: string, codigo: string) {
     await this.transporter.sendMail({
       from: `"Soporte Byte & Buy" <${process.env.MAIL_USER}>`,

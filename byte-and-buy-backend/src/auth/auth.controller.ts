@@ -10,6 +10,10 @@ import { UsuarioService } from '../usuario/usuario.service';
 import { RegistroDto } from './dto/registro.dto';
 import { ResponseUsuarioDto } from '../usuario/dto/response-usuario.dto';
 
+/**
+ * Controlador de autenticación.
+ * Maneja las rutas relacionadas con la autenticación y registro de usuarios.
+ */
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -20,7 +24,10 @@ export class AuthController {
   /**
    * POST /auth/registro
    * Registra un usuario nuevo: lo crea en Supabase (auth) y en la base local.
-   * Body: { usuario_nombre, usuario_apellido1, usuario_apellido2?, usuario_correo, usuario_contrasena }
+   * @param datos Datos del usuario para el registro (nombre, apellidos, correo y contraseña).
+   * @returns Datos del usuario registrado.
+   * @throws BadRequestException Si faltan datos obligatorios.
+   * @throws ConflictException Si el correo ya está registrado.
    */
   @Post('registro')
   async registro(@Body() datos: RegistroDto): Promise<ResponseUsuarioDto> {

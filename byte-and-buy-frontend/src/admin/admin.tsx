@@ -21,6 +21,11 @@ import type {
   CreateEtiqueta,
 } from "../ts/interfaces";
 import "../styles/admin.css";
+
+/**
+ * Panel de administración.
+ * Permite gestionar proveedores, productos, categorías y etiquetas.
+ */
 export default function Admin() {
   const navigate = useNavigate();
   const { usuario } = useUsuario();

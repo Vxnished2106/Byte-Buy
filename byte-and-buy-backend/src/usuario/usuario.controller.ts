@@ -5,15 +5,19 @@ import { ResponseUsuarioDto } from './dto/response-usuario.dto';
 import { SupabaseAuthGuard } from '../auth/supabase-auth/supabase-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 
+/**
+ * Controlador de usuarios.
+ * Maneja las rutas relacionadas con la gestión de usuarios, perfil y recuperación de contraseña.
+ */
 @Controller('usuarios')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) { }
 
   /**
    * GET /usuarios/me
-   * Es para registrar al usuario cuando se haya creado en supabase
-   * Headers: Authorization: Bearer <token_supabase>
-   * Body: ninguno
+   * Obtiene o crea el usuario a partir del token de Supabase.
+   * @param req Request con el usuario autenticado.
+   * @returns Datos del usuario.
    */
   @UseGuards(SupabaseAuthGuard)
   @Get('me')
@@ -23,8 +27,9 @@ export class UsuarioController {
 
   /**
    * GET /usuarios/perfil
-   * Devuelve el perfil del usuario autenticado (protegido con JWT).
-   * Headers: Authorization: Bearer <token>
+   * Obtiene el perfil del usuario autenticado.
+   * @param req Request con el usuario autenticado.
+   * @returns Datos del perfil del usuario.
    */
   @UseGuards(SupabaseAuthGuard)
   @Get('perfil')
@@ -32,11 +37,25 @@ export class UsuarioController {
     return this.usuarioService.getOrCreateFromToken(req.user);
   }
 
+  /**
+   * GET /usuarios/:id
+   * Obtiene un usuario por su ID.
+   * @param id ID del usuario.
+   * @returns Datos del usuario.
+   */
   @Get(':id')
   async getUsuario(@Param('id', ParseIntPipe) id: number): Promise<ResponseUsuarioDto> {
     return this.usuarioService.findOne(id);
   }
 
+  /**
+   * PATCH /usuarios
+   * Actualiza la información del usuario autenticado.
+   * @param req Request con el usuario autenticado.
+   * @param datos Nuevos datos del usuario.
+   * @param file Foto de perfil (opcional).
+   * @returns Usuario actualizado.
+   */
   @UseGuards(SupabaseAuthGuard)
   @Patch()
   @UseInterceptors(FileInterceptor('usuario_foto'))
@@ -51,8 +70,9 @@ export class UsuarioController {
 
   /**
    * GET /usuarios/perfil
-   * Permite a un usuario autenticado obtener sus datos de perfil
-   * Headers: Authorization: Bearer <token_supabase>
+   * Obtiene el perfil del usuario autenticado (alias de getPerfil).
+   * @param req Request con el usuario autenticado.
+   * @returns Datos del perfil del usuario.
    */
   @UseGuards(SupabaseAuthGuard)
   @Get('perfil')
@@ -62,9 +82,11 @@ export class UsuarioController {
 
   /**
    * PATCH /usuarios/perfil
-   * Permite a un usuario autenticado actualizar su perfil personal
-   * Headers: Authorization: Bearer <token_supabase>
-   * Body: UpdateUsuarioDto
+   * Actualiza el perfil del usuario autenticado (alias de update).
+   * @param req Request con el usuario autenticado.
+   * @param datos Nuevos datos del usuario.
+   * @param file Foto de perfil (opcional).
+   * @returns Usuario actualizado.
    */
   @UseGuards(SupabaseAuthGuard)
   @Patch('perfil')
@@ -78,6 +100,12 @@ export class UsuarioController {
     return this.usuarioService.update(usuario.usuario_id, datos, file);
   }
 
+  /**
+   * PATCH /usuarios/cambiar-contrasena
+   * Cambia la contraseña del usuario autenticado.
+   * @param req Request con el usuario autenticado.
+   * @param datos Contraseña actual y nueva.
+   */
   @UseGuards(SupabaseAuthGuard)
   @Patch('cambiar-contrasena')
   async cambiarContrasena(
@@ -90,8 +118,8 @@ export class UsuarioController {
 
   /**
    * POST /usuarios/solicitar-recuperacion
-   * Permite enviar al correo que se ingreso el pin
-   * Body: { "email": "juan@example.com" }
+   * Envía un PIN de recuperación de contraseña al correo del usuario.
+   * @param body Correo electrónico del usuario.
    */
   @Post('solicitar-recuperacion')
   async solicitarRecuperacion(@Body() body: { email: string }): Promise<void> {
@@ -100,8 +128,8 @@ export class UsuarioController {
 
   /**
    * POST /usuarios/confirmar-recuperacion
-   * Cambia la contraseña al validar el pin buscando por el email
-   * Body: { "email": "juan@example.com", "codigo": "123456", "nuevaContrasena": "nueva123" }
+   * Valida el PIN y cambia la contraseña del usuario.
+   * @param body Correo, PIN y nueva contraseña.
    */
   @Post('confirmar-recuperacion')
   async confirmarRecuperacion(

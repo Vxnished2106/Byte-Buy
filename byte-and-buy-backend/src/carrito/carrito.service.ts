@@ -1,3 +1,6 @@
+/**
+ * Servicio para la gestión del carrito de compras
+ */
 import {
   Injectable,
   NotFoundException,
@@ -17,6 +20,9 @@ import {
   ResponseCarritoItemDto,
 } from './dto/response-carrito.dto';
 
+/**
+ * Servicio que maneja la lógica de negocio para el carrito de compras
+ */
 @Injectable()
 export class CarritoService {
   constructor(
@@ -36,6 +42,8 @@ export class CarritoService {
    * Obtiene el carrito del usuario autenticado; si aún no existe lo crea.
    * Se usa como punto de entrada de todas las operaciones del carrito para
    * garantizar que cada usuario opere siempre sobre su propio carrito.
+   * @param usuario_id - Identificador del usuario
+   * @returns Carrito del usuario
    */
   async obtenerOCrearCarrito(usuario_id: number): Promise<Carrito> {
     let carrito = await this.carritoRepository.findOne({
@@ -56,6 +64,9 @@ export class CarritoService {
    * Agrega un producto al carrito. Si el producto ya está en el carrito,
    * suma la cantidad. Valida que la cantidad total resultante no supere el
    * stock disponible (consultado al módulo de inventario).
+   * @param usuario_id - Identificador del usuario
+   * @param dto - Datos del producto a agregar
+   * @returns Carrito actualizado
    */
   async agregarItem(
     usuario_id: number,
@@ -89,6 +100,11 @@ export class CarritoService {
   /**
    * Reemplaza la cantidad de un producto ya presente en el carrito, validando
    * el stock disponible para la nueva cantidad.
+   * @param usuario_id - Identificador del usuario
+   * @param producto_id - Identificador del producto
+   * @param dto - Datos con la nueva cantidad
+   * @returns Carrito actualizado
+   * @throws NotFoundException si el producto no está en el carrito
    */
   async actualizarCantidad(
     usuario_id: number,
@@ -113,7 +129,13 @@ export class CarritoService {
     return this.obtenerOCrearCarrito(usuario_id);
   }
 
-  /** Elimina un producto del carrito del usuario. */
+  /**
+   * Elimina un producto del carrito del usuario.
+   * @param usuario_id - Identificador del usuario
+   * @param producto_id - Identificador del producto
+   * @returns Carrito actualizado
+   * @throws NotFoundException si el producto no está en el carrito
+   */
   async eliminarItem(
     usuario_id: number,
     producto_id: number,
@@ -136,6 +158,8 @@ export class CarritoService {
    * Devuelve el carrito del usuario con el cálculo de subtotales por ítem y
    * el total. El descuento y el impuesto del producto se aplican como
    * porcentaje sobre el precio unitario.
+   * @param usuario_id - Identificador del usuario
+   * @returns Carrito con subtotales y total
    */
   async obtenerCarritoConSubtotales(
     usuario_id: number,
@@ -177,7 +201,11 @@ export class CarritoService {
     };
   }
 
-  /** Redondea a 2 decimales para montos monetarios. */
+  /**
+   * Redondea a 2 decimales para montos monetarios.
+   * @param valor - Valor a redondear
+   * @returns Valor redondeado a 2 decimales
+   */
   private redondear(valor: number): number {
     return Math.round(valor * 100) / 100;
   }
@@ -185,6 +213,10 @@ export class CarritoService {
   /**
    * Valida que el producto exista y que tenga stock suficiente para la
    * cantidad indicada, consumiendo la disponibilidad del módulo de inventario.
+   * @param producto_id - Identificador del producto
+   * @param cantidad - Cantidad a validar
+   * @throws NotFoundException si el producto no existe
+   * @throws BadRequestException si el stock es insuficiente
    */
   private async validarStock(
     producto_id: number,

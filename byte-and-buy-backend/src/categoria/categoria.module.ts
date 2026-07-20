@@ -8,6 +8,10 @@ import { AuthController } from '../auth/auth.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UsuarioModule } from '../usuario/usuario.module';
 
+/**
+ * Módulo de categorías.
+ * Contiene la lógica para la gestión de categorías de productos.
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Categoria, Producto]),

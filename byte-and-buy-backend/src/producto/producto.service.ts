@@ -1,6 +1,9 @@
+/**
+ * Servicio para la gestión de productos
+ */
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Producto, ProductoEstado } from './entities/producto.entity';
 import { Categoria } from '../categoria/entities/categoria.entity';
 import { Etiqueta } from '../etiqueta/entities/etiqueta.entity';
@@ -12,6 +15,9 @@ import { ResponseDetalleProductoDto } from './dto/response-detalle-producto.dto'
 import { ResponseCatalogoProductoDto } from './dto/response-catalogo-producto.dto';
 import { FileUploadService } from '../auth/supabase-storage/file-upload.service';
 
+/**
+ * Servicio que maneja la lógica de negocio para los productos
+ */
 @Injectable()
 export class ProductoService {
   constructor(
@@ -24,6 +30,11 @@ export class ProductoService {
     private readonly fileUploadService: FileUploadService,
   ) { }
 
+  /**
+   * Convierte una entidad Producto a un DTO de respuesta
+   * @param producto - Entidad Producto a convertir
+   * @returns DTO de respuesta con los datos del producto
+   */
   private toResponseDto(producto: Producto): ResponseProductoDto {
     return {
       producto_id: producto.producto_id,
@@ -40,7 +51,14 @@ export class ProductoService {
     };
   }
 
-
+  /**
+   * Registra un nuevo producto en el sistema
+   * @param datos - Datos del producto a crear
+   * @param imagen - Archivo de imagen del producto (opcional)
+   * @param banner - Archivo de banner del producto (opcional)
+   * @returns DTO de respuesta con el producto creado
+   * @throws BadRequestException si ya existe un producto con el mismo nombre
+   */
   async registrarProducto(
     datos: CreateProductoDto,
     imagen?: Express.Multer.File,
@@ -126,7 +144,16 @@ export class ProductoService {
     return this.toResponseDto(productoCompleto!);
   }
 
-
+  /**
+   * Edita un producto existente en el sistema
+   * @param producto_id - Identificador del producto a editar
+   * @param datos - Datos del producto a actualizar
+   * @param imagen - Nuevo archivo de imagen del producto (opcional)
+   * @param banner - Nuevo archivo de banner del producto (opcional)
+   * @returns DTO de respuesta con el producto actualizado
+   * @throws NotFoundException si el producto no existe
+   * @throws BadRequestException si ya existe un producto con el mismo nombre
+   */
   async editarProducto(
     producto_id: number,
     datos: UpdateProductoDto,
@@ -252,7 +279,10 @@ export class ProductoService {
     return this.toResponseDto(actualizado);
   }
 
-
+  /**
+   * Obtiene el catálogo de productos activos
+   * @returns Lista de DTOs de catálogo de productos
+   */
   async mostrarCatalogo(): Promise<ResponseCatalogoProductoDto[]> {
 
     const productos =
@@ -294,7 +324,12 @@ export class ProductoService {
     });
   }
 
-
+  /**
+   * Obtiene los detalles de un producto activo
+   * @param producto_id - Identificador del producto
+   * @returns DTO de respuesta con los detalles del producto
+   * @throws NotFoundException si el producto no existe o está inactivo
+   */
   async obtenerDetalleProducto(
     producto_id: number,
   ): Promise<ResponseDetalleProductoDto> {
@@ -370,7 +405,15 @@ export class ProductoService {
     };
   }
 
-
+  /**
+   * Filtra productos activos según diferentes criterios
+   * @param categoria_ids - Identificadores de categorías para filtrar (opcional)
+   * @param etiqueta_ids - Identificadores de etiquetas para filtrar (opcional)
+   * @param nombre - Nombre o parte del nombre para filtrar (opcional)
+   * @param precio_min - Precio mínimo para filtrar (opcional)
+   * @param precio_max - Precio máximo para filtrar (opcional)
+   * @returns Lista de DTOs de productos que cumplen con los filtros
+   */
   async filtrarProductos(
     categoria_ids?: number[],
     etiqueta_ids?: number[],

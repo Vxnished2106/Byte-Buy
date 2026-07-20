@@ -8,6 +8,10 @@ import { Repository, IsNull } from 'typeorm';
 import { TokenRecuperacion } from './entities/token_recuperacion.entity';
 import { ResponseTokenRecuperacionDto } from './dto/response-token_recuperacion.dto';
 
+/**
+ * Servicio de tokens de recuperación.
+ * Contiene la lógica para la gestión de tokens de recuperación de contraseña.
+ */
 @Injectable()
 export class TokenRecuperacionService {
   constructor(
@@ -15,6 +19,11 @@ export class TokenRecuperacionService {
     private readonly tokenRepository: Repository<TokenRecuperacion>,
   ) {}
 
+  /**
+   * Convierte una entidad TokenRecuperacion a su DTO de respuesta.
+   * @param token Entidad TokenRecuperacion.
+   * @returns DTO de respuesta.
+   */
   private toResponseDto(token: TokenRecuperacion): ResponseTokenRecuperacionDto {
     return {
       id: token.id,
@@ -26,16 +35,29 @@ export class TokenRecuperacionService {
     };
   }
 
+  /**
+   * Genera un PIN aleatorio de 6 dígitos.
+   * @returns PIN aleatorio.
+   */
   private generarPin(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
+  /**
+   * Calcula la fecha de expiración del token (15 minutos a partir de ahora).
+   * @returns Fecha de expiración.
+   */
   private calcularExpiracion(): Date {
     const expira = new Date();
     expira.setMinutes(expira.getMinutes() + 15);
     return expira;
   }
 
+  /**
+   * Crea un nuevo token de recuperación para un usuario.
+   * @param usuarioId ID del usuario.
+   * @returns DTO del token creado.
+   */
   async create(usuarioId: number): Promise<ResponseTokenRecuperacionDto> {
     await this.tokenRepository.update(
       { usuario_id: usuarioId, usado_en: IsNull() },
@@ -53,6 +75,13 @@ export class TokenRecuperacionService {
     return this.toResponseDto(guardado);
   }
 
+  /**
+   * Valida un PIN de recuperación.
+   * @param pin PIN a validar.
+   * @param usuarioId ID del usuario.
+   * @returns Entidad TokenRecuperacion si el PIN es válido.
+   * @throws BadRequestException Si el PIN es incorrecto, expiró o hay demasiados intentos.
+   */
   async validarPin(pin: string, usuarioId: number): Promise<TokenRecuperacion> {
     const token = await this.tokenRepository.findOne({
       where: {
@@ -79,6 +108,10 @@ export class TokenRecuperacionService {
     return token;
   }
 
+  /**
+   * Marca un token como usado.
+   * @param token Token a marcar.
+   */
   async marcarComoUsado(token: TokenRecuperacion): Promise<void> {
     token.usado_en = new Date();
     await this.tokenRepository.save(token);
@@ -89,6 +122,12 @@ export class TokenRecuperacionService {
     );
   }
 
+  /**
+   * Busca un token por su PIN.
+   * @param pin PIN del token.
+   * @returns DTO del token.
+   * @throws NotFoundException Si el token no existe.
+   */
   async findByPin(pin: string): Promise<ResponseTokenRecuperacionDto> {
     const token = await this.tokenRepository.findOne({
       where: { token: pin },

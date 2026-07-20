@@ -1,6 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase-storage/supabase.service';
 
+/**
+ * Servicio para la autenticación con Supabase.
+ * Contiene métodos para registrar usuarios, cambiar contraseñas y restablecer contraseñas.
+ */
 @Injectable()
 export class SupabaseAuthService {
   constructor(private readonly supabaseService: SupabaseService) {}
@@ -40,6 +44,12 @@ export class SupabaseAuthService {
     return { id: data.user.id, email: data.user.email ?? datos.email };
   }
 
+  /**
+   * Cambia la contraseña de un usuario en Supabase.
+   * @param supabaseId ID del usuario en Supabase.
+   * @param contrasenaNueva Nueva contraseña del usuario.
+   * @throws BadRequestException Si falta el ID o hay un error en Supabase.
+   */
   async cambiarContrasena(supabaseId: string, contrasenaNueva: string): Promise<void> {
     if (!supabaseId) throw new BadRequestException('supabaseId requerido');
 
@@ -51,6 +61,12 @@ export class SupabaseAuthService {
     if (error) throw new BadRequestException(error.message);
   }
 
+  /**
+   * Envía un correo de restablecimiento de contraseña.
+   * @param email Correo del usuario.
+   * @param redirectTo URL de redirección después de restablecer la contraseña.
+   * @throws BadRequestException Si falta el correo o hay un error en Supabase.
+   */
   async restablecerContrasena(email: string, redirectTo?: string): Promise<void> {
     if (!email) throw new BadRequestException('Email requerido');
 

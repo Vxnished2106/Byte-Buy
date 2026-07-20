@@ -1,3 +1,6 @@
+/**
+ * Módulo de carrito de compras
+ */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -9,6 +12,9 @@ import { CarritoController } from './carrito.controller';
 import { InventarioModule } from '../inventario/inventario.module';
 import { UsuarioModule } from '../usuario/usuario.module';
 
+/**
+ * Módulo que configura y exporta los componentes del carrito de compras
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Carrito, CarritoItem, Producto]),

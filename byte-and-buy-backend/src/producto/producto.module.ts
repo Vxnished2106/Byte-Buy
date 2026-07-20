@@ -1,3 +1,6 @@
+/**
+ * Módulo de productos
+ */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Producto } from './entities/producto.entity';
@@ -10,6 +13,9 @@ import { InventarioModule } from '../inventario/inventario.module';
 import { Inventario } from '../inventario/entities/inventario.entity';
 import { UsuarioModule } from '../usuario/usuario.module';
 
+/**
+ * Módulo que configura y exporta los componentes de producto
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Producto, Inventario]),

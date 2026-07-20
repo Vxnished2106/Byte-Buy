@@ -1,7 +1,12 @@
 import "../styles/cartItem.css";
 
+/**
+ * Props para el componente CarritoItem.
+ */
 interface CarritoItemProps {
+  /** ID del producto. */
   producto_id: number;
+  /** Nombre del producto. */
   producto_nombre: string;
   /** Imagen del producto (viene del catálogo, no del carrito; ver nota abajo). */
   producto_imagen?: string | null;
@@ -11,15 +16,20 @@ interface CarritoItemProps {
   descuento: number;
   /** Precio unitario ya con descuento e impuesto aplicados; es lo que se cobra. */
   precio_final_unitario: number;
+  /** Cantidad del producto en el carrito. */
   cantidad: number;
+  /** Subtotal del item (precio_final_unitario * cantidad). */
   subtotal: number;
   /** `true` mientras hay una mutación en curso para este item (deshabilita los controles). */
   actualizando?: boolean;
+  /** Callback para cambiar la cantidad del producto. */
   onCambiarCantidad: (cantidad: number) => void;
+  /** Callback para eliminar el producto del carrito. */
   onEliminar: () => void;
 }
 
 /**
+ * Componente de item del carrito de compras.
  * El backend (`ResponseCarritoItemDto`) no expone imagen ni categoría del
  * producto en el carrito, así que `producto_imagen` se resuelve aparte (desde
  * el catálogo) y se pasa como prop; si no hay imagen se usa un placeholder
