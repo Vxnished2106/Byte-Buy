@@ -3,8 +3,11 @@ import type { proveedorData } from "../ts/interfaces";
 import "../styles/modal-form.css";
 
 export interface ProveedorModalFormProps {
+  /** Datos del proveedor a editar; si se omite, el formulario crea uno nuevo. */
   initialData?: proveedorData | null;
+  /** Cierra el modal sin guardar. */
   onClose: () => void;
+  /** Guarda el proveedor (creación o edición según initialData). */
   onSave: (data: proveedorData) => Promise<void>;
 }
 
@@ -17,6 +20,7 @@ const emptyProveedor: proveedorData = {
   proveedor_estado: true,
 };
 
+/** Modal con el formulario para crear o editar un proveedor. */
 export default function ProveedorModalForm({
   initialData,
   onClose,

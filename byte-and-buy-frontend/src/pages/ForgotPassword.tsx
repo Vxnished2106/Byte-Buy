@@ -7,6 +7,12 @@ import Header from "../components/Header";
 import { validarContrasena } from "../utils/validaciones";
 import { useRecuperarContrasena } from "../hooks/useRecuperarContrasena";
 
+/**
+ * Página de recuperación de contraseña en 3 pasos: (1) solicitar el envío de un
+ * código al correo, (2) ingresar el código y la nueva contraseña, (3) confirmación.
+ * El paso actual (`step`) y las acciones de solicitud/confirmación vienen de
+ * {@link useRecuperarContrasena}.
+ */
 export default function ForgotPassword() {
   const { step, email, loading, error, solicitar, confirmar } =
     useRecuperarContrasena();

@@ -7,6 +7,10 @@ import { SupabaseAuthGuard } from '../auth/supabase-auth/supabase-auth.guard';
 import { UsuarioService } from '../usuario/usuario.service';
 import { Rol } from '../usuario/entities/usuario.entity';
 
+/**
+ * Controlador de etiquetas.
+ * Maneja las rutas relacionadas con la gestión de etiquetas de productos.
+ */
 @Controller('etiquetas')
 export class EtiquetaController {
   constructor(
@@ -14,6 +18,11 @@ export class EtiquetaController {
     private readonly usuarioService: UsuarioService,
   ) { }
 
+  /**
+   * Valida que el usuario autenticado tenga rol de administrador.
+   * @param req Request con el usuario autenticado.
+   * @throws ForbiddenException Si el usuario no es administrador.
+   */
   private async validarAdmin(req: any): Promise<void> {
     const usuario = await this.usuarioService.getOrCreateFromToken(req.user);
 
@@ -24,11 +33,21 @@ export class EtiquetaController {
     }
   }
 
+  /**
+   * Obtiene todas las etiquetas.
+   * @returns Lista de etiquetas.
+   */
   @Get()
   async mostrarEtiquetas(): Promise<ResponseEtiquetaDto[]> {
     return this.etiquetaService.mostrarEtiquetas();
   }
 
+  /**
+   * Registra una nueva etiqueta (solo para administradores).
+   * @param req Request con el usuario autenticado.
+   * @param datos Datos de la etiqueta.
+   * @returns Etiqueta registrada.
+   */
   @UseGuards(SupabaseAuthGuard)
   @Post('registrar')
   async registrarEtiqueta(

@@ -7,6 +7,12 @@ import EyeCloseFill from "../assets/favicon/closeEye";
 import { register } from "../services/auth";
 import { validarContrasena } from "../utils/validaciones";
 
+/**
+ * Página de registro de una nueva cuenta. Valida la confirmación de contraseña,
+ * los requisitos de seguridad y la aceptación de términos antes de registrar al
+ * usuario; si Supabase requiere confirmación por correo, muestra un aviso en
+ * lugar de iniciar sesión automáticamente.
+ */
 export default function Register() {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState("");

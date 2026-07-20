@@ -7,6 +7,10 @@ import { VentaService } from './venta.service';
 import { VentaController } from './venta.controller';
 import { UsuarioModule } from '../usuario/usuario.module';
 
+/**
+ * Módulo de ventas.
+ * Contiene la lógica para el registro y la consulta de ventas.
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Venta, Usuario, Carrito]),

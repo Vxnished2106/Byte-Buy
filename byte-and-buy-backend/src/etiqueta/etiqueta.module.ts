@@ -6,6 +6,10 @@ import { EtiquetaService } from './etiqueta.service';
 import { EtiquetaController } from './etiqueta.controller';
 import { UsuarioModule } from '../usuario/usuario.module';
 
+/**
+ * Módulo de etiquetas.
+ * Contiene la lógica para la gestión de etiquetas de productos.
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Etiqueta, Producto]),

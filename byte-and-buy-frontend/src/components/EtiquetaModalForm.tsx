@@ -3,10 +3,13 @@ import type { CreateEtiqueta } from "../ts/interfaces";
 import "../styles/modal-form.css";
 
 export interface EtiquetaModalFormProps {
+  /** Cierra el modal sin guardar. */
   onClose: () => void;
+  /** Guarda la nueva etiqueta; el backend no expone edición, solo listar y crear. */
   onSave: (data: CreateEtiqueta) => Promise<void>;
 }
 
+/** Modal con el formulario para crear una etiqueta de producto. */
 export default function EtiquetaModalForm({
   onClose,
   onSave,

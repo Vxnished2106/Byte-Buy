@@ -1,3 +1,4 @@
+/** Obtiene las iniciales (nombre + primer apellido) para el avatar del usuario. */
 export function obtenerIniciales(nombre: string, apellido1: string): string {
   return [nombre, apellido1]
     .filter(Boolean)
@@ -6,6 +7,7 @@ export function obtenerIniciales(nombre: string, apellido1: string): string {
     .toUpperCase();
 }
 
+/** Concatena nombre y apellidos (el segundo apellido es opcional) en un solo string. */
 export function obtenerNombreCompleto(
   nombre: string,
   apellido1: string,

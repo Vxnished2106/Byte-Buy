@@ -5,6 +5,10 @@ import { ProveedorService } from './proveedor.service';
 import { ProveedorController } from './proveedor.controller';
 import { UsuarioModule } from '../usuario/usuario.module';
 
+/**
+ * Módulo de proveedores.
+ * Contiene la lógica para la gestión de proveedores de productos.
+ */
 @Module({
   imports: [TypeOrmModule.forFeature([Proveedor]),
     UsuarioModule],

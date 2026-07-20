@@ -7,6 +7,10 @@ import { PagoValidacionService } from './pago-validacion.service';
 import { PagoService } from './pago.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+/**
+ * Módulo de pagos.
+ * Contiene la lógica para la validación y el registro de pagos de una venta.
+ */
 @Module({
   imports: [TypeOrmModule.forFeature([Pago, Venta, MetodoPago])],
   controllers: [PagoController],

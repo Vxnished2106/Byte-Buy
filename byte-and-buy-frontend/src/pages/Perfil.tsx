@@ -34,10 +34,16 @@ const pedidos = [
   },
 ];
 
+/** Clase CSS asociada al estado de un pedido. */
 function estadoClassName(estado: string) {
   return estado === "Entregado" ? "entregado" : "en-camino";
 }
 
+/**
+ * Página de perfil del usuario autenticado. Carga los datos reales del usuario
+ * desde el backend y permite editarlos mediante {@link EditProfileModal}.
+ * La lista de "Pedidos recientes" es todavía data de ejemplo
+ */
 export default function Perfil() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);

@@ -7,6 +7,10 @@ import { PagoValidacionService } from './pago-validacion.service';
 import { ValidarPagoDto } from './dto/validar-pago.dto';
 import { SupabaseAuthGuard } from '../auth/supabase-auth/supabase-auth.guard';
 
+/**
+ * Controlador de pagos.
+ * Maneja las rutas relacionadas con la validación y el registro de pagos.
+ */
 @Controller('pagos')
 @UseGuards(SupabaseAuthGuard)
 export class PagoController {
@@ -15,26 +19,52 @@ export class PagoController {
     private readonly pagoService: PagoService
   ) { }
 
+  /**
+   * Valida los datos de un método de pago (tarjeta) sin procesar el cobro.
+   * @param dto Datos de la tarjeta a validar.
+   * @returns Resultado de la validación.
+   */
   @Post('validar')
   validar(@Body() dto: ValidarPagoDto) {
     return this.pagoValidacionService.validar(dto);
   }
 
+  /**
+   * Registra un nuevo pago para una venta.
+   * @param datos Datos del pago.
+   * @returns Pago registrado.
+   */
   @Post('registrar')
   async registrarPago(@Body() datos: CreatePagoDto): Promise<ResponsePagoDto> {
     return this.pagoService.registrarPago(datos);
   }
 
+  /**
+   * Obtiene un pago por su ID.
+   * @param pago_id ID del pago.
+   * @returns DTO del pago.
+   */
   @Get(':pago_id')
   async findOne(@Param('pago_id', ParseIntPipe) pago_id: number): Promise<ResponsePagoDto> {
     return this.pagoService.findOne(pago_id);
   }
 
+  /**
+   * Obtiene todos los pagos asociados a una venta.
+   * @param venta_id ID de la venta.
+   * @returns Lista de pagos de la venta.
+   */
   @Get('venta/:venta_id')
   async findByVenta(@Param('venta_id', ParseIntPipe) venta_id: number): Promise<ResponsePagoDto[]> {
     return this.pagoService.findByVenta(venta_id);
   }
 
+  /**
+   * Actualiza un pago existente.
+   * @param pago_id ID del pago.
+   * @param datos Nuevos datos del pago.
+   * @returns Pago actualizado.
+   */
   @Patch(':pago_id')
   async update(
     @Param('pago_id', ParseIntPipe) pago_id: number,

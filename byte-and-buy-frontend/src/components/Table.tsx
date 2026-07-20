@@ -1,15 +1,29 @@
 import React from "react";
 import "../styles/table.css"
 type TableProps<T extends object> = {
+  /** Título mostrado sobre la tabla. */
   title: string;
+  /** Nombres de las columnas de datos (además de "Estados" y "Acciones", que son fijas). */
   columns_name: string[];
+  /** Texto del botón principal (ej. "Nuevo producto"). */
   main_button_title: string;
+  /** Acción del botón principal (normalmente abre un modal de creación). */
   onAction_main_button: () => void;
+  /** Acción al pulsar "Editar" en una fila. */
   onEdit?: (row: T) => void;
+  /** Acción al activar/desactivar una fila; recibe la fila con el campo booleano invertido. */
   onToggleEstado?: (row: T) => void;
+  /** Filas a renderizar. Cada valor booleano se detecta automáticamente como el estado de la fila. */
   data: T[]
+  /** Oculta el botón de activar/desactivar cuando la entidad no maneja estado. */
   hideToggleEstado?: boolean;
 };
+
+/**
+ * Tabla genérica de administración: renderiza cualquier arreglo de objetos como filas,
+ * detecta el primer campo booleano de cada fila como su "estado" y expone acciones de
+ * editar y activar/desactivar por fila.
+ */
 export default function Table<T extends object>({
   title,
   columns_name,

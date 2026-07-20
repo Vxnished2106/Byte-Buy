@@ -7,6 +7,10 @@ import Header from "../components/Header";
 import { login } from "../services/auth";
 import { Rol } from "../ts/interfaces";
 
+/**
+ * Página de inicio de sesión. Autentica al usuario y lo redirige al panel de
+ * administración si su rol es ADMIN, o a la página principal en caso contrario.
+ */
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");

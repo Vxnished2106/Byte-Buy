@@ -7,6 +7,10 @@ import Header from "../components/Header";
 import { validarContrasena } from "../utils/validaciones";
 import { useCambiarContrasena } from "../hooks/useCambiarContrasena";
 
+/**
+ * Página para que un usuario autenticado cambie su contraseña actual por una
+ * nueva, validando los requisitos de seguridad y la confirmación antes de enviarla.
+ */
 export default function CambiarContrasena() {
   const { cambiar, loading, error, success } = useCambiarContrasena();
   const [contrasenaActual, setContrasenaActual] = useState("");

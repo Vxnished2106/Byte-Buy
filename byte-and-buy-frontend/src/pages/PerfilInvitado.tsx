@@ -2,6 +2,10 @@ import { Link } from "react-router";
 import Header from "../components/Header";
 import "../styles/perfil.css";
 
+/**
+ * Página mostrada en lugar de {@link Perfil} cuando no hay una sesión iniciada,
+ * invitando al usuario a iniciar sesión o crear una cuenta.
+ */
 export default function PerfilInvitado() {
   return (
     <>

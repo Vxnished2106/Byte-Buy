@@ -8,6 +8,10 @@ import { CreatePagoDto } from './dto/create-pago.dto';
 import { UpdatePagoDto } from './dto/update-pago.dto';
 import { ResponsePagoDto } from './dto/response-pago.dto';
 
+/**
+ * Servicio de pagos.
+ * Contiene la lógica para el registro y la gestión de pagos de una venta.
+ */
 @Injectable()
 export class PagoService {
   constructor(
@@ -19,6 +23,11 @@ export class PagoService {
     private readonly metodoPagoRepository: Repository<MetodoPago>,
   ) { }
 
+  /**
+   * Convierte una entidad Pago a su DTO de respuesta.
+   * @param pago Entidad Pago.
+   * @returns DTO de respuesta.
+   */
   private toResponseDto(pago: Pago): ResponsePagoDto {
     return {
       pago_id: pago.pago_id,
@@ -31,6 +40,12 @@ export class PagoService {
     };
   }
 
+  /**
+   * Registra un nuevo pago para una venta con estado "aprobado".
+   * @param datos Datos del pago.
+   * @returns Pago registrado.
+   * @throws NotFoundException Si la venta o el método de pago no existen.
+   */
   async registrarPago(datos: CreatePagoDto): Promise<ResponsePagoDto> {
     const venta = await this.ventaRepository.findOneBy({ venta_id: datos.venta_id });
     if (!venta) throw new NotFoundException('Venta no encontrada');
@@ -47,17 +62,35 @@ export class PagoService {
     return this.toResponseDto(guardado);
   }
 
+  /**
+   * Obtiene un pago por su ID.
+   * @param pago_id ID del pago.
+   * @returns DTO del pago.
+   * @throws NotFoundException Si el pago no existe.
+   */
   async findOne(pago_id: number): Promise<ResponsePagoDto> {
     const pago = await this.pagoRepository.findOneBy({ pago_id });
     if (!pago) throw new NotFoundException('Pago no encontrado');
     return this.toResponseDto(pago);
   }
 
+  /**
+   * Obtiene todos los pagos asociados a una venta.
+   * @param venta_id ID de la venta.
+   * @returns Lista de pagos de la venta.
+   */
   async findByVenta(venta_id: number): Promise<ResponsePagoDto[]> {
     const pagos = await this.pagoRepository.find({ where: { venta_id } });
     return pagos.map(this.toResponseDto);
   }
 
+  /**
+   * Actualiza un pago existente.
+   * @param pago_id ID del pago.
+   * @param datos Nuevos datos del pago.
+   * @returns Pago actualizado.
+   * @throws NotFoundException Si el pago no existe.
+   */
   async update(pago_id: number, datos: UpdatePagoDto): Promise<ResponsePagoDto> {
     const pago = await this.pagoRepository.findOneBy({ pago_id });
     if (!pago) throw new NotFoundException('Pago no encontrado');
