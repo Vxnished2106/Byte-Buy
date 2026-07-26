@@ -139,8 +139,22 @@ export class UsuarioService {
       usuario_rol: Rol.CLIENTE,
     });
 
-    const guardado = await this.usuarioRepository.save(nuevoUsuario);
-    return this.toResponseDto(guardado);
+    try {
+      const guardado = await this.usuarioRepository.save(nuevoUsuario);
+      return this.toResponseDto(guardado);
+    } catch (error: any) {
+      // El frontend puede disparar dos peticiones casi simultáneas que
+      // terminan aquí (p. ej. el listener de onAuthStateChange y el propio
+      // flujo de registro llamando ambos a /usuarios/me). Si otra ya insertó
+      // el usuario, no es un error real: devolvemos el registro existente.
+      if (error?.code === 'ER_DUP_ENTRY') {
+        const creadoPorOtraPeticion = await this.usuarioRepository.findOne({
+          where: [{ supabase_id: user.userId }, { usuario_correo: user.email }],
+        });
+        if (creadoPorOtraPeticion) return this.toResponseDto(creadoPorOtraPeticion);
+      }
+      throw error;
+    }
   }
 
   // ─── Actualizar ────────────────────────────────────────────────
