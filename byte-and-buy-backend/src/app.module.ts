@@ -18,6 +18,8 @@ import { CarritoModule } from './carrito/carrito.module';
 import { PagoModule } from './pago/pago.module';
 import { VentaModule } from './venta/venta.module';
 import { MetodoPagoModule } from './metodo_pago/metodo_pago.module';
+import { FacturaModule } from './factura/factura.module';
+import { DetalleCompraModule } from './detalle_compra/detalle_compra.module';
 
 /**
  * Módulo principal de la aplicación NestJS.
@@ -58,7 +60,9 @@ import { MetodoPagoModule } from './metodo_pago/metodo_pago.module';
     CarritoModule,
     PagoModule,
     VentaModule,
-    MetodoPagoModule
+    MetodoPagoModule,
+    FacturaModule,
+    DetalleCompraModule,
   ],
   controllers: [AppController],
   providers: [AppService],

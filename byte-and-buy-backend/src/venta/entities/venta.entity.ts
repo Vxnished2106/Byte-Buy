@@ -10,6 +10,8 @@ import {
 import { Usuario } from '../../usuario/entities/usuario.entity';
 import { Carrito } from '../../carrito/entities/carrito.entity';
 import { Pago } from '../../pago/entities/pago.entity';
+import { DetalleCompra } from '../../detalle_compra/entities/detalle_compra.entity';
+import { Factura } from '../../factura/entities/factura.entity';
 
 /**
  * Entidad de venta.
@@ -54,5 +56,11 @@ export class Venta {
   /** Pagos asociados a la venta. */
   @OneToMany(() => Pago, (pago) => pago.venta)
   pagos: Pago[];
+
+  @OneToMany(() => DetalleCompra, (dc) => dc.venta, { cascade: true })
+  detallesCompra: DetalleCompra[];
+
+  @OneToMany(() => Factura, (factura) => factura.venta)
+  facturas: Factura[];
 
 }

@@ -34,4 +34,36 @@ export class MailService {
       `,
     });
   }
+
+  async enviarFactura(
+    email: string,
+    pdf: Buffer,
+    numeroFactura: string,
+    resumen: string,
+  ) {
+    await this.transporter.sendMail({
+      from: `"Byte & Buy" <${process.env.MAIL_USER}>`,
+      to: email,
+      subject: `Factura ${numeroFactura}`,
+      html: `
+      <h2>Factura de compra</h2>
+
+      <p>Gracias por realizar tu compra.</p>
+
+      <p>
+        ${resumen}
+      </p>
+
+      <p>
+        Adjuntamos tu factura en formato PDF.
+      </p>
+    `,
+      attachments: [
+        {
+          filename: `${numeroFactura}.pdf`,
+          content: pdf,
+        },
+      ],
+    });
+  }
 }

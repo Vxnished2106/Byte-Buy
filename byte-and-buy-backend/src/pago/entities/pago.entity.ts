@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Venta } from '../../venta/entities/venta.entity';
 import { MetodoPago } from '../../metodo_pago/entities/metodo_pago.entity';
+import { Factura } from '../../factura/entities/factura.entity';
 
 /**
  * Entidad de pago.
@@ -53,5 +54,8 @@ export class Pago {
   @ManyToOne(() => MetodoPago, (mp) => mp.pagos)
   @JoinColumn({ name: 'metodo_pago_id' })
   metodoPago: MetodoPago;
+
+  @OneToMany(() => Factura, (factura) => factura.pago)
+  facturas: Factura[];
 
 }
