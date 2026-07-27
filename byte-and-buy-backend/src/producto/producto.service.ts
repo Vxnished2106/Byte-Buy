@@ -474,4 +474,18 @@ export class ProductoService {
       this.toResponseDto(producto),
     );
   }
+
+  async findEntity(productoId: number): Promise<Producto> {
+    const producto = await this.productoRepository.findOne({
+      where: {
+        producto_id: productoId,
+      },
+    });
+
+    if (!producto) {
+      throw new NotFoundException('Producto no encontrado');
+    }
+
+    return producto;
+  }
 }

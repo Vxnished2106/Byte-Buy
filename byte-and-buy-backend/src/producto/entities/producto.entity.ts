@@ -13,6 +13,7 @@ import { Categoria } from '../../categoria/entities/categoria.entity';
 import { Etiqueta } from '../../etiqueta/entities/etiqueta.entity';
 import { Inventario } from '../../inventario/entities/inventario.entity';
 import { ProductoProveedor } from '../../producto_proveedor/entities/producto_proveedor.entity';
+import { DetalleCompra } from '../../detalle_compra/entities/detalle_compra.entity';
 
 /**
  * Estados posibles de un producto
@@ -78,4 +79,7 @@ export class Producto {
   /** Relación con los proveedores del producto */
   @OneToMany(() => ProductoProveedor, (pp) => pp.producto)
   productoProveedores: ProductoProveedor[];
+
+  @OneToMany(() => DetalleCompra, (dc) => dc.producto)
+  detallesCompra: DetalleCompra[];
 }
