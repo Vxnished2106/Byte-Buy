@@ -1,0 +1,195 @@
+.invoice-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 110px 40px 60px;
+}
+
+.invoice-loading,
+.invoice-error {
+  text-align: center;
+  padding: 60px 0;
+  font-family: var(--text);
+  font-size: 15px;
+  color: var(--bb-text-3);
+}
+
+/* ---- Hoja de factura (misma estructura que el PDF del backend) ---- */
+
+.invoice-paper {
+  padding: 48px;
+  background-color: var(--bb-surface);
+  border: 1px solid var(--bb-border);
+  border-radius: 14px;
+}
+
+.invoice-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.invoice-brand {
+  font-family: var(--titles);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: 0.02em;
+}
+
+.invoice-brand span {
+  color: var(--links-color);
+}
+
+.invoice-brand .B {
+  color: #000;
+}
+
+.invoice-subtitle {
+  font-family: var(--titles);
+  font-size: 16px;
+  color: var(--bb-text-2);
+  margin-top: 4px;
+}
+
+.invoice-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--bb-border);
+}
+
+.invoice-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--text);
+  font-size: 13px;
+  color: var(--bb-text-2);
+}
+
+.invoice-meta-row span:last-child {
+  font-family: var(--details);
+  color: var(--bb-ink);
+}
+
+.invoice-cliente {
+  margin-bottom: 28px;
+}
+
+.invoice-cliente h3 {
+  font-family: var(--titles);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bb-ink);
+  margin-bottom: 6px;
+}
+
+.invoice-cliente p {
+  font-family: var(--text);
+  font-size: 13px;
+  color: var(--bb-text-2);
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.invoice-table thead tr {
+  border-bottom: 1px solid var(--bb-ink);
+}
+
+.invoice-table th {
+  padding: 0 0 10px;
+  font-family: var(--titles);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bb-ink);
+}
+
+.invoice-table td {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--bb-border);
+  font-family: var(--text);
+  font-size: 13px;
+  color: var(--bb-ink);
+}
+
+.invoice-table .left {
+  text-align: left;
+}
+
+.invoice-table .center {
+  text-align: center;
+}
+
+.invoice-table .right {
+  text-align: right;
+}
+
+.invoice-table-status {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--bb-text-3);
+}
+
+.invoice-total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bb-ink);
+  margin-bottom: 24px;
+}
+
+.invoice-total span:first-child {
+  font-family: var(--titles);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bb-ink);
+}
+
+.invoice-total span:last-child {
+  font-family: var(--titles);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bb-ink);
+}
+
+.invoice-thanks {
+  text-align: center;
+  font-family: var(--text);
+  font-size: 12px;
+  color: var(--bb-text-3);
+  margin-bottom: 20px;
+}
+
+.invoice-status {
+  text-align: center;
+  padding: 14px;
+  border-radius: 10px;
+  background-color: var(--bb-bg-3);
+  font-family: var(--text);
+  font-size: 13px;
+  color: var(--bb-text-2);
+}
+
+.invoice-status.success {
+  background-color: #eafaf1;
+  color: var(--bb-success);
+  margin-bottom: 16px;
+}
+
+.invoice-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .invoice-paper {
+    padding: 28px 20px;
+  }
+}

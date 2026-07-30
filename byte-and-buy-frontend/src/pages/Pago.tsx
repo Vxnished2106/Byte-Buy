@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Header from "../components/Header";
 import { useCarrito } from "../hooks/useCarrito";
 import { useMetodosPago } from "../hooks/useMetodosPago";
@@ -54,6 +54,7 @@ function validarCodigoGiftCard(codigo: string): boolean {
 }
 
 export default function Pago() {
+  const navigate = useNavigate();
   const {
     carrito,
     loading: carritoCargando,
@@ -76,7 +77,6 @@ export default function Pago() {
   const [correoPaypal, setCorreoPaypal] = useState("");
   const [codigoGiftCard, setCodigoGiftCard] = useState("");
   const [errorFormulario, setErrorFormulario] = useState<string | null>(null);
-  const [ventaExitosaId, setVentaExitosaId] = useState<number | null>(null);
 
   // Mientras el usuario no elija explícitamente, se usa el primer método
   // cargado como selección por defecto (derivado, sin useEffect).
@@ -143,41 +143,29 @@ export default function Pago() {
     }
 
     try {
-      const { venta } = await pagar({
+      const { factura } = await pagar({
         carrito_id: carrito.carrito_id,
         monto: total,
         metodo_pago_id: metodoSeleccionado.metodo_pago_id,
         detalle,
+        items: items.map((item) => ({
+          producto_id: item.producto_id,
+          cantidad: item.cantidad,
+        })),
       });
 
       // La venta ya quedó registrada: se vacía el carrito para reflejar la compra.
       await Promise.all(
         items.map((item) => eliminarProducto(item.producto_id)),
       );
-      setVentaExitosaId(venta.venta_id);
+
+      // El pedido quedó completado: la factura se previsualiza (y se envía
+      // por correo) en su propia página.
+      navigate(`/byte&buy/facturacion/${factura.factura_id}`);
     } catch {
       // El mensaje de error ya queda expuesto en `errorPago`.
     }
   };
-
-  if (ventaExitosaId !== null) {
-    return (
-      <>
-        <Header />
-        <main className="payment-container">
-          <section className="payment-method-section">
-            <h2>¡Compra realizada!</h2>
-            <p className="payment-info-box">
-              Tu pedido #{ventaExitosaId} fue registrado correctamente.
-            </p>
-            <Link to="/byte&buy/products" className="continue-button-link">
-              Seguir comprando
-            </Link>
-          </section>
-        </main>
-      </>
-    );
-  }
 
   if (carritoCargando || metodosCargando) {
     return (

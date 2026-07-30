@@ -14,3 +14,5 @@ export * from "./carritoItem.interface";
 export * from "./pago.interface";
 export * from "./metodoPago.interface";
 export * from "./venta.interface";
+export * from "./factura.interface";
+export * from "./detalle_compra.interface";
