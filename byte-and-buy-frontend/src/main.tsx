@@ -16,6 +16,7 @@ import Productos from "./pages/Productos.tsx";
 import DetalleProducto from "./pages/DetalleProducto.tsx";
 import Carrito from "./pages/Carrito.tsx";
 import Pago from "./pages/Pago.tsx";
+import Facturacion from "./pages/Facturacion.tsx";
 import { CarritoProvider } from "./context/CarritoContext.tsx";
 
 /**
@@ -48,6 +49,11 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/byte&buy/pago" element={
             <RequireAuth fallback={<PerfilInvitado/>}>
               <Pago/>
+            </RequireAuth>
+          }/>
+          <Route path="/byte&buy/facturacion/:facturaId" element={
+            <RequireAuth fallback={<PerfilInvitado/>}>
+              <Facturacion/>
             </RequireAuth>
           }/>
           <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
