@@ -127,13 +127,13 @@ export default function Facturacion() {
                       {detalle.detalle_compra_cantidad}
                     </td>
                     <td className="right">
-                      ${detalle.detalle_compra_precio_unitario.toFixed(2)}
+                      ${detalle.detalle_compra_precio_unitario}
                     </td>
                     <td className="right">
-                      ${detalle.detalle_compra_subtotal.toFixed(2)}
+                      ${detalle.detalle_compra_subtotal}
                     </td>
                     <td className="right">
-                      ${detalle.detalle_compra_total.toFixed(2)}
+                      ${detalle.detalle_compra_total}
                     </td>
                   </tr>
                 ))
@@ -143,7 +143,7 @@ export default function Facturacion() {
 
           <div className="invoice-total">
             <span>Total factura</span>
-            <span>${factura.factura_monto_total.toFixed(2)}</span>
+            <span>${factura.factura_monto_total}</span>
           </div>
 
           <p className="invoice-thanks">Gracias por comprar en Byte & Buy.</p>
