@@ -1,52 +1,23 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import Header from "../components/Header";
 import EditProfileModal, {
   type ProfileData,
 } from "../components/EditProfileModal";
+import { listarPedidos } from "../services/pedido";
 import { actualizarPerfil, obtenerPerfil } from "../services/usuario";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 import "../styles/perfil.css";
 
-const stats = [{ id: 1, value: "24", label: "Pedidos realizados" }];
-
-
-const pedidos = [
-  {
-    id: "BB-2026-4839",
-    nombre: "Portátil Vela 14",
-    fecha: "28 jun 2026",
-    estado: "Entregado",
-    total: "$1,299",
-  },
-  {
-    id: "BB-2026-4801",
-    nombre: "Auriculares Aura Pro",
-    fecha: "15 jun 2026",
-    estado: "En camino",
-    total: "$249",
-  },
-  {
-    id: "BB-2026-4772",
-    nombre: "Smartwatch Tempo 3",
-    fecha: "2 jun 2026",
-    estado: "Entregado",
-    total: "$199",
-  },
-];
-
-/** Clase CSS asociada al estado de un pedido. */
-function estadoClassName(estado: string) {
-  return estado === "Entregado" ? "entregado" : "en-camino";
-}
-
 /**
  * Página de perfil del usuario autenticado. Carga los datos reales del usuario
  * desde el backend y permite editarlos mediante {@link EditProfileModal}.
- * La lista de "Pedidos recientes" es todavía data de ejemplo
  */
 export default function Perfil() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [usuarioId, setUsuarioId] = useState<number | null>(null);
+  const [totalPedidos, setTotalPedidos] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -55,6 +26,7 @@ export default function Perfil() {
   useEffect(() => {
     obtenerPerfil()
       .then((usuario) => {
+        setUsuarioId(usuario.usuario_id);
         setProfile({
           nombre: usuario.usuario_nombre,
           apellido1: usuario.usuario_apellido1,
@@ -70,6 +42,34 @@ export default function Perfil() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // El total de pedidos se pide aparte (mismo `listarPedidos` que usa
+  // PedidosLista) porque el perfil no necesita las filas, solo el conteo:
+  // `limit: 1` evita traer pedidos que no se van a mostrar.
+  useEffect(() => {
+    if (!usuarioId) return;
+
+    let vigente = true;
+    listarPedidos({ cliente_id: usuarioId, limit: 1 })
+      .then((resultado) => {
+        if (vigente) setTotalPedidos(resultado.total);
+      })
+      .catch(() => {
+        if (vigente) setTotalPedidos(null);
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, [usuarioId]);
+
+  const stats = [
+    {
+      id: 1,
+      value: totalPedidos === null ? "—" : String(totalPedidos),
+      label: "Pedidos realizados",
+    },
+  ];
 
   const nombreCompleto = profile
     ? obtenerNombreCompleto(profile.nombre, profile.apellido1, profile.apellido2)
@@ -172,30 +172,15 @@ export default function Perfil() {
 
         <section className="perfil-card">
           <div className="card-header">
-            <h4>Pedidos recientes</h4>
-            <button type="button" className="add-link">
+            <h4>Pedidos</h4>
+            <Link to="/byte&buy/pedidos" className="add-link">
               Ver todos
-            </button>
+            </Link>
           </div>
-          <div className="pedidos-list">
-            {pedidos.map((pedido) => (
-              <div className="pedido-item" key={pedido.id}>
-                <div className="pedido-thumb"></div>
-                <div className="pedido-info">
-                  <span className="pedido-nombre">{pedido.nombre}</span>
-                  <span className="pedido-meta">
-                    {pedido.id} · {pedido.fecha}
-                  </span>
-                </div>
-                <span
-                  className={`pedido-status ${estadoClassName(pedido.estado)}`}
-                >
-                  {pedido.estado}
-                </span>
-                <span className="pedido-precio">{pedido.total}</span>
-              </div>
-            ))}
-          </div>
+          <p className="pedidos-cta-text">
+            Revisa el historial completo de tus pedidos: estado, fecha,
+            total y el detalle de cada uno.
+          </p>
         </section>
       </div>
 
