@@ -68,13 +68,13 @@ export default function Facturacion() {
       <Header />
       <main className="invoice-container">
         <article className="invoice-paper">
-          <header className="invoice-header">
+          <div className="invoice-header">
             <h1 className="invoice-brand">
               <span className="B">B</span>yte<span>&</span>
               <span className="B">B</span>uy
             </h1>
             <p className="invoice-subtitle">Factura de Compra</p>
-          </header>
+          </div>
 
           <section className="invoice-meta">
             <div className="invoice-meta-row">
