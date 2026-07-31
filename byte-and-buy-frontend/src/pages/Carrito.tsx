@@ -12,10 +12,19 @@ export default function Carrito() {
     carrito,
     loading,
     error,
+    errorProductoId,
     actualizandoProductoId,
     cambiarCantidad,
     eliminarProducto,
+    limpiarError,
   } = useCarrito();
+
+  // `error` vive en el contexto del carrito (compartido por toda la app), así
+  // que sin esto un error de esta página (ej. "stock insuficiente" al subir
+  // la cantidad) queda visible al volver a entrar a `/carrito` más tarde.
+  useEffect(() => {
+    return () => limpiarError();
+  }, [limpiarError]);
 
   // El carrito (`ResponseCarritoItemDto`) no trae imagen del producto, así
   // que se resuelve aparte con el catálogo público para poder mostrarla.
@@ -53,19 +62,28 @@ export default function Carrito() {
       <main className="car-conatiner">
         {loading ? (
           <p className="cart-status">Cargando carrito...</p>
-        ) : error ? (
-          <p className="cart-status cart-status-error">{error}</p>
         ) : items.length === 0 ? (
-          <div className="cart-empty">
-            <h3>Tu carrito está vacío</h3>
-            <p>Descubre lo último en tecnología.</p>
-            <Link to="/byte&buy/products" className="cart-empty-button">
-              Explorar catálogo
-            </Link>
-          </div>
+          error ? (
+            <p className="cart-status cart-status-error">{error}</p>
+          ) : (
+            <div className="cart-empty">
+              <h3>Tu carrito está vacío</h3>
+              <p>Descubre lo último en tecnología.</p>
+              <Link to="/byte&buy/products" className="cart-empty-button">
+                Explorar catálogo
+              </Link>
+            </div>
+          )
         ) : (
           <>
             <h2>Tu carrito</h2>
+            {/* Un error general (sin producto asociado) no tiene card donde
+                mostrarse, así que se deja arriba de la lista. Los errores de
+                un item puntual (ej. "stock insuficiente") se muestran en su
+                propia card, más abajo. */}
+            {error && errorProductoId === null && (
+              <p className="cart-status cart-status-error">{error}</p>
+            )}
             <section className="cart-items-section">
               {items.map((item) => (
                 <CarritoItem
@@ -79,6 +97,7 @@ export default function Carrito() {
                   cantidad={item.cantidad}
                   subtotal={item.subtotal}
                   actualizando={actualizandoProductoId === item.producto_id}
+                  error={errorProductoId === item.producto_id ? error : null}
                   onCambiarCantidad={(cantidad) =>
                     cambiarCantidad(item.producto_id, cantidad)
                   }

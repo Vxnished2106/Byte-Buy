@@ -23,6 +23,10 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
   const [carrito, setCarrito] = useState<Carrito | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Producto al que pertenece `error`, cuando viene de agregar/cambiar
+  // cantidad/eliminar (para mostrarlo en su card en vez de a nivel página).
+  // `null` cuando el error es general (ej. no se pudo cargar el carrito).
+  const [errorProductoId, setErrorProductoId] = useState<number | null>(null);
   const [actualizandoProductoId, setActualizandoProductoId] = useState<
     number | null
   >(null);
@@ -35,6 +39,7 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     }
     setLoading(true);
     setError(null);
+    setErrorProductoId(null);
     try {
       setCarrito(await obtenerCarrito());
     } catch (err) {
@@ -54,6 +59,7 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     async (producto_id: number, cantidad = 1) => {
       setActualizandoProductoId(producto_id);
       setError(null);
+      setErrorProductoId(null);
       try {
         await agregarItemCarrito({ producto_id, cantidad });
         await recargar();
@@ -61,6 +67,7 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
         setError(
           err instanceof Error ? err.message : "No se pudo agregar el producto",
         );
+        setErrorProductoId(producto_id);
         throw err;
       } finally {
         setActualizandoProductoId(null);
@@ -73,6 +80,7 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     async (producto_id: number, cantidad: number) => {
       setActualizandoProductoId(producto_id);
       setError(null);
+      setErrorProductoId(null);
       try {
         await actualizarItemCarrito(producto_id, { cantidad });
         await recargar();
@@ -80,6 +88,7 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
         setError(
           err instanceof Error ? err.message : "No se pudo actualizar la cantidad",
         );
+        setErrorProductoId(producto_id);
         throw err;
       } finally {
         setActualizandoProductoId(null);
@@ -92,6 +101,7 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     async (producto_id: number) => {
       setActualizandoProductoId(producto_id);
       setError(null);
+      setErrorProductoId(null);
       try {
         await eliminarItemCarrito(producto_id);
         await recargar();
@@ -99,6 +109,7 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
         setError(
           err instanceof Error ? err.message : "No se pudo quitar el producto",
         );
+        setErrorProductoId(producto_id);
         throw err;
       } finally {
         setActualizandoProductoId(null);
@@ -106,6 +117,11 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
     },
     [recargar],
   );
+
+  const limpiarError = useCallback(() => {
+    setError(null);
+    setErrorProductoId(null);
+  }, []);
 
   const cantidadTotal =
     carrito?.items.reduce((total, item) => total + item.cantidad, 0) ?? 0;
@@ -116,12 +132,14 @@ export function CarritoProvider({ children }: { children: ReactNode }) {
         carrito,
         loading,
         error,
+        errorProductoId,
         cantidadTotal,
         actualizandoProductoId,
         recargar,
         agregarProducto,
         cambiarCantidad,
         eliminarProducto,
+        limpiarError,
       }}
     >
       {children}

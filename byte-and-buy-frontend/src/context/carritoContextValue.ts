@@ -11,6 +11,12 @@ export interface CarritoContextValue {
   loading: boolean;
   /** Mensaje de error si hubo un problema al cargar/modificar el carrito. */
   error: string | null;
+  /**
+   * `producto_id` al que pertenece `error`, cuando viene de agregar/cambiar
+   * cantidad/eliminar un item puntual. `null` cuando el error es general
+   * (ej. no se pudo cargar el carrito) y no hay un item al que asociarlo.
+   */
+  errorProductoId: number | null;
   /** Suma de las cantidades de todos los items; para la burbuja del header. */
   cantidadTotal: number;
   /** `producto_id` del item que tiene una mutación en curso, o `null`. */
@@ -23,6 +29,8 @@ export interface CarritoContextValue {
   cambiarCantidad: (producto_id: number, cantidad: number) => Promise<void>;
   /** Elimina un producto del carrito. */
   eliminarProducto: (producto_id: number) => Promise<void>;
+  /** Limpia el mensaje de error (ej. al salir de la página que lo mostró). */
+  limpiarError: () => void;
 }
 
 /**
