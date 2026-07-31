@@ -282,7 +282,11 @@ export default function Header() {
                     >
                       Mi perfil
                     </Link>
-                    <Link to={"/"} className="link" onClick={cerrarMenuPerfil}>
+                    <Link
+                      to={"/byte&buy/pedidos"}
+                      className="link"
+                      onClick={cerrarMenuPerfil}
+                    >
                       Mis pedidos
                     </Link>
                     {esAdmin && (

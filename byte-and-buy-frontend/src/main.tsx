@@ -17,6 +17,9 @@ import DetalleProducto from "./pages/DetalleProducto.tsx";
 import Carrito from "./pages/Carrito.tsx";
 import Pago from "./pages/Pago.tsx";
 import Facturacion from "./pages/Facturacion.tsx";
+import PedidosLista from "./pages/PedidosLista.tsx";
+import PedidoForm from "./pages/PedidoForm.tsx";
+import PedidoDetalle from "./pages/PedidoDetalle.tsx";
 import { CarritoProvider } from "./context/CarritoContext.tsx";
 
 /**
@@ -54,6 +57,26 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/byte&buy/facturacion/:facturaId" element={
             <RequireAuth fallback={<PerfilInvitado/>}>
               <Facturacion/>
+            </RequireAuth>
+          }/>
+          <Route path="/byte&buy/pedidos" element={
+            <RequireAuth fallback={<PerfilInvitado/>}>
+              <PedidosLista/>
+            </RequireAuth>
+          }/>
+          <Route path="/byte&buy/pedidos/nuevo" element={
+            <RequireAuth fallback={<PerfilInvitado/>}>
+              <PedidoForm/>
+            </RequireAuth>
+          }/>
+          <Route path="/byte&buy/pedidos/:id" element={
+            <RequireAuth fallback={<PerfilInvitado/>}>
+              <PedidoDetalle/>
+            </RequireAuth>
+          }/>
+          <Route path="/byte&buy/pedidos/:id/editar" element={
+            <RequireAuth fallback={<PerfilInvitado/>}>
+              <PedidoForm/>
             </RequireAuth>
           }/>
           <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />

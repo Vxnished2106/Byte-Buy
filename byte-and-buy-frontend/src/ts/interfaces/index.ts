@@ -16,3 +16,5 @@ export * from "./metodoPago.interface";
 export * from "./venta.interface";
 export * from "./factura.interface";
 export * from "./detalle_compra.interface";
+export * from "./pedido.interface";
+export * from "./direccion_envio.interface";

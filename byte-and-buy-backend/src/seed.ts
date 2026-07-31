@@ -8,13 +8,66 @@ import { InventarioService } from './inventario/inventario.service';
 import { ProductoProveedorService } from './producto_proveedor/producto-proveedor.service';
 import { ProductoEstado } from './producto/entities/producto.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Categoria } from './categoria/entities/categoria.entity';
 import { Etiqueta } from './etiqueta/entities/etiqueta.entity';
 import { Proveedor } from './proveedor/entities/proveedor.entity';
+import { Pais } from './catalogo/entities/pais.entity';
+import { Region } from './catalogo/entities/region.entity';
+import { Ciudad } from './catalogo/entities/ciudad.entity';
+
+/**
+ * Inserta el catálogo geográfico base (países, regiones y ciudades).
+ * Es idempotente: no hace nada si ya existen países cargados.
+ */
+async function seedCatalogos(dataSource: DataSource) {
+  const paisRepo = dataSource.getRepository(Pais);
+  const regionRepo = dataSource.getRepository(Region);
+  const ciudadRepo = dataSource.getRepository(Ciudad);
+
+  if ((await paisRepo.count()) > 0) {
+    console.log('Catálogo geográfico ya existe, se omite.');
+    return;
+  }
+
+  const catalogo: Record<string, Record<string, string[]>> = {
+    'Costa Rica|CR': {
+      'San José': ['San José', 'Escazú', 'Desamparados'],
+      Alajuela: ['Alajuela', 'San Carlos'],
+      Cartago: ['Cartago', 'Turrialba'],
+    },
+    'México|MX': {
+      'Ciudad de México': ['Cuauhtémoc', 'Coyoacán', 'Benito Juárez'],
+      Jalisco: ['Guadalajara', 'Zapopan'],
+    },
+  };
+
+  for (const [paisKey, regiones] of Object.entries(catalogo)) {
+    const [pais_nombre, pais_codigo] = paisKey.split('|');
+    const pais = await paisRepo.save(
+      paisRepo.create({ pais_nombre, pais_codigo }),
+    );
+
+    for (const [region_nombre, ciudades] of Object.entries(regiones)) {
+      const region = await regionRepo.save(
+        regionRepo.create({ region_nombre, pais_id: pais.pais_id }),
+      );
+
+      await ciudadRepo.save(
+        ciudades.map((ciudad_nombre) =>
+          ciudadRepo.create({ ciudad_nombre, region_id: region.region_id }),
+        ),
+      );
+    }
+  }
+
+  console.log('Catálogo geográfico inicializado correctamente!');
+}
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
+
+  await seedCatalogos(app.get(DataSource));
 
   const categoriaService = app.get(CategoriaService);
   const etiquetaService = app.get(EtiquetaService);
