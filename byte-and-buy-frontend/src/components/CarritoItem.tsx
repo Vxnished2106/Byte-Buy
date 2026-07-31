@@ -22,6 +22,8 @@ interface CarritoItemProps {
   subtotal: number;
   /** `true` mientras hay una mutación en curso para este item (deshabilita los controles). */
   actualizando?: boolean;
+  /** Mensaje de error de la última mutación sobre este item (ej. "Stock insuficiente"). */
+  error?: string | null;
   /** Callback para cambiar la cantidad del producto. */
   onCambiarCantidad: (cantidad: number) => void;
   /** Callback para eliminar el producto del carrito. */
@@ -44,6 +46,7 @@ export default function CarritoItem({
   cantidad,
   subtotal,
   actualizando = false,
+  error,
   onCambiarCantidad,
   onEliminar,
 }: CarritoItemProps) {
@@ -56,6 +59,7 @@ export default function CarritoItem({
 
   return (
     <div className="cart-item-container">
+      <div className="cart-item-row">
       <div className="cart-item-info">
         <div className="cart-item-info-image">
           <img
@@ -111,6 +115,9 @@ export default function CarritoItem({
           X
         </button>
       </div>
+      </div>
+
+      {error && <p className="cart-item-error">{error}</p>}
     </div>
   );
 }
