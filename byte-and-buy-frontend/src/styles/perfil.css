@@ -161,6 +161,7 @@
   font-weight: 700;
   font-size: 14px;
   color: var(--links-color);
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -291,6 +292,13 @@
   font-size: 16px;
   letter-spacing: 2px;
   color: var(--bb-ink);
+}
+
+.pedidos-cta-text {
+  margin-top: 8px;
+  font-family: var(--text);
+  font-size: 14px;
+  color: var(--bb-text-2);
 }
 
 .pedidos-list {
