@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import { useCarrito } from "../hooks/useCarrito";
 import { useMetodosPago } from "../hooks/useMetodosPago";
 import { usePago } from "../hooks/usePago";
+import type { EstadoPostPago } from "../ts/pedidoReglas";
 import { calcularCostoEnvio } from "../utils/carrito";
 import "../styles/pago.css";
 
@@ -159,9 +160,23 @@ export default function Pago() {
         items.map((item) => eliminarProducto(item.producto_id)),
       );
 
-      // El pedido quedó completado: la factura se previsualiza (y se envía
-      // por correo) en su propia página.
-      navigate(`/byte&buy/facturacion/${factura.factura_id}`);
+      // La compra ya está paga y facturada. Antes de ver la factura, se pide
+      // la dirección de envío/notas a través del formulario de pedidos
+      // (prellenado con lo comprado); `PedidoForm` usa este estado para saber
+      // que viene de acá y mandar a facturación al terminar, en vez del
+      // detalle de pedido.
+      navigate("/byte&buy/pedidos/nuevo", {
+        state: {
+          facturaId: factura.factura_id,
+          facturaNumero: factura.factura_numero,
+          items: items.map((item) => ({
+            producto_id: item.producto_id,
+            cantidad: item.cantidad,
+            precio_unitario: item.precio_unitario,
+            descuento_pct: item.descuento,
+          })),
+        } satisfies EstadoPostPago,
+      });
     } catch {
       // El mensaje de error ya queda expuesto en `errorPago`.
     }

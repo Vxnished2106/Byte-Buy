@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import Header from "../components/Header";
 import { useProductos } from "../hooks/useProductos";
 import { usePedido } from "../hooks/usePedido";
@@ -12,6 +12,7 @@ import {
   sumarTotales,
   validarLinea,
   lineaTieneErrores,
+  type EstadoPostPago,
 } from "../ts/pedidoReglas";
 import type {
   CreatePedido,
@@ -55,9 +56,17 @@ function indiceDeLineaEnMensaje(mensaje: string): number | null {
  */
 export default function PedidoForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const pedidoId = id ? Number(id) : undefined;
   const esEdicion = pedidoId !== undefined;
+
+  // Si venimos de un pago recién hecho, `Pago.tsx` deja acá lo comprado y la
+  // factura generada: sirve para precargar las líneas y para saber, al
+  // guardar, que hay que volver a la factura en vez de al detalle de pedido.
+  const estadoPostPago = !esEdicion
+    ? (location.state as EstadoPostPago | null)
+    : null;
 
   const { usuario } = useUsuario();
   const { productosCompletos, loading: cargandoProductos } = useProductos();
@@ -68,9 +77,23 @@ export default function PedidoForm() {
   const [pedidoFecha, setPedidoFecha] = useState(
     () => new Date().toISOString().slice(0, 10),
   );
-  const [notas, setNotas] = useState("");
+  const [notas, setNotas] = useState(() =>
+    estadoPostPago
+      ? `Pedido informativo: la compra ya fue pagada y facturada (factura ${estadoPostPago.facturaNumero}). No confirmar este pedido: el stock de estos productos ya se descontó al pagar.`
+      : "",
+  );
   const [direccionId, setDireccionId] = useState<number>(0);
-  const [lineas, setLineas] = useState<LineaForm[]>([nuevaLinea()]);
+  const [lineas, setLineas] = useState<LineaForm[]>(() =>
+    estadoPostPago && estadoPostPago.items.length > 0
+      ? estadoPostPago.items.map((it) => ({
+          key: crypto.randomUUID(),
+          producto_id: it.producto_id,
+          cantidad: it.cantidad,
+          precio_unitario: it.precio_unitario,
+          descuento_pct: it.descuento_pct,
+        }))
+      : [nuevaLinea()],
+  );
   const [version, setVersion] = useState(0);
 
   const [tocados, setTocados] = useState<Set<string>>(new Set());
@@ -247,7 +270,11 @@ export default function PedidoForm() {
         };
         const creado = await crearPedido(payload, idempotencyKey.current);
         setSucio(false);
-        navigate(`/byte&buy/pedidos/${creado.pedido_id}`);
+        navigate(
+          estadoPostPago
+            ? `/byte&buy/facturacion/${estadoPostPago.facturaId}`
+            : `/byte&buy/pedidos/${creado.pedido_id}`,
+        );
       }
     } catch (err) {
       // Los datos del formulario se conservan intactos para reintentar.
@@ -266,7 +293,13 @@ export default function PedidoForm() {
     if (sucio && !window.confirm("Tienes cambios sin guardar. ¿Salir de todas formas?")) {
       return;
     }
-    navigate("/byte&buy/pedidos");
+    // Viniendo de un pago, la compra ya está hecha con o sin este pedido: no
+    // tiene sentido mandar a la lista general de pedidos.
+    navigate(
+      estadoPostPago
+        ? `/byte&buy/facturacion/${estadoPostPago.facturaId}`
+        : "/byte&buy/pedidos",
+    );
   };
 
   if (esEdicion && cargandoPedido) {
@@ -284,7 +317,22 @@ export default function PedidoForm() {
     <>
       <Header />
       <main className="pedidos-container">
-        <h1>{esEdicion ? "Editar pedido" : "Nuevo pedido"}</h1>
+        <h1>
+          {esEdicion
+            ? "Editar pedido"
+            : estadoPostPago
+              ? "Datos de envío"
+              : "Nuevo pedido"}
+        </h1>
+
+        {estadoPostPago && (
+          <p className="pedidos-banner-info">
+            Tu compra ya fue pagada y facturada (factura{" "}
+            {estadoPostPago.facturaNumero}). Completa la dirección de envío
+            para continuar a tu factura; podés omitir este paso si preferís
+            verla directamente.
+          </p>
+        )}
 
         {errorGlobal && (
           <div className="pedidos-banner-error" role="alert">
@@ -520,7 +568,7 @@ export default function PedidoForm() {
               onClick={cancelar}
               disabled={enviando}
             >
-              Cancelar
+              {estadoPostPago ? "Omitir e ir a la factura" : "Cancelar"}
             </button>
             <button
               type="submit"
@@ -528,7 +576,13 @@ export default function PedidoForm() {
               disabled={enviando || hayErrores}
               aria-disabled={enviando || hayErrores}
             >
-              {enviando ? "Guardando…" : esEdicion ? "Guardar cambios" : "Crear pedido"}
+              {enviando
+                ? "Guardando…"
+                : esEdicion
+                  ? "Guardar cambios"
+                  : estadoPostPago
+                    ? "Guardar y ver factura"
+                    : "Crear pedido"}
             </button>
           </div>
         </form>

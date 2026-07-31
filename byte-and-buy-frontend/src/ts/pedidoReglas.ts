@@ -119,3 +119,15 @@ export function validarLinea(linea: LineaFormValues): ErroresLinea {
 export function lineaTieneErrores(errores: ErroresLinea): boolean {
   return Object.keys(errores).length > 0;
 }
+
+/**
+ * Estado de navegación (`location.state`) que `Pago.tsx` le pasa a
+ * `PedidoForm` al mandarlo a `/byte&buy/pedidos/nuevo` justo después de un
+ * pago exitoso: precarga las líneas con lo comprado y le dice a `PedidoForm`
+ * que, al guardar, debe llevar a la factura en vez de al detalle de pedido.
+ */
+export interface EstadoPostPago {
+  facturaId: number;
+  facturaNumero: string;
+  items: LineaFormValues[];
+}
