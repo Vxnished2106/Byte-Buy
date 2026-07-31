@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DetalleCompra } from './entities/detalle_compra.entity';
 import { ProductoService } from '../producto/producto.service';
+import { InventarioService } from '../inventario/inventario.service';
 import { CreateDetalleCompraDto } from './dto/create-detalle_compra.dto';
 import { ResponseDetalleCompraDto } from './dto/response-detalle_compra.dto';
 
@@ -12,6 +13,7 @@ export class DetalleCompraService {
     @InjectRepository(DetalleCompra)
     private readonly detalleCompraRepository: Repository<DetalleCompra>,
     private readonly productoService: ProductoService,
+    private readonly inventarioService: InventarioService,
   ) {}
 
   private toResponseDto(detalle: DetalleCompra): ResponseDetalleCompraDto {
@@ -53,6 +55,14 @@ export class DetalleCompraService {
     const impuestoAplicado = montoBase * (impuesto / 100);
 
     const total = montoBase + impuestoAplicado;
+
+    // Se descuenta antes de crear la línea: si no hay stock suficiente, la
+    // compra falla acá y no queda un detalle_compra huérfano sin inventario
+    // descontado.
+    await this.inventarioService.descontarStock(
+      datos.producto_id,
+      datos.cantidad,
+    );
 
     const detalle = this.detalleCompraRepository.create({
       venta_id: datos.venta_id,
