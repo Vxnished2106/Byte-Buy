@@ -204,7 +204,43 @@ export class UsuarioService {
     }
 
     if (file) {
-      datos.usuario_foto = await this.fileUploadService.uploadFile(file, 'usuario');
+      const fotoAnterior = usuario.usuario_foto;
+      const nuevaFoto = await this.fileUploadService.uploadFile(file, 'usuario');
+
+      if (nuevaFoto) {
+        await this.usuarioRepository.update(
+          { usuario_id: usuarioId },
+          { usuario_foto: nuevaFoto },
+        );
+        usuario.usuario_foto = nuevaFoto;
+        datos.usuario_foto = nuevaFoto;
+
+        try {
+          await this.fileUploadService.deleteFileByPublicUrl(
+            fotoAnterior,
+            'usuario',
+          );
+        } catch {
+          try {
+            await this.fileUploadService.deleteFileByPublicUrl(
+              nuevaFoto,
+              'usuario',
+            );
+          } catch (e) {
+            void e;
+          }
+
+          await this.usuarioRepository.update(
+            { usuario_id: usuarioId },
+            { usuario_foto: fotoAnterior ?? null },
+          );
+          usuario.usuario_foto = fotoAnterior ?? null;
+          datos.usuario_foto = fotoAnterior ?? null;
+          throw new BadRequestException(
+            'No se pudo eliminar la foto anterior del usuario',
+          );
+        }
+      }
     }
 
     Object.assign(usuario, datos);

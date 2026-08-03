@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Param, Body, ParseIntPipe, ForbiddenException, UploadedFile, UseInterceptors, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, ParseIntPipe, ForbiddenException, UploadedFile, UseInterceptors, Request, UseGuards, Patch, Query } from '@nestjs/common';
 import { CategoriaService } from './categoria.service';
 import { CreateCategoriaDto } from './dto/create-categoria.dto';
+import { UpdateCategoriaDto } from './dto/update-categoria.dto';
 import { ResponseCategoriaDto } from './dto/response-categoria.dto';
+import { ResponseCategoriaMasVendidaDto } from './dto/response-categoria-mas-vendida.dto';
 import { UsuarioService } from '../usuario/usuario.service';
 import { Rol } from '../usuario/entities/usuario.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -37,6 +39,19 @@ export class CategoriaController {
    * Obtiene todas las categorías.
    * @returns Lista de categorías.
    */
+  @Get('mas-vendidas')
+  async masVendidas(
+    @Query('limit') limit?: string,
+  ): Promise<ResponseCategoriaMasVendidaDto[]> {
+    const parsedLimit = limit ? Number(limit) : undefined;
+    const finalLimit =
+      parsedLimit && Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.floor(parsedLimit)
+        : 10;
+
+    return this.categoriaService.obtenerCategoriasMasVendidas(finalLimit);
+  }
+
   @Get()
   async mostrarCategorias(): Promise<ResponseCategoriaDto[]> {
     return this.categoriaService.mostrarCategorias();
@@ -60,6 +75,19 @@ export class CategoriaController {
     await this.validarAdmin(req);
 
     return this.categoriaService.registrarCategoria(datos, file);
+  }
+
+  @UseGuards(SupabaseAuthGuard)
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('categoria_imagen'))
+  async editarCategoria(
+    @Request() req: any,
+    @Param('id', ParseIntPipe) categoria_id: number,
+    @Body() datos: UpdateCategoriaDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<ResponseCategoriaDto> {
+    await this.validarAdmin(req);
+    return this.categoriaService.editarCategoria(categoria_id, datos, file);
   }
 
 }

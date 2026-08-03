@@ -8,6 +8,18 @@ import { SupabaseService } from './supabase.service';
 export class FileUploadService {
   constructor(private readonly supabaseService: SupabaseService) {}
 
+  private getStoragePathFromPublicUrl(publicUrl: string, bucket: string): string | null {
+    try {
+      const url = new URL(publicUrl);
+      const marker = `/storage/v1/object/public/${bucket}/`;
+      const markerIndex = url.pathname.indexOf(marker);
+      if (markerIndex === -1) return null;
+      return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Sube un archivo a un bucket de Supabase Storage.
    * @param file Archivo a subir.
@@ -33,5 +45,19 @@ export class FileUploadService {
       .getPublicUrl(data.path);
 
     return publicData.data.publicUrl || null;
+  }
+
+  async deleteFileByPublicUrl(publicUrl: string | null | undefined, bucket: string): Promise<void> {
+    if (!publicUrl) return;
+
+    const path = this.getStoragePathFromPublicUrl(publicUrl, bucket);
+    if (!path) return;
+
+    const { error } = await this.supabaseService.client
+      .storage
+      .from(bucket)
+      .remove([path]);
+
+    if (error) throw new Error(`Error al borrar archivo: ${error.message}`);
   }
 }
