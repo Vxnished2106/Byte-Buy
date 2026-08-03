@@ -28,6 +28,7 @@ import { UpdateProductoDto } from './dto/update-producto.dto';
 import { ResponseProductoDto } from './dto/response-producto.dto';
 import { ResponseDetalleProductoDto } from './dto/response-detalle-producto.dto';
 import { ResponseCatalogoProductoDto } from './dto/response-catalogo-producto.dto';
+import { ResponseProductoMasVendidoDto } from './dto/response-producto-mas-vendido.dto';
 
 import { SupabaseAuthGuard } from '../auth/supabase-auth/supabase-auth.guard';
 import { Rol } from '../usuario/entities/usuario.entity';
@@ -92,6 +93,19 @@ export class ProductoController {
       min ? Number(min) : undefined,
       max ? Number(max) : undefined,
     );
+  }
+
+  @Get('mas-vendidos')
+  async masVendidos(
+    @Query('limit') limit?: string,
+  ): Promise<ResponseProductoMasVendidoDto[]> {
+    const parsedLimit = limit ? Number(limit) : undefined;
+    const finalLimit =
+      parsedLimit && Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.floor(parsedLimit)
+        : 10;
+
+    return this.productoService.obtenerProductosMasVendidos(finalLimit);
   }
 
   /**

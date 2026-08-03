@@ -3,7 +3,7 @@
  */
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Producto, ProductoEstado } from './entities/producto.entity';
 import { Categoria } from '../categoria/entities/categoria.entity';
 import { Etiqueta } from '../etiqueta/entities/etiqueta.entity';
@@ -13,6 +13,7 @@ import { UpdateProductoDto } from './dto/update-producto.dto';
 import { ResponseProductoDto } from './dto/response-producto.dto';
 import { ResponseDetalleProductoDto } from './dto/response-detalle-producto.dto';
 import { ResponseCatalogoProductoDto } from './dto/response-catalogo-producto.dto';
+import { ResponseProductoMasVendidoDto } from './dto/response-producto-mas-vendido.dto';
 import { FileUploadService } from '../auth/supabase-storage/file-upload.service';
 
 /**
@@ -204,20 +205,88 @@ export class ProductoService {
 
 
     if (imagen) {
-      datos.producto_imagen =
+      const imagenAnterior = producto.producto_imagen;
+      const nuevaImagen =
         await this.fileUploadService.uploadFile(
           imagen,
           'producto',
         );
+
+      if (nuevaImagen) {
+        await this.productoRepository.update(
+          { producto_id },
+          { producto_imagen: nuevaImagen },
+        );
+        producto.producto_imagen = nuevaImagen;
+
+        try {
+          await this.fileUploadService.deleteFileByPublicUrl(
+            imagenAnterior,
+            'producto',
+          );
+        } catch {
+          try {
+            await this.fileUploadService.deleteFileByPublicUrl(
+              nuevaImagen,
+              'producto',
+            );
+          } catch (e) {
+            void e;
+          }
+
+          await this.productoRepository.update(
+            { producto_id },
+            { producto_imagen: imagenAnterior ?? null },
+          );
+          producto.producto_imagen = imagenAnterior ?? null;
+          throw new BadRequestException(
+            'No se pudo eliminar la imagen anterior del producto',
+          );
+        }
+      }
     }
 
 
     if (banner) {
-      datos.producto_banner =
+      const bannerAnterior = producto.producto_banner;
+      const nuevoBanner =
         await this.fileUploadService.uploadFile(
           banner,
           'producto',
         );
+
+      if (nuevoBanner) {
+        await this.productoRepository.update(
+          { producto_id },
+          { producto_banner: nuevoBanner },
+        );
+        producto.producto_banner = nuevoBanner;
+
+        try {
+          await this.fileUploadService.deleteFileByPublicUrl(
+            bannerAnterior,
+            'producto',
+          );
+        } catch {
+          try {
+            await this.fileUploadService.deleteFileByPublicUrl(
+              nuevoBanner,
+              'producto',
+            );
+          } catch (e) {
+            void e;
+          }
+
+          await this.productoRepository.update(
+            { producto_id },
+            { producto_banner: bannerAnterior ?? null },
+          );
+          producto.producto_banner = bannerAnterior ?? null;
+          throw new BadRequestException(
+            'No se pudo eliminar el banner anterior del producto',
+          );
+        }
+      }
     }
 
 
@@ -473,6 +542,77 @@ export class ProductoService {
     return productos.map((producto) =>
       this.toResponseDto(producto),
     );
+  }
+
+  async obtenerProductosMasVendidos(
+    limit = 10,
+  ): Promise<ResponseProductoMasVendidoDto[]> {
+    const top = await this.productoRepository
+      .createQueryBuilder('producto')
+      .innerJoin('producto.detallesCompra', 'dc')
+      .innerJoin('dc.venta', 'venta')
+      .where('venta.venta_estado = :estado', {
+        estado: 'aprobado',
+      })
+      .select('producto.producto_id', 'producto_id')
+      .addSelect('SUM(dc.detalle_compra_cantidad)', 'total_vendido')
+      .groupBy('producto.producto_id')
+      .orderBy('total_vendido', 'DESC')
+      .limit(limit)
+      .getRawMany<{ producto_id: number; total_vendido: string }>();
+
+    if (!top.length) {
+      return [];
+    }
+
+    const ids = top.map((r) => Number(r.producto_id));
+    const totalById = new Map<number, number>(
+      top.map((r) => [Number(r.producto_id), Number(r.total_vendido)]),
+    );
+
+    const productos = await this.productoRepository.find({
+      where: {
+        producto_id: In(ids),
+      },
+      relations: [
+        'categorias',
+        'etiquetas',
+        'detallesCompra',
+        'detallesCompra.venta',
+      ],
+    });
+
+    const productoById = new Map<number, Producto>(
+      productos.map((p) => [p.producto_id, p]),
+    );
+
+    return ids
+      .map((id) => productoById.get(id))
+      .filter((p): p is Producto => Boolean(p))
+      .map((producto) => {
+        const detalles_compra = (producto.detallesCompra ?? [])
+          .filter((dc) => dc.venta?.venta_estado === 'aprobado')
+          .map((dc) => ({
+            detalle_compra_id: dc.detalle_compra_id,
+            detalle_compra_cantidad: dc.detalle_compra_cantidad,
+            detalle_compra_precio_unitario: Number(
+              dc.detalle_compra_precio_unitario,
+            ),
+            detalle_compra_descuento: Number(dc.detalle_compra_descuento),
+            detalle_compra_impuesto: Number(dc.detalle_compra_impuesto),
+            detalle_compra_subtotal: Number(dc.detalle_compra_subtotal),
+            detalle_compra_total: Number(dc.detalle_compra_total),
+            venta_id: dc.venta_id,
+            venta_estado: dc.venta.venta_estado,
+            venta_fecha: dc.venta.venta_fecha,
+          }));
+
+        return {
+          ...this.toResponseDto(producto),
+          total_vendido: totalById.get(producto.producto_id) ?? 0,
+          detalles_compra,
+        };
+      });
   }
 
   async findEntity(productoId: number): Promise<Producto> {
