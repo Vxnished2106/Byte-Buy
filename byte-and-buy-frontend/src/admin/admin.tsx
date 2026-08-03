@@ -245,7 +245,6 @@ export default function Admin() {
           )}
         </div>
       </div>
-      <section className="stats-section"></section>
       <section className="table-section">
         <div className="admin-action-buttons">
           <button

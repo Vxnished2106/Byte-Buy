@@ -20,6 +20,8 @@ import Facturacion from "./pages/Facturacion.tsx";
 import PedidosLista from "./pages/PedidosLista.tsx";
 import PedidoForm from "./pages/PedidoForm.tsx";
 import PedidoDetalle from "./pages/PedidoDetalle.tsx";
+import SobreNosotros from "./pages/SobreNosotros.tsx";
+import Contacto from "./pages/Contacto.tsx";
 import { CarritoProvider } from "./context/CarritoContext.tsx";
 
 /**
@@ -79,6 +81,8 @@ createRoot(document.getElementById("root")!).render(
               <PedidoForm/>
             </RequireAuth>
           }/>
+          <Route path="/byte&buy/nosotros" element={<SobreNosotros />} />
+          <Route path="/byte&buy/contacto" element={<Contacto />} />
           <Route path="/byte&buy/forgot-password" element={<ForgotPassword />} />
           <Route
             path="/byte&buy/cambiar-contrasena"
