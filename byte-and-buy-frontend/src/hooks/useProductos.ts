@@ -24,7 +24,6 @@ function toRow(
   return {
     producto_id: producto.producto_id,
     producto_nombre: producto.producto_nombre,
-    producto_descripcion: producto.producto_descripcion ?? "",
     producto_precio: producto.producto_precio,
     producto_stock: inventario?.inventario_stock_actual ?? 0,
     producto_stock_minimo: inventario?.inventario_stock_minimo ?? 0,
