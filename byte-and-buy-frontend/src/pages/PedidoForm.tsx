@@ -4,7 +4,8 @@ import Header from "../components/Header";
 import { useProductos } from "../hooks/useProductos";
 import { usePedido } from "../hooks/usePedido";
 import { useUsuario } from "../hooks/useUsuario";
-import { listarMisDirecciones } from "../services/direccionEnvio";
+import { crearDireccion, listarMisDirecciones } from "../services/direccionEnvio";
+import { listarCiudades, listarPaises, listarRegiones } from "../services/catalogo";
 import { crearPedido, editarPedido } from "../services/pedido";
 import {
   calcularLinea,
@@ -15,10 +16,13 @@ import {
   type EstadoPostPago,
 } from "../ts/pedidoReglas";
 import type {
+  Ciudad,
   CreatePedido,
   DireccionEnvio,
+  Pais,
   PedidoItem,
   Producto,
+  Region,
   UpdatePedido,
 } from "../ts/interfaces";
 import "../styles/pedidos.css";
@@ -73,6 +77,24 @@ export default function PedidoForm() {
   const { pedido, loading: cargandoPedido } = usePedido(pedidoId);
 
   const [direcciones, setDirecciones] = useState<DireccionEnvio[]>([]);
+
+  // --- Formulario de nueva dirección de envío --------------------------------
+  const [mostrarNuevaDireccion, setMostrarNuevaDireccion] = useState(false);
+  const [paises, setPaises] = useState<Pais[]>([]);
+  const [regiones, setRegiones] = useState<Region[]>([]);
+  const [ciudades, setCiudades] = useState<Ciudad[]>([]);
+  const [nuevaDireccion, setNuevaDireccion] = useState({
+    pais_id: 0,
+    region_id: 0,
+    ciudad_id: 0,
+    direccion_destinatario: "",
+    direccion_telefono: "",
+    direccion_calle: "",
+    direccion_referencia: "",
+    direccion_codigo_postal: "",
+  });
+  const [guardandoDireccion, setGuardandoDireccion] = useState(false);
+  const [errorDireccion, setErrorDireccion] = useState("");
 
   const [pedidoFecha, setPedidoFecha] = useState(
     () => new Date().toISOString().slice(0, 10),
@@ -130,6 +152,82 @@ export default function PedidoForm() {
       vigente = false;
     };
   }, []);
+
+  // Carga los países la primera vez que se abre el formulario de nueva dirección.
+  useEffect(() => {
+    if (!mostrarNuevaDireccion || paises.length > 0) return;
+    listarPaises()
+      .then(setPaises)
+      .catch(() => setErrorDireccion("No se pudieron cargar los países"));
+  }, [mostrarNuevaDireccion, paises.length]);
+
+  const handlePaisChange = (pais_id: number) => {
+    setNuevaDireccion((f) => ({ ...f, pais_id, region_id: 0, ciudad_id: 0 }));
+    setRegiones([]);
+    setCiudades([]);
+    if (!pais_id) return;
+    listarRegiones(pais_id)
+      .then(setRegiones)
+      .catch(() => setErrorDireccion("No se pudieron cargar las regiones"));
+  };
+
+  const handleRegionChange = (region_id: number) => {
+    setNuevaDireccion((f) => ({ ...f, region_id, ciudad_id: 0 }));
+    setCiudades([]);
+    if (!region_id) return;
+    listarCiudades(region_id)
+      .then(setCiudades)
+      .catch(() => setErrorDireccion("No se pudieron cargar las ciudades"));
+  };
+
+  const guardarNuevaDireccion = async () => {
+    setErrorDireccion("");
+    if (
+      !nuevaDireccion.ciudad_id ||
+      !nuevaDireccion.direccion_destinatario.trim() ||
+      !nuevaDireccion.direccion_telefono.trim() ||
+      !nuevaDireccion.direccion_calle.trim()
+    ) {
+      setErrorDireccion(
+        "Completa país, región, ciudad, destinatario, teléfono y calle.",
+      );
+      return;
+    }
+    setGuardandoDireccion(true);
+    try {
+      const creada = await crearDireccion({
+        ciudad_id: nuevaDireccion.ciudad_id,
+        direccion_destinatario: nuevaDireccion.direccion_destinatario.trim(),
+        direccion_telefono: nuevaDireccion.direccion_telefono.trim(),
+        direccion_calle: nuevaDireccion.direccion_calle.trim(),
+        direccion_referencia: nuevaDireccion.direccion_referencia.trim() || undefined,
+        direccion_codigo_postal:
+          nuevaDireccion.direccion_codigo_postal.trim() || undefined,
+      });
+      setDirecciones((ds) => [...ds, creada]);
+      setDireccionId(creada.direccion_envio_id);
+      marcarSucio();
+      setMostrarNuevaDireccion(false);
+      setNuevaDireccion({
+        pais_id: 0,
+        region_id: 0,
+        ciudad_id: 0,
+        direccion_destinatario: "",
+        direccion_telefono: "",
+        direccion_calle: "",
+        direccion_referencia: "",
+        direccion_codigo_postal: "",
+      });
+      setRegiones([]);
+      setCiudades([]);
+    } catch (err) {
+      setErrorDireccion(
+        err instanceof Error ? err.message : "No se pudo guardar la dirección",
+      );
+    } finally {
+      setGuardandoDireccion(false);
+    }
+  };
 
   // Repobla el formulario cuando se carga el pedido a editar (una sola vez).
   useEffect(() => {
@@ -395,7 +493,165 @@ export default function PedidoForm() {
                   </option>
                 ))}
               </select>
+              <button
+                type="button"
+                className="pedidos-link-btn pedido-direccion-toggle"
+                onClick={() => setMostrarNuevaDireccion((v) => !v)}
+              >
+                {mostrarNuevaDireccion
+                  ? "Cancelar nueva dirección"
+                  : "+ Agregar nueva dirección"}
+              </button>
             </div>
+
+            {mostrarNuevaDireccion && (
+              <div
+                className="pedido-direccion-nueva"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.preventDefault();
+                }}
+              >
+                <h3>Nueva dirección de envío</h3>
+                <div className="pedido-direccion-grid">
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-pais">País</label>
+                    <select
+                      id="nd-pais"
+                      value={nuevaDireccion.pais_id}
+                      onChange={(e) => handlePaisChange(Number(e.target.value))}
+                    >
+                      <option value={0}>Selecciona…</option>
+                      {paises.map((p) => (
+                        <option key={p.pais_id} value={p.pais_id}>
+                          {p.pais_nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-region">Región</label>
+                    <select
+                      id="nd-region"
+                      value={nuevaDireccion.region_id}
+                      onChange={(e) => handleRegionChange(Number(e.target.value))}
+                      disabled={!nuevaDireccion.pais_id}
+                    >
+                      <option value={0}>Selecciona…</option>
+                      {regiones.map((r) => (
+                        <option key={r.region_id} value={r.region_id}>
+                          {r.region_nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-ciudad">Ciudad</label>
+                    <select
+                      id="nd-ciudad"
+                      value={nuevaDireccion.ciudad_id}
+                      onChange={(e) =>
+                        setNuevaDireccion((f) => ({
+                          ...f,
+                          ciudad_id: Number(e.target.value),
+                        }))
+                      }
+                      disabled={!nuevaDireccion.region_id}
+                    >
+                      <option value={0}>Selecciona…</option>
+                      {ciudades.map((c) => (
+                        <option key={c.ciudad_id} value={c.ciudad_id}>
+                          {c.ciudad_nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-destinatario">Destinatario</label>
+                    <input
+                      id="nd-destinatario"
+                      type="text"
+                      value={nuevaDireccion.direccion_destinatario}
+                      onChange={(e) =>
+                        setNuevaDireccion((f) => ({
+                          ...f,
+                          direccion_destinatario: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-telefono">Teléfono</label>
+                    <input
+                      id="nd-telefono"
+                      type="tel"
+                      value={nuevaDireccion.direccion_telefono}
+                      onChange={(e) =>
+                        setNuevaDireccion((f) => ({
+                          ...f,
+                          direccion_telefono: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-calle">Calle</label>
+                    <input
+                      id="nd-calle"
+                      type="text"
+                      value={nuevaDireccion.direccion_calle}
+                      onChange={(e) =>
+                        setNuevaDireccion((f) => ({
+                          ...f,
+                          direccion_calle: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-referencia">Dirección de referencia</label>
+                    <input
+                      id="nd-referencia"
+                      type="text"
+                      value={nuevaDireccion.direccion_referencia}
+                      onChange={(e) =>
+                        setNuevaDireccion((f) => ({
+                          ...f,
+                          direccion_referencia: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="pedidos-filtro">
+                    <label htmlFor="nd-cp">Código postal</label>
+                    <input
+                      id="nd-cp"
+                      type="text"
+                      value={nuevaDireccion.direccion_codigo_postal}
+                      onChange={(e) =>
+                        setNuevaDireccion((f) => ({
+                          ...f,
+                          direccion_codigo_postal: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+                {errorDireccion && (
+                  <p className="pedido-error-campo">{errorDireccion}</p>
+                )}
+                <div className="pedido-direccion-acciones">
+                  <button
+                    type="button"
+                    className="pedidos-btn-primary"
+                    onClick={guardarNuevaDireccion}
+                    disabled={guardandoDireccion}
+                  >
+                    {guardandoDireccion ? "Guardando…" : "Guardar dirección"}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="pedidos-filtro pedido-form-notas">
               <label htmlFor="notas">Notas</label>
               <textarea
