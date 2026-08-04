@@ -310,6 +310,33 @@
   resize: vertical;
   font-family: inherit;
 }
+.pedido-direccion-toggle {
+  margin-top: 6px;
+  align-self: flex-start;
+  font-size: 0.82rem;
+}
+.pedido-direccion-nueva {
+  flex-basis: 100%;
+  background: var(--bb-bg-3);
+  border: 1px solid var(--bb-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.pedido-direccion-nueva h3 {
+  font-size: 1rem;
+  margin: 0 0 12px;
+  color: var(--bb-ink);
+}
+.pedido-direccion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.pedido-direccion-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
 .pedido-lineas-header {
   display: flex;
   align-items: center;

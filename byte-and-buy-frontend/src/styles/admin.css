@@ -165,26 +165,76 @@
 
 .stock-alert-banner {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-left: auto;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
   background-color: #fff7ed;
   border: 1px solid #fdba74;
+  border-left: 5px solid #f97316;
   border-radius: 10px;
-  padding: 10px 18px;
+  padding: 14px 20px;
   font-family: var(--details);
   font-size: 14px;
-  max-width: 60%;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.12);
+}
+
+.stock-alert-icon {
+  flex-shrink: 0;
+  color: #f97316;
+  margin-top: 2px;
+}
+
+.stock-alert-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
 
 .stock-alert-count {
   font-weight: 700;
+  font-size: 15px;
   color: #b45309;
 }
 
-.stock-alert-list {
+.stock-alert-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stock-alert-chip {
+  background-color: #fff;
+  border: 1px solid #fdba74;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
   color: #92400e;
+}
+
+.admin-filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-filtros select {
+  background-color: #fff;
+  border: 1px solid #e5e6ef;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: var(--details);
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.admin-filtros select:focus {
+  outline: none;
+  border-color: #4b5fe5;
+  color: #4b5fe5;
 }
 
 .admin-status-error {
