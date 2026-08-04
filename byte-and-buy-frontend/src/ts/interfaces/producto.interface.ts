@@ -59,7 +59,6 @@ export interface ProductoCatalogo {
 export interface productoData {
   producto_id: number;
   producto_nombre: string;
-  producto_descripcion: string;
   producto_precio: number;
   producto_stock: number;
   producto_stock_minimo: number;
