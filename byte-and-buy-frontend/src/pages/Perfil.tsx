@@ -80,6 +80,7 @@ export default function Perfil() {
     : "";
 
   const handleSave = async (updated: ProfileData, foto?: File) => {
+    if (!profile) return;
     setSaving(true);
     setSaveError("");
     try {
@@ -97,7 +98,10 @@ export default function Perfil() {
         apellido1: usuarioActualizado.usuario_apellido1,
         apellido2: usuarioActualizado.usuario_apellido2 ?? "",
         correo: usuarioActualizado.usuario_correo,
-        foto: usuarioActualizado.usuario_foto ?? null,
+        // Si no se subió una foto nueva, el backend puede no devolver la url
+        // existente: se conserva la que ya estaba en pantalla en vez de
+        // pisarla con lo que venga en la respuesta.
+        foto: foto ? (usuarioActualizado.usuario_foto ?? null) : profile.foto,
       });
       setIsEditOpen(false);
     } catch (err) {
