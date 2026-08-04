@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useUsuario } from "../hooks/useUsuario";
 import { useProveedores } from "../hooks/useProveedores";
@@ -41,6 +41,10 @@ export default function Admin() {
     useState<proveedorData | null>(null);
   const [editingProducto, setEditingProducto] =
     useState<ProductoFormValues | null>(null);
+  const [filtroCategoriaId, setFiltroCategoriaId] = useState(0);
+  const [filtroProveedorId, setFiltroProveedorId] = useState(0);
+  const [ordenPrecio, setOrdenPrecio] = useState<"" | "asc" | "desc">("");
+  const [ordenStock, setOrdenStock] = useState<"" | "asc" | "desc">("");
 
   const {
     proveedores,
@@ -76,7 +80,6 @@ export default function Admin() {
   const producto_columns_name = [
     "ID",
     "Producto",
-    "Descripcion",
     "Precio",
     "Stock",
     "Stock Minimo",
@@ -86,6 +89,47 @@ export default function Admin() {
     "Descuento",
     "Impuesto",
   ];
+
+  const productosFiltrados = useMemo(() => {
+    let base = productos;
+    if (filtroCategoriaId) {
+      base = base.filter((row) =>
+        productosCompletos
+          .find((p) => p.producto_id === row.producto_id)
+          ?.categorias.some((c) => c.categoria_id === filtroCategoriaId),
+      );
+    }
+    if (filtroProveedorId) {
+      base = base.filter((row) =>
+        proveedoresPorProducto(row.producto_id).some(
+          (a) => a.proveedor_id === filtroProveedorId,
+        ),
+      );
+    }
+    if (ordenPrecio) {
+      base = [...base].sort((a, b) =>
+        ordenPrecio === "asc"
+          ? a.producto_precio - b.producto_precio
+          : b.producto_precio - a.producto_precio,
+      );
+    }
+    if (ordenStock) {
+      base = [...base].sort((a, b) =>
+        ordenStock === "asc"
+          ? a.producto_stock - b.producto_stock
+          : b.producto_stock - a.producto_stock,
+      );
+    }
+    return base;
+  }, [
+    productos,
+    productosCompletos,
+    proveedoresPorProducto,
+    filtroCategoriaId,
+    filtroProveedorId,
+    ordenPrecio,
+    ordenStock,
+  ]);
 
   const handleToggleMenu = () => setOpenMenu(!openMenu);
 
@@ -273,22 +317,94 @@ export default function Admin() {
               >
                 Nueva Etiqueta
               </button>
-              {alertasStock.length > 0 && (
-                <div className="stock-alert-banner">
-                  <span className="stock-alert-count">
-                    {alertasStock.length} producto
-                    {alertasStock.length === 1 ? "" : "s"} con stock bajo
-                  </span>
-                  {nombresStockBajo.length > 0 && (
-                    <span className="stock-alert-list">
-                      {nombresStockBajo.join(", ")}
-                    </span>
-                  )}
-                </div>
-              )}
             </>
           )}
         </div>
+        {vista === "productos" && alertasStock.length > 0 && (
+          <div className="stock-alert-banner" role="alert">
+            <svg
+              className="stock-alert-icon"
+              viewBox="0 0 24 24"
+              width="22"
+              height="22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <div className="stock-alert-body">
+              <span className="stock-alert-count">
+                {alertasStock.length} producto
+                {alertasStock.length === 1 ? "" : "s"} con stock bajo
+              </span>
+              {nombresStockBajo.length > 0 && (
+                <div className="stock-alert-chips">
+                  {nombresStockBajo.map((nombre, i) => (
+                    <span className="stock-alert-chip" key={i}>
+                      {nombre}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {vista === "productos" && (
+          <div className="admin-filtros">
+            <select
+              value={filtroCategoriaId}
+              onChange={(e) => setFiltroCategoriaId(Number(e.target.value))}
+              aria-label="Filtrar por categoria"
+            >
+              <option value={0}>Todas las categorias</option>
+              {categorias.map((c) => (
+                <option key={c.categoria_id} value={c.categoria_id}>
+                  {c.categoria_nombre}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filtroProveedorId}
+              onChange={(e) => setFiltroProveedorId(Number(e.target.value))}
+              aria-label="Filtrar por proveedor"
+            >
+              <option value={0}>Todos los proveedores</option>
+              {proveedores.map((p) => (
+                <option key={p.proveedor_id} value={p.proveedor_id}>
+                  {p.proveedor_nombre}
+                </option>
+              ))}
+            </select>
+            <select
+              value={ordenPrecio}
+              onChange={(e) =>
+                setOrdenPrecio(e.target.value as "" | "asc" | "desc")
+              }
+              aria-label="Ordenar por precio"
+            >
+              <option value="">Precio: sin ordenar</option>
+              <option value="asc">Precio: menor a mayor</option>
+              <option value="desc">Precio: mayor a menor</option>
+            </select>
+            <select
+              value={ordenStock}
+              onChange={(e) =>
+                setOrdenStock(e.target.value as "" | "asc" | "desc")
+              }
+              aria-label="Ordenar por stock"
+            >
+              <option value="">Stock: sin ordenar</option>
+              <option value="asc">Stock: menor a mayor</option>
+              <option value="desc">Stock: mayor a menor</option>
+            </select>
+          </div>
+        )}
         <div className="table">
           {vista === "proveedores" && (
             <>
@@ -326,7 +442,7 @@ export default function Admin() {
                   title="Productos"
                   main_button_title="Agregar Producto"
                   columns_name={producto_columns_name}
-                  data={productos}
+                  data={productosFiltrados}
                   onAction_main_button={handleAddProducto}
                   onEdit={handleEditProducto}
                   onToggleEstado={handleToggleEstadoProducto}
