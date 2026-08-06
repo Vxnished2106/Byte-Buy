@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-ISC-green.svg)
 
-![Stack Tecnológico](https://skillicons.dev/icons?i=react,ts,vite,nestjs,mysql,nodejs,supabase,jest)
+![Stack Tecnológico](https://skillicons.dev/icons?i=react,ts,vite,nestjs,mysql,nodejs,supabase)
 
 **Byte and Buy** es una plataforma de comercio electrónico orientada a la venta de componentes de hardware, software y artículos tecnológicos. El proyecto está organizado como un monorepo con un frontend en React y un backend en NestJS totalmente desacoplados, comunicados vía API REST.
 
