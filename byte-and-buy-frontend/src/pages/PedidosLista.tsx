@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import Header from "../components/Header";
 import { useListaPedidos } from "../hooks/useListaPedidos";
+import { useUsuario } from "../hooks/useUsuario";
 import { ETIQUETA_ESTADO, formatearMonto } from "../ts/pedidoReglas";
 import type { ListarPedidosParams, PedidoEstado } from "../ts/interfaces";
 import "../styles/pedidos.css";
@@ -17,6 +18,7 @@ const ESTADOS: PedidoEstado[] = [
 /** Página de listado de pedidos con filtros, orden y paginación server-side. */
 export default function PedidosLista() {
   const navigate = useNavigate();
+  const { usuario } = useUsuario();
 
   const [filtros, setFiltros] = useState<ListarPedidosParams>({
     orden_por: "created_at",
@@ -38,8 +40,12 @@ export default function PedidosLista() {
     return () => clearTimeout(t);
   }, [buscarInput]);
 
+  // El listado debe acotarse siempre a los pedidos del usuario autenticado:
+  // el backend no lo hace por sí solo, así que `cliente_id` viaja en cada
+  // consulta. Mientras el usuario todavía no cargó se usa un id imposible
+  // (-1) para no traer momentáneamente los pedidos de todos los usuarios.
   const { pedidos, total, page, limit, totalPaginas, loading, error } =
-    useListaPedidos(filtros);
+    useListaPedidos({ ...filtros, cliente_id: usuario?.usuario_id ?? -1 });
 
   /** Actualiza un filtro y regresa a la primera página. */
   const setFiltro = <K extends keyof ListarPedidosParams>(
