@@ -224,9 +224,7 @@ function App() {
                 ofrecerte calidad garantizada, precios justos y una experiencia
                 de compra rápida y segura, con soporte cercano en cada paso.
               </p>
-              <Link to="/byte&buy/nosotros" className="section-link">
-                Conoce más sobre nosotros →
-              </Link>
+              
             </div>
           </div>
         </section>
