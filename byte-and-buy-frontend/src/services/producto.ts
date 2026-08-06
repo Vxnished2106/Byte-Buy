@@ -4,6 +4,7 @@ import type {
   DetalleProducto,
   Producto,
   ProductoCatalogo,
+  ProductoMasVendido,
   UpdateProducto,
 } from "../ts/interfaces";
 
@@ -46,6 +47,17 @@ export async function listarProductos(filtros?: {
 export async function obtenerCatalogo(): Promise<ProductoCatalogo[]> {
   const { data } = await api.get<ProductoCatalogo[]>("/productos/catalogo");
   return data;
+}
+
+/** Lista los productos con más unidades vendidas (ventas aprobadas), de mayor a menor. */
+export async function obtenerProductosMasVendidos(
+  limit?: number,
+): Promise<ProductoMasVendido[]> {
+  const { data } = await api.get<ProductoMasVendido[]>(
+    "/productos/mas-vendidos",
+    { params: { limit } },
+  );
+  return data.map(normalizarProducto);
 }
 
 /** Obtiene el detalle público de un producto activo, incluido su stock. */
