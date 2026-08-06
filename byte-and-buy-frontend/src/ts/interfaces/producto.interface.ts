@@ -40,6 +40,11 @@ export interface DetalleProducto extends Producto {
   puedeComprar: boolean;
 }
 
+/** Forma que entrega `GET /productos/mas-vendidos` (producto + unidades vendidas). */
+export interface ProductoMasVendido extends Producto {
+  total_vendido: number;
+}
+
 /** Forma que entrega `GET /productos/catalogo` (listado público liviano con disponibilidad). */
 export interface ProductoCatalogo {
   producto_id: number;
