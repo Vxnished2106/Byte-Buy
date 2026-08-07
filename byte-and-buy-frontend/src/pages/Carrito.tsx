@@ -4,6 +4,7 @@ import CarritoItem from "../components/CarritoItem";
 import Header from "../components/Header";
 import { useCarrito } from "../hooks/useCarrito";
 import { obtenerCatalogo } from "../services/producto";
+import type { EstadoDesdeCarrito } from "../ts/pedidoReglas";
 import { calcularCostoEnvio } from "../utils/carrito";
 import "../styles/cart.css";
 
@@ -125,8 +126,23 @@ export default function Carrito() {
                   <h5 className="total-title">Total</h5>
                   <span className="total-value">${total.toFixed(2)}</span>
                 </div>
-                <Link to={"/byte&buy/pago"} className="pay-button">
-                  Proceder al pago
+                <Link
+                  to="/byte&buy/pedidos/nuevo"
+                  // Primero se crea el pedido (dirección de envío incluida)
+                  // con lo que hay en el carrito; recién después se paga.
+                  state={
+                    {
+                      items: items.map((item) => ({
+                        producto_id: item.producto_id,
+                        cantidad: item.cantidad,
+                        precio_unitario: item.precio_unitario,
+                        descuento_pct: item.descuento,
+                      })),
+                    } satisfies EstadoDesdeCarrito
+                  }
+                  className="pay-button"
+                >
+                  Continuar al pedido
                 </Link>
               </div>
             </section>

@@ -13,6 +13,8 @@ import {
   sumarTotales,
   validarLinea,
   lineaTieneErrores,
+  type EstadoConPedido,
+  type EstadoDesdeCarrito,
   type EstadoPostPago,
 } from "../ts/pedidoReglas";
 import type {
@@ -57,6 +59,11 @@ function indiceDeLineaEnMensaje(mensaje: string): number | null {
  * pedido está en otro estado, se redirige a la vista de detalle. Los totales
  * que se ven aquí son PREVISUALIZACIÓN: el backend recalcula y es la fuente de
  * verdad.
+ *
+ * Flujo de compra: `Carrito.tsx` manda acá con `EstadoDesdeCarrito` para
+ * crear el pedido (con la dirección de envío) antes de pagar; al guardar se
+ * continúa a `Pago.tsx`. `EstadoPostPago` es un respaldo del flujo anterior,
+ * por si se llega a `/byte&buy/pago` sin haber creado antes el pedido.
  */
 export default function PedidoForm() {
   const navigate = useNavigate();
@@ -65,12 +72,21 @@ export default function PedidoForm() {
   const pedidoId = id ? Number(id) : undefined;
   const esEdicion = pedidoId !== undefined;
 
-  // Si venimos de un pago recién hecho, `Pago.tsx` deja acá lo comprado y la
-  // factura generada: sirve para precargar las líneas y para saber, al
-  // guardar, que hay que volver a la factura en vez de al detalle de pedido.
-  const estadoPostPago = !esEdicion
-    ? (location.state as EstadoPostPago | null)
+  // El estado de navegación tiene dos orígenes posibles (nunca ambos a la
+  // vez): `Carrito.tsx` al iniciar la compra (precarga las líneas con el
+  // carrito y, al guardar, continúa a `Pago`), o `Pago.tsx` como respaldo
+  // cuando se llega acá sin pedido creado (precarga con lo ya pagado y, al
+  // guardar, va a la factura). Se distinguen por `facturaId`.
+  const estadoNavegacion = !esEdicion
+    ? (location.state as (EstadoPostPago | EstadoDesdeCarrito) | null)
     : null;
+  const estadoPostPago =
+    estadoNavegacion && "facturaId" in estadoNavegacion ? estadoNavegacion : null;
+  const estadoDesdeCarrito =
+    estadoNavegacion && !estadoPostPago
+      ? (estadoNavegacion as EstadoDesdeCarrito)
+      : null;
+  const itemsPrecargados = estadoPostPago?.items ?? estadoDesdeCarrito?.items ?? null;
 
   const { usuario } = useUsuario();
   const { productosCompletos, loading: cargandoProductos } = useProductos();
@@ -106,8 +122,8 @@ export default function PedidoForm() {
   );
   const [direccionId, setDireccionId] = useState<number>(0);
   const [lineas, setLineas] = useState<LineaForm[]>(() =>
-    estadoPostPago && estadoPostPago.items.length > 0
-      ? estadoPostPago.items.map((it) => ({
+    itemsPrecargados && itemsPrecargados.length > 0
+      ? itemsPrecargados.map((it) => ({
           key: crypto.randomUUID(),
           producto_id: it.producto_id,
           cantidad: it.cantidad,
@@ -368,11 +384,18 @@ export default function PedidoForm() {
         };
         const creado = await crearPedido(payload, idempotencyKey.current);
         setSucio(false);
-        navigate(
-          estadoPostPago
-            ? `/byte&buy/facturacion/${estadoPostPago.facturaId}`
-            : `/byte&buy/pedidos/${creado.pedido_id}`,
-        );
+        if (estadoPostPago) {
+          navigate(`/byte&buy/facturacion/${estadoPostPago.facturaId}`);
+        } else if (estadoDesdeCarrito) {
+          navigate("/byte&buy/pago", {
+            state: {
+              pedidoId: creado.pedido_id,
+              pedidoNumero: creado.pedido_numero,
+            } satisfies EstadoConPedido,
+          });
+        } else {
+          navigate(`/byte&buy/pedidos/${creado.pedido_id}`);
+        }
       }
     } catch (err) {
       // Los datos del formulario se conservan intactos para reintentar.
@@ -391,13 +414,15 @@ export default function PedidoForm() {
     if (sucio && !window.confirm("Tienes cambios sin guardar. ¿Salir de todas formas?")) {
       return;
     }
-    // Viniendo de un pago, la compra ya está hecha con o sin este pedido: no
-    // tiene sentido mandar a la lista general de pedidos.
-    navigate(
-      estadoPostPago
-        ? `/byte&buy/facturacion/${estadoPostPago.facturaId}`
-        : "/byte&buy/pedidos",
-    );
+    if (estadoPostPago) {
+      // Viniendo de un pago, la compra ya está hecha con o sin este pedido:
+      // no tiene sentido mandar a la lista general de pedidos.
+      navigate(`/byte&buy/facturacion/${estadoPostPago.facturaId}`);
+    } else if (estadoDesdeCarrito) {
+      navigate("/byte&buy/carrito");
+    } else {
+      navigate("/byte&buy/pedidos");
+    }
   };
 
   if (esEdicion && cargandoPedido) {
@@ -418,7 +443,7 @@ export default function PedidoForm() {
         <h1>
           {esEdicion
             ? "Editar pedido"
-            : estadoPostPago
+            : estadoPostPago || estadoDesdeCarrito
               ? "Datos de envío"
               : "Nuevo pedido"}
         </h1>
@@ -429,6 +454,13 @@ export default function PedidoForm() {
             {estadoPostPago.facturaNumero}). Completa la dirección de envío
             para continuar a tu factura; podés omitir este paso si preferís
             verla directamente.
+          </p>
+        )}
+
+        {estadoDesdeCarrito && (
+          <p className="pedidos-banner-info">
+            Completa la dirección de envío de tu pedido. Al guardar,
+            continuarás al pago.
           </p>
         )}
 
@@ -838,7 +870,9 @@ export default function PedidoForm() {
                   ? "Guardar cambios"
                   : estadoPostPago
                     ? "Guardar y ver factura"
-                    : "Crear pedido"}
+                    : estadoDesdeCarrito
+                      ? "Guardar y continuar al pago"
+                      : "Crear pedido"}
             </button>
           </div>
         </form>

@@ -125,9 +125,34 @@ export function lineaTieneErrores(errores: ErroresLinea): boolean {
  * `PedidoForm` al mandarlo a `/byte&buy/pedidos/nuevo` justo después de un
  * pago exitoso: precarga las líneas con lo comprado y le dice a `PedidoForm`
  * que, al guardar, debe llevar a la factura en vez de al detalle de pedido.
+ *
+ * Solo se usa como respaldo cuando se llega a `/byte&buy/pago` sin haber
+ * pasado antes por `/byte&buy/pedidos/nuevo` (ver `EstadoDesdeCarrito`): el
+ * flujo normal ahora crea el pedido antes de pagar.
  */
 export interface EstadoPostPago {
   facturaId: number;
   facturaNumero: string;
   items: LineaFormValues[];
+}
+
+/**
+ * Estado de navegación que `Carrito.tsx` le pasa a `PedidoForm` al iniciar la
+ * compra: precarga las líneas con el contenido del carrito. Al guardar el
+ * pedido, `PedidoForm` continúa a `/byte&buy/pago` (en vez de ir al detalle
+ * del pedido) para cobrar lo pedido.
+ */
+export interface EstadoDesdeCarrito {
+  items: LineaFormValues[];
+}
+
+/**
+ * Estado que `PedidoForm` le pasa a `Pago.tsx` tras crear el pedido a partir
+ * del carrito: identifica el pedido ya creado (con su dirección de envío)
+ * para que, al completar el pago, `Pago` vaya directo a la factura en vez de
+ * volver a pedir los datos de envío.
+ */
+export interface EstadoConPedido {
+  pedidoId: number;
+  pedidoNumero: string;
 }

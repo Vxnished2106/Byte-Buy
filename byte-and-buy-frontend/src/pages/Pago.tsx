@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import Header from "../components/Header";
 import { useCarrito } from "../hooks/useCarrito";
 import { useMetodosPago } from "../hooks/useMetodosPago";
 import { usePago } from "../hooks/usePago";
-import type { EstadoPostPago } from "../ts/pedidoReglas";
+import type { EstadoConPedido, EstadoPostPago } from "../ts/pedidoReglas";
 import { calcularCostoEnvio } from "../utils/carrito";
 import "../styles/pago.css";
 
@@ -56,6 +56,12 @@ function validarCodigoGiftCard(codigo: string): boolean {
 
 export default function Pago() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // `PedidoForm` deja acá el pedido (con su dirección de envío) recién creado
+  // desde el carrito. Si falta (ej. se llega directo a esta URL sin haber
+  // pasado por ahí), se usa el flujo anterior como respaldo: pedir la
+  // dirección de envío después de pagar.
+  const estadoConPedido = location.state as EstadoConPedido | null;
   const {
     carrito,
     loading: carritoCargando,
@@ -160,23 +166,28 @@ export default function Pago() {
         items.map((item) => eliminarProducto(item.producto_id)),
       );
 
-      // La compra ya está paga y facturada. Antes de ver la factura, se pide
-      // la dirección de envío/notas a través del formulario de pedidos
-      // (prellenado con lo comprado); `PedidoForm` usa este estado para saber
-      // que viene de acá y mandar a facturación al terminar, en vez del
-      // detalle de pedido.
-      navigate("/byte&buy/pedidos/nuevo", {
-        state: {
-          facturaId: factura.factura_id,
-          facturaNumero: factura.factura_numero,
-          items: items.map((item) => ({
-            producto_id: item.producto_id,
-            cantidad: item.cantidad,
-            precio_unitario: item.precio_unitario,
-            descuento_pct: item.descuento,
-          })),
-        } satisfies EstadoPostPago,
-      });
+      if (estadoConPedido) {
+        // El pedido y su dirección de envío ya se crearon antes de pagar:
+        // se va directo a la factura.
+        navigate(`/byte&buy/facturacion/${factura.factura_id}`);
+      } else {
+        // Respaldo: se llegó a pagar sin haber creado antes el pedido. Se
+        // pide la dirección de envío/notas a través del formulario de
+        // pedidos (prellenado con lo comprado); `PedidoForm` usa este estado
+        // para saber que viene de acá y mandar a facturación al terminar.
+        navigate("/byte&buy/pedidos/nuevo", {
+          state: {
+            facturaId: factura.factura_id,
+            facturaNumero: factura.factura_numero,
+            items: items.map((item) => ({
+              producto_id: item.producto_id,
+              cantidad: item.cantidad,
+              precio_unitario: item.precio_unitario,
+              descuento_pct: item.descuento,
+            })),
+          } satisfies EstadoPostPago,
+        });
+      }
     } catch {
       // El mensaje de error ya queda expuesto en `errorPago`.
     }
