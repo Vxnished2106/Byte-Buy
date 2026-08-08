@@ -255,6 +255,39 @@ header {
     color: var(--links-color);
 }
 
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.menu-toggle span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background-color: var(--bb-ink, #000);
+    border-radius: 2px;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.menu-toggle.open span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.open span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.mobile-menu-panel {
+    display: none;
+}
+
 .action-button.cart {
     position: relative;
 }
@@ -364,7 +397,8 @@ header {
     gap: 2px;
 }
 
-.item-container-user .link {
+.item-container-user .link,
+.mobile-menu-panel .link {
     text-decoration: none;
     color: var(--bb-ink);
     font-size: 15px;
@@ -373,16 +407,144 @@ header {
     transition: background-color .15s ease, color .15s ease;
 }
 
-.item-container-user .link:hover {
+.item-container-user .link:hover,
+.mobile-menu-panel .link:hover {
     background-color: var(--bb-bg-2);
     color: var(--links-color);
 }
 
-.item-container-user button.link {
+.item-container-user button.link,
+.mobile-menu-panel button.link {
     background: none;
     border: none;
     width: 100%;
     text-align: left;
     font-family: inherit;
     cursor: pointer;
+}
+
+@media (max-width: 1200px) {
+    header {
+        padding-left: 24px;
+        padding-right: 32px;
+    }
+    .search-options {
+        gap: 32px;
+    }
+    .search-bar-container input {
+        width: min(280px, 26vw);
+    }
+}
+
+@media (max-width: 900px) {
+    .search-options {
+        gap: 16px;
+    }
+    .catalog {
+        width: auto;
+        padding: 0 4px;
+    }
+    .search-bar-container input {
+        width: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    .title {
+        font-size: 18px;
+    }
+
+    /* En mobile se reemplaza el catálogo inline + búsqueda + menú de
+       usuario por un único botón hamburguesa que abre un panel
+       desplegable con todo agrupado (más limpio que ir mostrando/
+       ocultando cada pieza por separado). */
+    .search-options,
+    .user-menu {
+        display: none;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .mobile-menu-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+        padding: 16px;
+        background-color: var(--bb-surface);
+        border-bottom: 1px solid var(--bb-border);
+        box-shadow: 0 12px 30px rgba(35, 37, 47, 0.12);
+        z-index: 99;
+    }
+
+    .mobile-menu-panel .search-bar-container {
+        position: relative;
+        margin-bottom: 8px;
+    }
+
+    .mobile-menu-panel .search-bar-container input {
+        width: 100%;
+    }
+
+    .mobile-menu-panel .search-suggestions {
+        position: static;
+        width: 100%;
+        max-height: none;
+        box-shadow: none;
+        margin-top: 8px;
+    }
+
+    .mobile-menu-section {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-menu-section ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mobile-menu-heading {
+        font-family: var(--titles);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--bb-text-4);
+        padding: 8px 8px 4px;
+    }
+
+    .mobile-menu-panel .divider {
+        margin: 8px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    .action-buttons {
+        gap: 8px;
+    }
+    .action-buttons button {
+        height: 36px;
+        width: 36px;
+    }
+    .mobile-menu-panel {
+        padding: 12px;
+    }
 }

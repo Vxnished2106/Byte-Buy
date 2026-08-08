@@ -92,10 +92,15 @@
   color: var(--bb-text-2);
 }
 
+.invoice-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .invoice-table thead tr {
@@ -192,7 +197,35 @@
 }
 
 @media (max-width: 640px) {
+  .invoice-container {
+    padding: 90px 20px 40px;
+  }
+
   .invoice-paper {
     padding: 28px 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .invoice-container {
+    padding: 80px 12px 32px;
+  }
+
+  .invoice-paper {
+    padding: 22px 14px;
+  }
+
+  .invoice-brand {
+    font-size: 22px;
+  }
+
+  .invoice-table th,
+  .invoice-table td {
+    padding-right: 6px;
+    font-size: 12px;
+  }
+
+  .invoice-total span:last-child {
+    font-size: 17px;
   }
 }

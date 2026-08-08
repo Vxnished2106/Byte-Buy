@@ -1,6 +1,8 @@
 .form-container {
   padding-top: 110px;
   padding-bottom: 60px;
+  padding-left: 20px;
+  padding-right: 20px;
   width: 100%;
   min-height: 100vh;
   display: flex;
@@ -10,7 +12,8 @@
 }
 
 .register-form {
-  width: 460px;
+  width: 100%;
+  max-width: 460px;
   background-color: var(--bb-surface);
   display: flex;
   flex-direction: column;
@@ -226,4 +229,42 @@
   font-weight: 700;
   color: #d64545;
   margin-top: -4px;
+}
+
+@media (max-width: 640px) {
+  .form-container {
+    padding-top: 90px;
+    padding-bottom: 40px;
+  }
+
+  .register-form {
+    padding: 28px 24px 24px;
+    border-radius: 16px;
+  }
+
+  .form-header h3 {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .form-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .register-form {
+    padding: 22px 18px 18px;
+  }
+
+  .password-validations {
+    grid-template-columns: 1fr;
+  }
 }

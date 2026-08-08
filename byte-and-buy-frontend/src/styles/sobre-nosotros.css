@@ -705,6 +705,9 @@
   .page-hero { padding: 50px 0 30px; }
   .page-hero-content,
   .section-container { padding: 0 20px; }
+  .page-hero-actions { flex-direction: column; align-items: stretch; width: 100%; }
+  .page-hero-actions .btn { width: 100%; }
+  .btn { min-height: 44px; }
   .stats-row { grid-template-columns: 1fr 1fr; gap: 12px; }
   .stat-number { font-size: 1.6rem; }
   .stat-label { font-size: 0.8rem; }
@@ -712,6 +715,26 @@
   .form-row { grid-template-columns: 1fr; }
   .contacto-form-wrap { padding: 24px 20px; }
   .footer-links-cols { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .faq-block { padding: 24px 20px; }
   .faq-viz { min-height: 170px; }
   .page-section { padding: 48px 0; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+@media (max-width: 420px) {
+  .page-hero-content,
+  .section-container { padding: 0 16px; }
+  .page-hero-badge { font-size: 0.8rem; padding: 8px 14px; }
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { padding: 20px 14px; }
+  .valor-card { padding: 24px 18px; }
+  .equipo-card { padding: 20px 16px; }
+  .equipo-photo { width: 96px; height: 96px; }
+  .dato-card { padding: 16px; gap: 12px; }
+  .dato-icon { width: 44px; height: 44px; font-size: 1.3rem; }
+  .contacto-form-wrap { padding: 20px 16px; }
+  .faq-block { padding: 20px 16px; }
+  .faq-badge { font-size: 0.8rem; padding: 10px 14px; }
+  .footer-links-cols { grid-template-columns: 1fr; gap: 20px; }
+  .exito-icon { width: 64px; height: 64px; font-size: 2rem; }
 }

@@ -206,3 +206,32 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 640px) {
+    .detalle-producto-container {
+        padding: 100px 20px 40px;
+        gap: 18px;
+    }
+
+    .detalle-producto-nombre {
+        font-size: 24px;
+    }
+
+    .detalle-producto-precio-final {
+        font-size: 22px;
+    }
+
+    .detalle-producto-banner {
+        max-height: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .detalle-producto-container {
+        padding: 90px 16px 32px;
+    }
+
+    .detalle-producto-add-cart {
+        max-width: none;
+    }
+}

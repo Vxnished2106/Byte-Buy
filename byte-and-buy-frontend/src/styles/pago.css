@@ -135,6 +135,24 @@
   border-color: var(--label-colors);
 }
 
+.card-number-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.card-number-input-wrapper input {
+  width: 100%;
+  padding-right: 52px;
+}
+
+.card-type-icon {
+  position: absolute;
+  right: 16px;
+  font-size: 22px;
+  pointer-events: none;
+}
+
 .payment-info-box {
   padding: 16px;
   background-color: var(--bb-bg-3);
@@ -212,10 +230,12 @@
 
 .order-item-name {
   flex: 1;
+  min-width: 0;
   font-family: var(--titles);
   font-size: 14px;
   font-weight: 600;
   color: var(--bb-ink);
+  overflow-wrap: break-word;
 }
 
 .order-item-price {
@@ -353,5 +373,49 @@
 @media (max-width: 800px) {
   .payment-container {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .payment-container {
+    padding: 100px 20px 40px;
+    row-gap: 24px;
+  }
+
+  .payment-method-section {
+    padding: 24px 20px;
+  }
+
+  .payment-method-section h2 {
+    font-size: 19px;
+  }
+
+  .order-summary {
+    padding: 20px;
+  }
+
+  .payment-option {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-container {
+    padding: 90px 16px 32px;
+  }
+
+  .payment-method-section {
+    padding: 20px 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .order-item-image {
+    width: 48px;
+    height: 48px;
   }
 }

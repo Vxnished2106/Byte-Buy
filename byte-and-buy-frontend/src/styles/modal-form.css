@@ -216,3 +216,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-form-content {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+
+  .modal-form-header h2 {
+    font-size: 1.3em;
+  }
+
+  .modal-form-close {
+    width: 36px;
+    height: 36px;
+  }
+
+  .modal-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-form-actions button {
+    width: 100%;
+  }
+}
