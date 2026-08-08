@@ -29,6 +29,7 @@ export default function Header() {
   const { productos } = useCatalogoProductos();
   const [openCatalogo, setOpenCatalogo] = useState(false);
   const [openPerfil, setOpenPerfil] = useState(false);
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
   const [product, setProduct] = useState<string>("");
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const [nombreUsuario, setNombreUsuario] = useState("");
@@ -40,6 +41,8 @@ export default function Header() {
   const handleOpenPerfil = () => setOpenPerfil(!openPerfil);
   const cerrarMenuPerfil = () => setOpenPerfil(false);
   const cerrarMenuCatalogo = () => setOpenCatalogo(false);
+  const cerrarMenuMovil = () => setMenuMovilAbierto(false);
+  const handleToggleMenuMovil = () => setMenuMovilAbierto((abierto) => !abierto);
 
   useEffect(() => {
     if (!session) {
@@ -83,6 +86,7 @@ export default function Header() {
   const handleLogout = async () => {
     await logout();
     cerrarMenuPerfil();
+    cerrarMenuMovil();
     navigate("/");
   };
 
@@ -94,6 +98,7 @@ export default function Header() {
   const irAResultados = (termino: string) => {
     const valor = termino.trim();
     setMostrarSugerencias(false);
+    cerrarMenuMovil();
     navigate(
       valor
         ? `/byte&buy/products?busqueda=${encodeURIComponent(valor)}`
@@ -124,8 +129,63 @@ export default function Header() {
 
   const handleSeleccionarSugerencia = (productoId: number) => {
     setMostrarSugerencias(false);
+    cerrarMenuMovil();
     navigate(`/byte&buy/products/${productoId}`);
   };
+
+  const renderSugerencias = () =>
+    mostrarSugerencias &&
+    terminoBusqueda && (
+      <div className="search-suggestions">
+        {sugerencias.length > 0 ? (
+          <>
+            <ul>
+              {sugerencias.map((producto) => (
+                <li key={producto.producto_id} className="suggestion-item">
+                  <button
+                    type="button"
+                    className="suggestion-link"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                      handleSeleccionarSugerencia(producto.producto_id)
+                    }
+                  >
+                    <span className="suggestion-image">
+                      {producto.producto_imagen && (
+                        <img
+                          src={producto.producto_imagen}
+                          alt={producto.producto_nombre}
+                          loading="lazy"
+                        />
+                      )}
+                    </span>
+                    <span className="suggestion-info">
+                      <span className="suggestion-name">
+                        {producto.producto_nombre}
+                      </span>
+                      <span className="suggestion-price">
+                        ${producto.producto_precio.toFixed(2)}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="suggestion-ver-todo"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => irAResultados(product)}
+            >
+              Ver todos los resultados
+            </button>
+          </>
+        ) : (
+          <p className="suggestion-empty">No se encontraron productos</p>
+        )}
+      </div>
+    );
+
   return (
     <header>
       <Link to={"/"} className="link">
@@ -186,62 +246,21 @@ export default function Header() {
             onFocus={() => setMostrarSugerencias(true)}
             onBlur={() => setTimeout(() => setMostrarSugerencias(false), 150)}
           />
-          {mostrarSugerencias && terminoBusqueda && (
-            <div className="search-suggestions">
-              {sugerencias.length > 0 ? (
-                <>
-                  <ul>
-                    {sugerencias.map((producto) => (
-                      <li
-                        key={producto.producto_id}
-                        className="suggestion-item"
-                      >
-                        <button
-                          type="button"
-                          className="suggestion-link"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() =>
-                            handleSeleccionarSugerencia(producto.producto_id)
-                          }
-                        >
-                          <span className="suggestion-image">
-                            {producto.producto_imagen && (
-                              <img
-                                src={producto.producto_imagen}
-                                alt={producto.producto_nombre}
-                                loading="lazy"
-                              />
-                            )}
-                          </span>
-                          <span className="suggestion-info">
-                            <span className="suggestion-name">
-                              {producto.producto_nombre}
-                            </span>
-                            <span className="suggestion-price">
-                              ${producto.producto_precio.toFixed(2)}
-                            </span>
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    className="suggestion-ver-todo"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => irAResultados(product)}
-                  >
-                    Ver todos los resultados
-                  </button>
-                </>
-              ) : (
-                <p className="suggestion-empty">No se encontraron productos</p>
-              )}
-            </div>
-          )}
+          {renderSugerencias()}
         </form>
       </div>
       <div className="action-buttons">
+        <button
+          type="button"
+          className={`action-button menu-toggle${menuMovilAbierto ? " open" : ""}`}
+          onClick={handleToggleMenuMovil}
+          aria-label={menuMovilAbierto ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={menuMovilAbierto}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
         <div className="user-menu">
           <button className="action-button user" onClick={handleOpenPerfil}>
             <User />
@@ -342,6 +361,132 @@ export default function Header() {
           </Link>
         </button>
       </div>
+
+      {menuMovilAbierto && (
+        <div className="mobile-menu-panel">
+          <form className="search-bar-container" onSubmit={handleBuscar}>
+            <button
+              type="submit"
+              className="search-bar-button"
+              aria-label="Buscar"
+            >
+              <SearchRounded />
+            </button>
+            <input
+              className="search-bar"
+              placeholder="Buscar productos, marcas, categorias..."
+              value={product}
+              onChange={(e) => setProduct(e.target.value)}
+              onFocus={() => setMostrarSugerencias(true)}
+              onBlur={() =>
+                setTimeout(() => setMostrarSugerencias(false), 150)
+              }
+            />
+            {renderSugerencias()}
+          </form>
+
+          <div className="mobile-menu-section">
+            <span className="mobile-menu-heading">Catálogo</span>
+            <ul>
+              <li className="items">
+                <Link
+                  to={"/byte&buy/products"}
+                  className="item-link"
+                  onClick={cerrarMenuMovil}
+                >
+                  <span className="item-name">Ver todo</span>
+                  <span className="item-count">{totalCatalogo}</span>
+                </Link>
+              </li>
+              {categoriasCatalogo.map((categoria) => (
+                <li className="items" key={categoria.nombre}>
+                  <Link
+                    to={`/byte&buy/products?categoria=${encodeURIComponent(categoria.nombre)}`}
+                    className="item-link"
+                    onClick={cerrarMenuMovil}
+                  >
+                    <span className="item-name">{categoria.nombre}</span>
+                    <span className="item-count">{categoria.cantidad}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="divider" />
+
+          <div className="mobile-menu-section">
+            {autenticado ? (
+              <>
+                <div className="perfil-info">
+                  <div className="icon-user">
+                    {fotoUsuario ? (
+                      <img
+                        src={fotoUsuario}
+                        alt="Foto de perfil"
+                        loading="lazy"
+                      />
+                    ) : (
+                      inicialesUsuario
+                    )}
+                  </div>
+                  <div className="perfil-text">
+                    <span className="name">{nombreUsuario}</span>
+                    <Link
+                      to={"/byte&buy/perfil"}
+                      className="ver-perfil-link"
+                      onClick={cerrarMenuMovil}
+                    >
+                      Ver mi perfil
+                    </Link>
+                  </div>
+                </div>
+                <div className="user-actions">
+                  <Link
+                    to={"/byte&buy/pedidos"}
+                    className="link"
+                    onClick={cerrarMenuMovil}
+                  >
+                    Mis pedidos
+                  </Link>
+                  {esAdmin && (
+                    <Link
+                      to={"/byte&buy/admin"}
+                      className="link"
+                      onClick={cerrarMenuMovil}
+                    >
+                      Volver al panel de administracion
+                    </Link>
+                  )}
+                </div>
+                <div className="divider" />
+                <div className="sesion-actions">
+                  <button type="button" className="link" onClick={handleLogout}>
+                    Cerrar sesion
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="sesion-actions">
+                <Link
+                  to={"/byte&buy/login"}
+                  className="link"
+                  onClick={cerrarMenuMovil}
+                >
+                  Iniciar sesion
+                </Link>
+                <Link
+                  to={"/byte&buy/register"}
+                  className="link"
+                  onClick={cerrarMenuMovil}
+                >
+                  Crear cuenta
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

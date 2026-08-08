@@ -1,0 +1,35 @@
+/* Contenedor genérico para páginas simples de contenido (Sobre Nosotros,
+   Contacto) que solo necesitan despejar el header fijo y centrar el texto. */
+.page-container {
+  min-height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 110px 32px 60px;
+}
+
+.page-container h1 {
+  font-family: var(--titles);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  color: var(--bb-ink);
+  margin-bottom: 14px;
+}
+
+.page-container p {
+  font-family: var(--text);
+  color: var(--bb-text-2);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .page-container {
+    padding: 90px 20px 40px;
+  }
+}
+
+@media (max-width: 380px) {
+  .page-container {
+    padding: 80px 16px 32px;
+  }
+}

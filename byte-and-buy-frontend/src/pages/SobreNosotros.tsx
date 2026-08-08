@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../components/Header";
 import "../styles/sobre-nosotros.css";
+import "../styles/page-container.css";
 
 export default function SobreNosotros() {
   return (

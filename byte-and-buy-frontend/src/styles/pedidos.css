@@ -9,7 +9,9 @@
 
   max-width: 1120px;
   margin: 0 auto;
-  padding: 28px 20px 72px;
+  /* El header es fixed (70px, ver header.css): el padding-top despeja ese
+     espacio para que el contenido no quede tapado debajo de él. */
+  padding: 100px 20px 72px;
   color: var(--bb-ink);
   font-family: var(--text);
 }
@@ -23,6 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 22px;
 }
@@ -418,6 +421,12 @@
   margin-top: 26px;
 }
 
+/* Modal de admin (PedidoEstadoModal): reutiliza el chrome de modal-form.css
+   pero necesita más ancho para la tabla de líneas. */
+.pedido-estado-modal.modal-form-content {
+  width: 760px;
+}
+
 /* Detalle */
 .pedido-detalle-meta {
   display: flex;
@@ -517,10 +526,111 @@
 }
 
 /* Responsive */
+
+/* La tabla de líneas del pedido (formulario y detalle) se convierte en una
+   lista de tarjetas en pantallas angostas: cada <td> usa su atributo
+   data-label (agregado en el JSX) como encabezado vía ::before, así se evita
+   el scroll horizontal que tendría una tabla de 5-6 columnas en un celular. */
+@media (max-width: 700px) {
+  .pedido-lineas-tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .pedido-lineas-tabla,
+  .pedido-lineas-tabla tbody,
+  .pedido-lineas-tabla tr,
+  .pedido-lineas-tabla td {
+    display: block;
+    width: 100%;
+  }
+
+  .pedido-lineas-tabla tr {
+    padding: 12px 14px;
+    border-bottom: 8px solid var(--bb-bg-1);
+  }
+
+  .pedido-lineas-tabla tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .pedido-lineas-tabla td {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--bb-border);
+    text-align: right;
+  }
+
+  .pedido-lineas-tabla td:last-child {
+    border-bottom: none;
+  }
+
+  .pedido-lineas-tabla td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--bb-text-2);
+  }
+
+  .pedido-lineas-tabla td input,
+  .pedido-lineas-tabla td select {
+    max-width: 60%;
+  }
+
+  .pedido-lineas-tabla td .pedido-error-campo {
+    flex-basis: 100%;
+    text-align: right;
+  }
+}
+
 @media (max-width: 640px) {
+  .pedidos-container {
+    padding: 90px 16px 48px;
+  }
+
+  .pedidos-topbar h1 {
+    font-size: 1.4rem;
+  }
+
+  .pedidos-btn-primary,
+  .pedidos-btn-secundario,
+  .pedidos-btn-peligro {
+    min-height: 44px;
+  }
+
+  .pedidos-paginacion {
+    justify-content: center;
+  }
+
+  .pedidos-paginacion select {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
   .pedido-form-acciones { flex-direction: column-reverse; }
-  .pedido-form-acciones button { width: 100%; }
+  .pedido-form-acciones button { width: 100%; min-height: 44px; }
   .pedido-totales { max-width: none; }
+
+  .pedido-detalle-meta {
+    gap: 16px;
+    padding: 14px;
+  }
+
+  .pedido-acciones-nota {
+    max-width: none;
+  }
 }
 
 /* Accesibilidad: texto solo para lectores de pantalla */

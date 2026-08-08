@@ -99,47 +99,49 @@ export default function Facturacion() {
             <p>{usuario?.usuario_correo}</p>
           </section>
 
-          <table className="invoice-table">
-            <thead>
-              <tr>
-                <th className="left">Producto</th>
-                <th className="center">Cant.</th>
-                <th className="right">Precio</th>
-                <th className="right">Subtotal</th>
-                <th className="right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {detallesCargando ? (
+          <div className="invoice-table-wrap">
+            <table className="invoice-table">
+              <thead>
                 <tr>
-                  <td colSpan={5} className="invoice-table-status">
-                    Cargando productos...
-                  </td>
+                  <th className="left">Producto</th>
+                  <th className="center">Cant.</th>
+                  <th className="right">Precio</th>
+                  <th className="right">Subtotal</th>
+                  <th className="right">Total</th>
                 </tr>
-              ) : (
-                detalles.map((detalle) => (
-                  <tr key={detalle.detalle_compra_id}>
-                    <td className="left">
-                      {detalle.producto?.producto_nombre ??
-                        `Producto #${detalle.producto_id}`}
-                    </td>
-                    <td className="center">
-                      {detalle.detalle_compra_cantidad}
-                    </td>
-                    <td className="right">
-                      ${detalle.detalle_compra_precio_unitario}
-                    </td>
-                    <td className="right">
-                      ${detalle.detalle_compra_subtotal}
-                    </td>
-                    <td className="right">
-                      ${detalle.detalle_compra_total}
+              </thead>
+              <tbody>
+                {detallesCargando ? (
+                  <tr>
+                    <td colSpan={5} className="invoice-table-status">
+                      Cargando productos...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  detalles.map((detalle) => (
+                    <tr key={detalle.detalle_compra_id}>
+                      <td className="left">
+                        {detalle.producto?.producto_nombre ??
+                          `Producto #${detalle.producto_id}`}
+                      </td>
+                      <td className="center">
+                        {detalle.detalle_compra_cantidad}
+                      </td>
+                      <td className="right">
+                        ${detalle.detalle_compra_precio_unitario}
+                      </td>
+                      <td className="right">
+                        ${detalle.detalle_compra_subtotal}
+                      </td>
+                      <td className="right">
+                        ${detalle.detalle_compra_total}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
           <div className="invoice-total">
             <span>Total factura</span>

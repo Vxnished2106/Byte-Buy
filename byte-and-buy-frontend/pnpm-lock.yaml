@@ -14,6 +14,9 @@ importers:
       axios:
         specifier: ^1.18.1
         version: 1.18.1
+      card-validator:
+        specifier: ^10.0.4
+        version: 10.0.4
       react:
         specifier: ^19.2.7
         version: 19.2.7
@@ -535,6 +538,9 @@ packages:
   caniuse-lite@1.0.30001800:
     resolution: {integrity: sha512-MMHtuAz9Ys840zAY5F4k6fV5GaivZ9sPk+nz0mY+GYVzRBnYkN0mpqkSR92oWRQ19yQWo4HvBV/FnC16AJX8MA==}
 
+  card-validator@10.0.4:
+    resolution: {integrity: sha512-1Q/tDCSvM5iL3psPo6j8KF/VoI63WA7Y4Zthy1E7l/H4Iul2e2X+1S0vp33n3OMRjLgGU2+gLaK2NsGtwArJkQ==}
+
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
@@ -544,6 +550,9 @@ packages:
 
   cookie-es@3.1.1:
     resolution: {integrity: sha512-UaXxwISYJPTr9hwQxMFYZ7kNhSXboMXP+Z3TRX6f1/NyaGPfuNUZOWP1pUEb75B2HjfklIYLVRfWiFZJyC6Npg==}
+
+  credit-card-type@10.3.0:
+    resolution: {integrity: sha512-gT9Sb34QMQJDjvovdygGLRHT2wWrvIjEJ+WfCHgBElBbbP8WSl5LEkgwuIRKHeaBOr5sMTgIro3SDYl7XxwTTQ==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -1612,6 +1621,10 @@ snapshots:
 
   caniuse-lite@1.0.30001800: {}
 
+  card-validator@10.0.4:
+    dependencies:
+      credit-card-type: 10.3.0
+
   combined-stream@1.0.8:
     dependencies:
       delayed-stream: 1.0.0
@@ -1619,6 +1632,8 @@ snapshots:
   convert-source-map@2.0.0: {}
 
   cookie-es@3.1.1: {}
+
+  credit-card-type@10.3.0: {}
 
   cross-spawn@7.0.6:
     dependencies:

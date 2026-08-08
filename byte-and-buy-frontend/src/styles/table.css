@@ -137,3 +137,48 @@
   border-color: #e5484d;
   color: #e5484d;
 }
+
+/* ===== Responsive ===== */
+
+@media (max-width: 768px) {
+  .table-section-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .main_button {
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .table-scroll {
+    max-height: 55vh;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  .edit-button,
+  .delete-button {
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .admin-table td.table-actions {
+    gap: 6px;
+  }
+
+  .edit-button,
+  .delete-button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}

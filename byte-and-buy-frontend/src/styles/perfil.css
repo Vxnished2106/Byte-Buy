@@ -8,7 +8,8 @@
 }
 
 .perfil-banner {
-  width: 815px;
+  width: 100%;
+  max-width: 815px;
   position: relative;
   background-color: var(--bb-surface);
   border: 1px solid var(--bb-border);
@@ -382,12 +383,22 @@
   color: var(--bb-ink);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .perfil-row,
   .direcciones-list,
-  .datos-grid,
-  .perfil-stats {
+  .datos-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* En desktop ancho, .perfil-stats se posiciona en absoluto para asomarse
+     a la derecha del banner; a este ancho ya no hay espacio para ese efecto,
+     así que vuelve al flujo normal del documento (evita overflow horizontal). */
+  .perfil-stats {
+    position: static;
+    right: auto;
+    top: auto;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin-top: 24px;
   }
 
   .banner-info {
@@ -397,6 +408,84 @@
 
   .edit-profile-btn {
     margin-bottom: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .perfil-container {
+    padding: 100px 24px 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .perfil-container {
+    padding: 90px 16px 40px;
+  }
+
+  .perfil-banner {
+    border-radius: 14px;
+  }
+
+  .banner-color {
+    height: 130px;
+  }
+
+  .banner-info {
+    padding: 0 16px 16px;
+    margin-top: -40px;
+  }
+
+  .perfil-bubble {
+    width: 76px;
+    height: 76px;
+    border-radius: 16px;
+  }
+
+  .perfil-bubble h2 {
+    font-size: 22px;
+  }
+
+  .edit-profile-btn {
+    width: 100%;
+    height: 44px;
+  }
+
+  .perfil-card {
+    padding: 18px;
+  }
+
+  .perfil-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    height: auto;
+    padding: 18px;
+  }
+
+  .datos-grid {
+    gap: 16px;
+  }
+
+  .perfil-guest {
+    margin: 40px auto;
+    padding: 28px 20px;
+  }
+
+  .perfil-guest-actions {
+    flex-direction: column;
+  }
+
+  .modal-content {
+    padding: 24px 20px;
+  }
+
+  .edit-profile-form .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-avatar {
+    flex-wrap: wrap;
   }
 }
 
