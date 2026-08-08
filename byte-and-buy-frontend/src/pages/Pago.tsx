@@ -1,17 +1,23 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
+import valid from "card-validator";
 import Header from "../components/Header";
 import { useCarrito } from "../hooks/useCarrito";
 import { useMetodosPago } from "../hooks/useMetodosPago";
 import { usePago } from "../hooks/usePago";
 import type { EstadoConPedido, EstadoPostPago } from "../ts/pedidoReglas";
 import { calcularCostoEnvio } from "../utils/carrito";
+import Visa from "../assets/favicon/visa";
+import Mastercard from "../assets/favicon/master_card";
+import AmericanExpress from "../assets/favicon/american_express";
+import Discover from "../assets/favicon/discover";
 import "../styles/pago.css";
 
 /**
- * El pago está simulado: no se valida si la tarjeta es real (algoritmo de
- * Luhn) ni su marca, solo el formato de lo que el usuario ingresa en cada
- * formulario (según el método elegido, detectado por su nombre).
+ * El pago está simulado: no se valida si la tarjeta es real ni su marca, solo
+ * el formato de lo que el usuario ingresa en cada formulario (según el
+ * método elegido, detectado por su nombre). El formato de los campos de
+ * tarjeta se valida con `card-validator`.
  */
 function esMetodoTarjeta(nombre: string): boolean {
   return /tarjeta(?!.*regalo)/i.test(nombre);
@@ -26,19 +32,42 @@ function esMetodoGiftCard(nombre: string): boolean {
 }
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const REGEX_VENCIMIENTO = /^(0[1-9]|1[0-2])\/\d{2}(\d{2})?$/;
 
-/** Solo valida el formato del número (13 a 19 dígitos): no es una validación real de tarjeta. */
+/** Iconos de marca por el `type` que devuelve `card-validator` para el número ingresado. */
+const ICONOS_TARJETA: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  visa: Visa,
+  mastercard: Mastercard,
+  "american-express": AmericanExpress,
+  discover: Discover,
+};
+
 function validarNumeroTarjeta(numero: string): boolean {
-  return /^\d{13,19}$/.test(numero.replace(/[\s-]/g, ""));
+  return valid.number(numero).isValid;
 }
 
 function validarVencimientoTarjeta(fecha: string): boolean {
-  return REGEX_VENCIMIENTO.test(fecha.trim());
+  return valid.expirationDate(fecha).isValid;
 }
 
-function validarCvv(cvv: string): boolean {
-  return /^\d{3,4}$/.test(cvv.trim());
+function validarCvv(cvv: string, tamanoEsperado?: number): boolean {
+  return valid.cvv(cvv, tamanoEsperado ?? [3, 4]).isValid;
+}
+
+/**
+ * Agrega automáticamente el "/" entre mes y año apenas se completan los 2
+ * dígitos del mes, y recorta el mes a un valor real (01-12) para que no se
+ * pueda escribir un mes inexistente (ej. "18").
+ */
+function formatearVencimiento(valor: string): string {
+  const digitos = valor.replace(/\D/g, "").slice(0, 4);
+  if (digitos.length <= 1) return digitos;
+
+  let mes = digitos.slice(0, 2);
+  if (Number(mes) === 0) mes = "01";
+  else if (Number(mes) > 12) mes = "12";
+
+  const anio = digitos.slice(2);
+  return anio ? `${mes}/${anio}` : `${mes}/`;
 }
 
 /** Valida el formato del correo de PayPal (no hay verificación real de la cuenta). */
@@ -101,6 +130,13 @@ export default function Pago() {
     ? esMetodoGiftCard(metodoSeleccionado.metodo_pago_nombre)
     : false;
 
+  // Marca de la tarjeta detectada en vivo a partir del número ingresado.
+  const tarjetaDetectada = valid.number(numeroTarjeta).card;
+  const IconoTarjeta = tarjetaDetectada
+    ? ICONOS_TARJETA[tarjetaDetectada.type]
+    : null;
+  const tamanoCvvEsperado = tarjetaDetectada?.code.size;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!carrito || items.length === 0 || !metodoSeleccionado) return;
@@ -115,15 +151,19 @@ export default function Pago() {
         return;
       }
       if (!validarNumeroTarjeta(numeroTarjeta)) {
-        setErrorFormulario("El número de tarjeta debe tener entre 13 y 19 dígitos");
+        setErrorFormulario("Ingresa un número de tarjeta válido");
         return;
       }
       if (!validarVencimientoTarjeta(vencimiento)) {
-        setErrorFormulario("La fecha de vencimiento debe tener el formato MM/AA");
+        setErrorFormulario(
+          valid.expirationDate(vencimiento).isPotentiallyValid
+            ? "Completa la fecha de vencimiento (MM/AA)"
+            : "La tarjeta está vencida o la fecha de vencimiento no es válida",
+        );
         return;
       }
-      if (!validarCvv(cvv)) {
-        setErrorFormulario("El CVV debe tener 3 o 4 dígitos");
+      if (!validarCvv(cvv, tamanoCvvEsperado)) {
+        setErrorFormulario(`El CVV debe tener ${tamanoCvvEsperado ?? "3 o 4"} dígitos`);
         return;
       }
       detalle = {
@@ -264,14 +304,22 @@ export default function Pago() {
                 <div className="card-form">
                   <div className="form-group">
                     <label htmlFor="numero-tarjeta">Número de tarjeta</label>
-                    <input
-                      id="numero-tarjeta"
-                      type="text"
-                      placeholder="0000 0000 0000 0000"
-                      value={numeroTarjeta}
-                      onChange={(e) => setNumeroTarjeta(e.target.value)}
-                      required
-                    />
+                    <div className="card-number-input-wrapper">
+                      <input
+                        id="numero-tarjeta"
+                        type="text"
+                        placeholder="0000 0000 0000 0000"
+                        value={numeroTarjeta}
+                        onChange={(e) => setNumeroTarjeta(e.target.value)}
+                        required
+                      />
+                      {IconoTarjeta && (
+                        <IconoTarjeta
+                          className="card-type-icon"
+                          aria-label={tarjetaDetectada?.niceType}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <div className="form-group">
@@ -292,9 +340,13 @@ export default function Pago() {
                       <input
                         id="vencimiento"
                         type="text"
+                        inputMode="numeric"
                         placeholder="MM/AA"
                         value={vencimiento}
-                        onChange={(e) => setVencimiento(e.target.value)}
+                        onChange={(e) =>
+                          setVencimiento(formatearVencimiento(e.target.value))
+                        }
+                        maxLength={5}
                         required
                       />
                     </div>
@@ -303,9 +355,13 @@ export default function Pago() {
                       <input
                         id="cvv"
                         type="text"
-                        placeholder="123"
+                        inputMode="numeric"
+                        placeholder={tamanoCvvEsperado === 4 ? "1234" : "123"}
                         value={cvv}
-                        onChange={(e) => setCvv(e.target.value)}
+                        onChange={(e) =>
+                          setCvv(e.target.value.replace(/\D/g, ""))
+                        }
+                        maxLength={tamanoCvvEsperado ?? 4}
                         required
                       />
                     </div>
