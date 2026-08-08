@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "../components/Header";
 import "../styles/header.css";
+import "../styles/page-container.css";
 
 export default function Contacto() {
   return (
