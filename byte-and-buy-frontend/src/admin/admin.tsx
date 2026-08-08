@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useUsuario } from "../hooks/useUsuario";
 import { useProveedores } from "../hooks/useProveedores";
@@ -6,6 +6,7 @@ import { useProductos } from "../hooks/useProductos";
 import { useCategorias } from "../hooks/useCategorias";
 import { useEtiquetas } from "../hooks/useEtiquetas";
 import { useAlertasStock } from "../hooks/useAlertasStock";
+import { useListaPedidos } from "../hooks/useListaPedidos";
 import { obtenerIniciales, obtenerNombreCompleto } from "../utils/usuario";
 import { logout } from "../services/auth";
 import Table from "../components/Table";
@@ -13,14 +14,27 @@ import ProveedorModalForm from "../components/ProveedorModalForm";
 import ProductoModalForm from "../components/ProductoModalForm";
 import CategoriaModalForm from "../components/CategoriaModalForm";
 import EtiquetaModalForm from "../components/EtiquetaModalForm";
+import PedidoEstadoModal from "../components/PedidoEstadoModal";
+import { ETIQUETA_ESTADO, formatearMonto } from "../ts/pedidoReglas";
 import type {
   proveedorData,
   productoData,
   ProductoFormValues,
   CreateCategoria,
   CreateEtiqueta,
+  ListarPedidosParams,
+  PedidoEstado,
 } from "../ts/interfaces";
 import "../styles/admin.css";
+import "../styles/pedidos.css";
+
+const ESTADOS_PEDIDO: PedidoEstado[] = [
+  "BORRADOR",
+  "CONFIRMADO",
+  "EN_PREPARACION",
+  "ENTREGADO",
+  "CANCELADO",
+];
 
 /**
  * Panel de administración.
@@ -29,7 +43,7 @@ import "../styles/admin.css";
 export default function Admin() {
   const navigate = useNavigate();
   const { usuario } = useUsuario();
-  const [vista, setVista] = useState<"proveedores" | "productos">(
+  const [vista, setVista] = useState<"proveedores" | "productos" | "pedidos">(
     "proveedores",
   );
   const [openMenu, setOpenMenu] = useState(false);
@@ -45,6 +59,30 @@ export default function Admin() {
   const [filtroProveedorId, setFiltroProveedorId] = useState(0);
   const [ordenPrecio, setOrdenPrecio] = useState<"" | "asc" | "desc">("");
   const [ordenStock, setOrdenStock] = useState<"" | "asc" | "desc">("");
+
+  // --- Gestión de pedidos (cambio de estado por el admin) --------------------
+  const [filtrosPedidos, setFiltrosPedidos] = useState<ListarPedidosParams>({
+    orden_por: "created_at",
+    orden_dir: "DESC",
+    page: 1,
+    limit: 10,
+  });
+  const [buscarPedidoInput, setBuscarPedidoInput] = useState("");
+  const [selectedPedidoId, setSelectedPedidoId] = useState<number | null>(
+    null,
+  );
+
+  // Búsqueda con debounce: no golpea el backend en cada tecla.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setFiltrosPedidos((f) => ({
+        ...f,
+        buscar: buscarPedidoInput.trim() || undefined,
+        page: 1,
+      }));
+    }, 350);
+    return () => clearTimeout(t);
+  }, [buscarPedidoInput]);
 
   const {
     proveedores,
@@ -69,6 +107,19 @@ export default function Admin() {
   const { etiquetas, crear: crearEtiqueta } = useEtiquetas();
   const { alertas: alertasStock, recargar: recargarAlertasStock } =
     useAlertasStock();
+
+  // Sin `cliente_id`: el admin ve los pedidos de todos los usuarios (el
+  // backend ya lo permite, `listar()` no restringe por actor).
+  const {
+    pedidos,
+    total: totalPedidos,
+    page: pagePedidos,
+    limit: limitPedidos,
+    totalPaginas: totalPaginasPedidos,
+    loading: cargandoPedidos,
+    error: errorPedidos,
+    recargar: recargarPedidos,
+  } = useListaPedidos(filtrosPedidos);
 
   const proveedores_columns_name = [
     "ID",
@@ -303,6 +354,12 @@ export default function Admin() {
           >
             Productos
           </button>
+          <button
+            className="admin-action-button"
+            onClick={() => setVista("pedidos")}
+          >
+            Pedidos
+          </button>
           {vista === "productos" && (
             <>
               <button
@@ -405,6 +462,73 @@ export default function Admin() {
             </select>
           </div>
         )}
+        {vista === "pedidos" && (
+          <div className="pedidos-filtros" aria-label="Filtros de pedidos">
+            <div className="pedidos-filtro">
+              <label htmlFor="admin-pedido-buscar">Buscar</label>
+              <input
+                id="admin-pedido-buscar"
+                type="search"
+                placeholder="Número o notas…"
+                value={buscarPedidoInput}
+                onChange={(e) => setBuscarPedidoInput(e.target.value)}
+              />
+            </div>
+            <div className="pedidos-filtro">
+              <label htmlFor="admin-pedido-estado">Estado</label>
+              <select
+                id="admin-pedido-estado"
+                value={filtrosPedidos.estado ?? ""}
+                onChange={(e) =>
+                  setFiltrosPedidos((f) => ({
+                    ...f,
+                    estado: (e.target.value || undefined) as
+                      | PedidoEstado
+                      | undefined,
+                    page: 1,
+                  }))
+                }
+              >
+                <option value="">Todos</option>
+                {ESTADOS_PEDIDO.map((e) => (
+                  <option key={e} value={e}>
+                    {ETIQUETA_ESTADO[e]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="pedidos-filtro">
+              <label htmlFor="admin-pedido-desde">Desde</label>
+              <input
+                id="admin-pedido-desde"
+                type="date"
+                value={filtrosPedidos.fecha_desde ?? ""}
+                onChange={(e) =>
+                  setFiltrosPedidos((f) => ({
+                    ...f,
+                    fecha_desde: e.target.value || undefined,
+                    page: 1,
+                  }))
+                }
+              />
+            </div>
+            <div className="pedidos-filtro">
+              <label htmlFor="admin-pedido-hasta">Hasta</label>
+              <input
+                id="admin-pedido-hasta"
+                type="date"
+                value={filtrosPedidos.fecha_hasta ?? ""}
+                onChange={(e) =>
+                  setFiltrosPedidos((f) => ({
+                    ...f,
+                    fecha_hasta: e.target.value || undefined,
+                    page: 1,
+                  }))
+                }
+              />
+            </div>
+          </div>
+        )}
         <div className="table">
           {vista === "proveedores" && (
             <>
@@ -451,6 +575,123 @@ export default function Admin() {
               )}
             </>
           )}
+          {vista === "pedidos" && (
+            <>
+              {errorPedidos && (
+                <p className="admin-status-message admin-status-error">
+                  {errorPedidos}
+                </p>
+              )}
+              <div className="pedidos-tabla-wrap">
+                <table className="pedidos-tabla">
+                  <thead>
+                    <tr>
+                      <th scope="col">Número</th>
+                      <th scope="col">Cliente</th>
+                      <th scope="col">Fecha</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col" className="right">
+                        Total
+                      </th>
+                      <th scope="col">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cargandoPedidos ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i} className="pedidos-skeleton-row">
+                          <td colSpan={6}>
+                            <span className="pedidos-skeleton" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : pedidos.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="pedidos-vacio">
+                          No hay pedidos que coincidan con los filtros.
+                        </td>
+                      </tr>
+                    ) : (
+                      pedidos.map((p) => (
+                        <tr key={p.pedido_id}>
+                          <td>{p.pedido_numero}</td>
+                          <td>#{p.cliente_id}</td>
+                          <td>{new Date(p.pedido_fecha).toLocaleDateString()}</td>
+                          <td>
+                            <span
+                              className={`pedidos-badge estado-${p.pedido_estado}`}
+                            >
+                              {ETIQUETA_ESTADO[p.pedido_estado]}
+                            </span>
+                          </td>
+                          <td className="right">
+                            {formatearMonto(p.pedido_total)}
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="pedidos-link-btn"
+                              onClick={() => setSelectedPedidoId(p.pedido_id)}
+                            >
+                              Ver / Cambiar estado
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <nav
+                className="pedidos-paginacion"
+                aria-label="Paginación de pedidos"
+              >
+                <button
+                  disabled={pagePedidos <= 1 || cargandoPedidos}
+                  onClick={() =>
+                    setFiltrosPedidos((f) => ({
+                      ...f,
+                      page: (f.page ?? 1) - 1,
+                    }))
+                  }
+                >
+                  ← Anterior
+                </button>
+                <span aria-live="polite">
+                  Página {pagePedidos} de {Math.max(totalPaginasPedidos, 1)} ·{" "}
+                  {totalPedidos} pedidos
+                </span>
+                <button
+                  disabled={pagePedidos >= totalPaginasPedidos || cargandoPedidos}
+                  onClick={() =>
+                    setFiltrosPedidos((f) => ({
+                      ...f,
+                      page: (f.page ?? 1) + 1,
+                    }))
+                  }
+                >
+                  Siguiente →
+                </button>
+                <select
+                  aria-label="Pedidos por página"
+                  value={limitPedidos}
+                  onChange={(e) =>
+                    setFiltrosPedidos((f) => ({
+                      ...f,
+                      limit: Number(e.target.value),
+                      page: 1,
+                    }))
+                  }
+                >
+                  {[10, 20, 50].map((n) => (
+                    <option key={n} value={n}>
+                      {n} / pág.
+                    </option>
+                  ))}
+                </select>
+              </nav>
+            </>
+          )}
         </div>
       </section>
       {showProveedorModal && (
@@ -480,6 +721,17 @@ export default function Admin() {
         <EtiquetaModalForm
           onClose={() => setShowEtiquetaModal(false)}
           onSave={handleSaveEtiqueta}
+        />
+      )}
+      {selectedPedidoId !== null && (
+        <PedidoEstadoModal
+          pedidoId={selectedPedidoId}
+          onClose={() => setSelectedPedidoId(null)}
+          onCambiado={() => {
+            recargarPedidos();
+            // Confirmar/cancelar un pedido mueve el stock: refresca las alertas.
+            recargarAlertasStock();
+          }}
         />
       )}
     </div>
