@@ -1,52 +1,19 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import Header from "../components/Header";
 import { usePedido } from "../hooks/usePedido";
-import { cambiarEstadoPedido } from "../services/pedido";
-import {
-  ETIQUETA_ESTADO,
-  formatearMonto,
-  transicionesDesde,
-} from "../ts/pedidoReglas";
-import type { PedidoEstado } from "../ts/interfaces";
+import { ETIQUETA_ESTADO, formatearMonto } from "../ts/pedidoReglas";
 import "../styles/pedidos.css";
 
-/** Vista de detalle de un pedido: cabecera, líneas, historial y transiciones. */
+/**
+ * Vista de detalle de un pedido: cabecera y líneas.
+ * El cambio de estado del pedido lo hace el admin desde el panel de
+ * administración, no el cliente.
+ */
 export default function PedidoDetalle() {
   const { id } = useParams<{ id: string }>();
   const pedidoId = id ? Number(id) : undefined;
-  const navigate = useNavigate();
 
-  const { pedido, loading, error, recargar } = usePedido(pedidoId);
-
-  const [nota, setNota] = useState("");
-  const [enviando, setEnviando] = useState(false);
-  const [errorAccion, setErrorAccion] = useState<string | null>(null);
-
-  const ejecutarTransicion = async (nuevo: PedidoEstado) => {
-    if (!pedido || enviando) return;
-    if (
-      nuevo === "CANCELADO" &&
-      !window.confirm("¿Seguro que deseas cancelar este pedido?")
-    ) {
-      return;
-    }
-    setEnviando(true);
-    setErrorAccion(null);
-    try {
-      await cambiarEstadoPedido(pedido.pedido_id, {
-        nuevo_estado: nuevo,
-        pedido_version: pedido.pedido_version,
-        nota: nota || undefined,
-      });
-      setNota("");
-      await recargar(); // Trae la nueva versión para la siguiente acción.
-    } catch (err) {
-      setErrorAccion(err instanceof Error ? err.message : "No se pudo cambiar el estado");
-    } finally {
-      setEnviando(false);
-    }
-  };
+  const { pedido, loading, error } = usePedido(pedidoId);
 
   if (loading) {
     return (
@@ -75,9 +42,6 @@ export default function PedidoDetalle() {
     );
   }
 
-  const transiciones = transicionesDesde(pedido.pedido_estado);
-  const esConflicto = errorAccion && /reciente|modificad|versión|version/i.test(errorAccion);
-
   return (
     <>
       <Header />
@@ -93,17 +57,6 @@ export default function PedidoDetalle() {
             {ETIQUETA_ESTADO[pedido.pedido_estado]}
           </span>
         </div>
-
-        {errorAccion && (
-          <div className="pedidos-banner-error" role="alert">
-            {errorAccion}
-            {esConflicto && (
-              <button type="button" className="pedidos-link-btn" onClick={() => recargar()}>
-                Recargar
-              </button>
-            )}
-          </div>
-        )}
 
         <section className="pedido-detalle-meta">
           <div><span>Fecha</span><span>{new Date(pedido.pedido_fecha).toLocaleDateString()}</span></div>
@@ -130,80 +83,17 @@ export default function PedidoDetalle() {
             <tbody>
               {pedido.detalles.map((d) => (
                 <tr key={d.detalle_pedido_id}>
-                  <td>{d.producto_nombre ?? `Producto #${d.producto_id}`}</td>
-                  <td className="right">{d.detalle_pedido_cantidad}</td>
-                  <td className="right">{formatearMonto(d.detalle_pedido_precio_unitario)}</td>
-                  <td className="right">{formatearMonto(d.detalle_pedido_descuento_monto)}</td>
-                  <td className="right">{formatearMonto(d.detalle_pedido_impuesto_monto)}</td>
-                  <td className="right">{formatearMonto(d.detalle_pedido_total)}</td>
+                  <td data-label="Producto">{d.producto_nombre ?? `Producto #${d.producto_id}`}</td>
+                  <td className="right" data-label="Cant.">{d.detalle_pedido_cantidad}</td>
+                  <td className="right" data-label="Precio">{formatearMonto(d.detalle_pedido_precio_unitario)}</td>
+                  <td className="right" data-label="Desc.">{formatearMonto(d.detalle_pedido_descuento_monto)}</td>
+                  <td className="right" data-label="Impuesto">{formatearMonto(d.detalle_pedido_impuesto_monto)}</td>
+                  <td className="right" data-label="Total">{formatearMonto(d.detalle_pedido_total)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        {/* Acciones de estado */}
-        {(transiciones.length > 0 || pedido.pedido_estado === "BORRADOR") && (
-          <section className="pedido-acciones" aria-label="Acciones del pedido">
-            {transiciones.length > 0 && (
-              <div className="pedido-acciones-nota">
-                <label htmlFor="nota-estado">Nota (opcional)</label>
-                <input
-                  id="nota-estado"
-                  type="text"
-                  maxLength={255}
-                  value={nota}
-                  onChange={(e) => setNota(e.target.value)}
-                  placeholder="Ej. Pago verificado"
-                />
-              </div>
-            )}
-            <div className="pedido-acciones-botones">
-              {pedido.pedido_estado === "BORRADOR" && (
-                <button
-                  type="button"
-                  className="pedidos-btn-secundario"
-                  onClick={() => navigate(`/byte&buy/pedidos/${pedido.pedido_id}/editar`)}
-                >
-                  Editar
-                </button>
-              )}
-              {transiciones.map((estado) => (
-                <button
-                  key={estado}
-                  type="button"
-                  className={estado === "CANCELADO" ? "pedidos-btn-peligro" : "pedidos-btn-primary"}
-                  onClick={() => ejecutarTransicion(estado)}
-                  disabled={enviando}
-                >
-                  {enviando ? "Procesando…" : ETIQUETA_ESTADO[estado]}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Historial */}
-        <section className="pedido-historial" aria-label="Historial de estados">
-          <h2>Historial</h2>
-          <ol className="pedido-historial-lista">
-            {(pedido.historial ?? []).map((h) => (
-              <li key={h.historial_id}>
-                <span className="pedido-historial-fecha">
-                  {new Date(h.created_at).toLocaleString()}
-                </span>
-                <span className="pedido-historial-cambio">
-                  {h.estado_anterior
-                    ? `${ETIQUETA_ESTADO[h.estado_anterior]} → ${ETIQUETA_ESTADO[h.estado_nuevo]}`
-                    : ETIQUETA_ESTADO[h.estado_nuevo]}
-                </span>
-                {h.historial_nota && (
-                  <span className="pedido-historial-nota">{h.historial_nota}</span>
-                )}
-              </li>
-            ))}
-          </ol>
-        </section>
       </main>
     </>
   );
