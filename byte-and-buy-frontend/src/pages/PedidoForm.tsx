@@ -80,8 +80,11 @@ export default function PedidoForm() {
   const estadoNavegacion = !esEdicion
     ? (location.state as (EstadoPostPago | EstadoDesdeCarrito) | null)
     : null;
-  const estadoPostPago =
-    estadoNavegacion && "facturaId" in estadoNavegacion ? estadoNavegacion : null;
+  const estadoPostPago = (
+    estadoNavegacion && "facturaId" in estadoNavegacion
+      ? estadoNavegacion
+      : null
+  ) as EstadoPostPago | null;
   const estadoDesdeCarrito =
     estadoNavegacion && !estadoPostPago
       ? (estadoNavegacion as EstadoDesdeCarrito)
@@ -89,7 +92,7 @@ export default function PedidoForm() {
   const itemsPrecargados = estadoPostPago?.items ?? estadoDesdeCarrito?.items ?? null;
 
   const { usuario } = useUsuario();
-  const { productosCompletos, loading: cargandoProductos } = useProductos();
+  const { productosCompletos } = useProductos();
   const { pedido, loading: cargandoPedido } = usePedido(pedidoId);
 
   const [direcciones, setDirecciones] = useState<DireccionEnvio[]>([]);
@@ -134,24 +137,17 @@ export default function PedidoForm() {
   );
   const [version, setVersion] = useState(0);
 
-  const [tocados, setTocados] = useState<Set<string>>(new Set());
   const [intentoEnvio, setIntentoEnvio] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [errorGlobal, setErrorGlobal] = useState<string | null>(null);
-  const [erroresServidorLinea, setErroresServidorLinea] = useState<Record<number, string>>({});
+  const [, setErroresServidorLinea] = useState<Record<number, string>>({});
   const [sucio, setSucio] = useState(false);
 
   // Clave de idempotencia estable por montaje: un reintento no crea duplicados.
   const idempotencyKey = useRef(crypto.randomUUID());
   // Evita repoblar el formulario en cada render durante la edición.
   const pedidoCargado = useRef(false);
-  const foco = useRef<HTMLSelectElement | null>(null);
-  const debeEnfocar = useRef(false);
 
-  const activos = useMemo(
-    () => productosCompletos.filter((p) => p.producto_estado === "activo"),
-    [productosCompletos],
-  );
   const productoPorId = useMemo(() => {
     const m = new Map<number, Producto>();
     productosCompletos.forEach((p) => m.set(p.producto_id, p));
@@ -279,44 +275,7 @@ export default function PedidoForm() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [sucio, enviando]);
 
-  // Enfoca el selector de la fila recién agregada.
-  useEffect(() => {
-    if (debeEnfocar.current && foco.current) {
-      foco.current.focus();
-      debeEnfocar.current = false;
-    }
-  }, [lineas]);
-
   const marcarSucio = () => setSucio(true);
-
-  // --- Manejo de líneas ------------------------------------------------------
-  const cambiarLinea = (key: string, cambios: Partial<LineaForm>) => {
-    setLineas((ls) => ls.map((l) => (l.key === key ? { ...l, ...cambios } : l)));
-    marcarSucio();
-  };
-
-  const seleccionarProducto = (key: string, productoId: number) => {
-    const producto = productoPorId.get(productoId);
-    cambiarLinea(key, {
-      producto_id: productoId,
-      // Autocompleta precio y descuento desde el catálogo (el usuario puede ajustarlos).
-      precio_unitario: producto ? Number(producto.producto_precio) : 0,
-      descuento_pct: producto ? Number(producto.producto_descuento) : 0,
-    });
-  };
-
-  const agregarLinea = () => {
-    debeEnfocar.current = true;
-    setLineas((ls) => [...ls, nuevaLinea()]);
-    marcarSucio();
-  };
-
-  const quitarLinea = (key: string) => {
-    setLineas((ls) => (ls.length > 1 ? ls.filter((l) => l.key !== key) : ls));
-    marcarSucio();
-  };
-
-  const tocar = (campo: string) => setTocados((t) => new Set(t).add(campo));
 
   // --- Cálculo de totales (previsualización) ---------------------------------
   const importes = lineas.map((l) => {
@@ -340,9 +299,6 @@ export default function PedidoForm() {
   erroresLinea.forEach((e, i) => {
     Object.values(e).forEach((msg) => resumenErrores.push(`Línea ${i + 1}: ${msg}`));
   });
-
-  const mostrarError = (key: string, campo: string, msg?: string) =>
-    msg && (intentoEnvio || tocados.has(`${key}:${campo}`)) ? msg : undefined;
 
   // --- Envío -----------------------------------------------------------------
   const handleSubmit = async (e: React.FormEvent) => {
@@ -699,130 +655,6 @@ export default function PedidoForm() {
             </div>
           </section>
 
-          {/* Grilla de líneas */}
-          <section aria-label="Líneas del pedido">
-            <div className="pedido-lineas-header">
-              <h2>Productos</h2>
-              <button type="button" className="pedidos-btn-secundario" onClick={agregarLinea}>
-                + Agregar línea
-              </button>
-            </div>
-
-            <div className="pedidos-tabla-wrap">
-              <table className="pedido-lineas-tabla">
-                <thead>
-                  <tr>
-                    <th scope="col">Producto</th>
-                    <th scope="col">Cantidad</th>
-                    <th scope="col">Precio unit.</th>
-                    <th scope="col">Desc. %</th>
-                    <th scope="col" className="right">Total línea</th>
-                    <th scope="col"><span className="sr-only">Acciones</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lineas.map((l, i) => {
-                    const errores = erroresLinea[i];
-                    const errServidor = erroresServidorLinea[i + 1];
-                    const esUltima = i === lineas.length - 1;
-                    const errProducto = mostrarError(l.key, "producto_id", errores.producto_id);
-                    const errCantidad = mostrarError(l.key, "cantidad", errores.cantidad);
-                    const errPrecio = mostrarError(l.key, "precio_unitario", errores.precio_unitario);
-                    const errDesc = mostrarError(l.key, "descuento_pct", errores.descuento_pct);
-                    return (
-                      <tr key={l.key} className={errServidor ? "linea-error-servidor" : ""}>
-                        <td>
-                          <select
-                            aria-label={`Producto de la línea ${i + 1}`}
-                            aria-invalid={Boolean(errProducto)}
-                            aria-describedby={errProducto ? `err-prod-${l.key}` : undefined}
-                            ref={esUltima ? foco : undefined}
-                            value={l.producto_id}
-                            onChange={(e) => seleccionarProducto(l.key, Number(e.target.value))}
-                            onBlur={() => tocar(`${l.key}:producto_id`)}
-                            disabled={cargandoProductos}
-                          >
-                            <option value={0}>Selecciona…</option>
-                            {activos.map((p) => (
-                              <option key={p.producto_id} value={p.producto_id}>
-                                {p.producto_nombre}
-                              </option>
-                            ))}
-                          </select>
-                          {errProducto && (
-                            <span id={`err-prod-${l.key}`} className="pedido-error-campo">
-                              {errProducto}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            min={1}
-                            step={1}
-                            aria-label={`Cantidad de la línea ${i + 1}`}
-                            aria-invalid={Boolean(errCantidad)}
-                            value={l.cantidad === 0 ? "" : l.cantidad}
-                            onChange={(e) =>
-                              cambiarLinea(l.key, { cantidad: Math.trunc(Number(e.target.value)) })
-                            }
-                            onBlur={() => tocar(`${l.key}:cantidad`)}
-                          />
-                          {errCantidad && <span className="pedido-error-campo">{errCantidad}</span>}
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            aria-label={`Precio unitario de la línea ${i + 1}`}
-                            aria-invalid={Boolean(errPrecio)}
-                            value={l.precio_unitario === 0 ? "" : l.precio_unitario}
-                            onChange={(e) =>
-                              cambiarLinea(l.key, { precio_unitario: Number(e.target.value) })
-                            }
-                            onBlur={() => tocar(`${l.key}:precio_unitario`)}
-                          />
-                          {errPrecio && <span className="pedido-error-campo">{errPrecio}</span>}
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            min={0}
-                            max={100}
-                            step="0.01"
-                            aria-label={`Descuento de la línea ${i + 1}`}
-                            aria-invalid={Boolean(errDesc)}
-                            value={l.descuento_pct === 0 ? "" : l.descuento_pct}
-                            onChange={(e) =>
-                              cambiarLinea(l.key, { descuento_pct: Number(e.target.value) })
-                            }
-                            onBlur={() => tocar(`${l.key}:descuento_pct`)}
-                          />
-                          {errDesc && <span className="pedido-error-campo">{errDesc}</span>}
-                        </td>
-                        <td className="right">{formatearMonto(importes[i].total)}</td>
-                        <td>
-                          <button
-                            type="button"
-                            className="pedido-quitar-linea"
-                            aria-label={`Quitar línea ${i + 1}`}
-                            onClick={() => quitarLinea(l.key)}
-                            disabled={lineas.length === 1}
-                          >
-                            ✕
-                          </button>
-                          {errServidor && (
-                            <span className="pedido-error-campo">{errServidor}</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </section>
 
           {/* Totales (previsualización) */}
           <section className="pedido-totales" aria-label="Totales (previsualización)">
@@ -832,9 +664,6 @@ export default function PedidoForm() {
             <div className="pedido-totales-total">
               <span>Total</span><span>{formatearMonto(totales.total)}</span>
             </div>
-            <p className="pedido-totales-nota">
-              * Previsualización. El total definitivo lo calcula el servidor al guardar.
-            </p>
           </section>
 
           {/* Resumen de por qué el botón está deshabilitado */}
