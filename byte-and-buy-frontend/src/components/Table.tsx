@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/table.css"
 type TableProps<T extends object> = {
   /** Título mostrado sobre la tabla. */

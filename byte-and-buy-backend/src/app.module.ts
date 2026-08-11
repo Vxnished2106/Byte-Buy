@@ -48,6 +48,13 @@ import { PedidoModule } from './pedido/pedido.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
         charset: 'utf8mb4',
+        // Los MySQL gestionados (Aiven, etc.) exigen TLS. Con DB_SSL=true se
+        // conecta cifrado; rejectUnauthorized:false evita tener que embarcar
+        // el certificado CA. En local (sin DB_SSL) se conecta sin SSL.
+        ssl:
+          config.get<string>('DB_SSL') === 'true'
+            ? { rejectUnauthorized: false }
+            : undefined,
       }),
     }),
     AuthModule,

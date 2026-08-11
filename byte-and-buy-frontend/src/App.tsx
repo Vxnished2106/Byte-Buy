@@ -3,7 +3,7 @@ import "./App.css";
 import Header from "./components/Header";
 import CategoryCard from "./components/CategoryCard";
 import ProductCard from "./components/ProductCard";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { useCatalogoProductos } from "./hooks/useCatalogoProductos";
 import { useCategoriasCatalogo } from "./hooks/useCategoriasCatalogo";
 import { useProductosMasVendidos } from "./hooks/useProductosMasVendidos";
