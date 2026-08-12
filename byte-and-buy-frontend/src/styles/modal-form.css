@@ -211,6 +211,26 @@
   background-color: #000;
 }
 
+.modal-form-actions .modal-form-save-peligro {
+  background-color: var(--pedido-peligro);
+}
+
+.modal-form-actions .modal-form-save-peligro:hover {
+  background-color: #b3221f;
+}
+
+.modal-form-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.confirm-modal-mensaje {
+  font-family: var(--details);
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
 @media (max-width: 640px) {
   .modal-form-row {
     grid-template-columns: 1fr;

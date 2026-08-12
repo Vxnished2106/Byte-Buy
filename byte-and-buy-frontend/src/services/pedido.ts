@@ -80,3 +80,20 @@ export async function cambiarEstadoPedido(
     throw errorDelBackend(error, "No se pudo cambiar el estado del pedido");
   }
 }
+
+/**
+ * Alinea el pedido con un pago ya completado (checkout de venta/pago que
+ * descuenta el stock por su cuenta, fuera de este módulo): lo deja en
+ * CONFIRMADO sin volver a descontar stock, para que una cancelación
+ * posterior lo reponga correctamente.
+ */
+export async function confirmarPagoPedido(pedido_id: number): Promise<Pedido> {
+  try {
+    const { data } = await api.patch<Pedido>(
+      `/pedidos/${pedido_id}/confirmar-pago`,
+    );
+    return data;
+  } catch (error) {
+    throw errorDelBackend(error, "No se pudo confirmar el pedido tras el pago");
+  }
+}
