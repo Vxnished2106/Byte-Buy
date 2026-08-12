@@ -3,9 +3,19 @@ import { Link, useNavigate } from "react-router";
 import Header from "../components/Header";
 import { useListaPedidos } from "../hooks/useListaPedidos";
 import { useUsuario } from "../hooks/useUsuario";
-import { ETIQUETA_ESTADO, formatearMonto } from "../ts/pedidoReglas";
-import type { ListarPedidosParams, PedidoEstado } from "../ts/interfaces";
+import { cambiarEstadoPedido } from "../services/pedido";
+import { ETIQUETA_ESTADO, formatearMonto, transicionesDesde } from "../ts/pedidoReglas";
+import type { ListarPedidosParams, Pedido, PedidoEstado } from "../ts/interfaces";
 import "../styles/pedidos.css";
+
+/** Plazo dentro del cual el cliente puede cancelar su propio pedido. */
+const VENTANA_CANCELACION_MS = 24 * 60 * 60 * 1000;
+
+/** ¿Puede el cliente cancelar este pedido? (estado lo permite y sigue dentro de las 24h desde su creación). */
+function puedeCancelar(p: Pedido): boolean {
+  if (!transicionesDesde(p.pedido_estado).includes("CANCELADO")) return false;
+  return Date.now() - new Date(p.created_at).getTime() < VENTANA_CANCELACION_MS;
+}
 
 const ESTADOS: PedidoEstado[] = [
   "BORRADOR",
@@ -44,7 +54,7 @@ export default function PedidosLista() {
   // el backend no lo hace por sí solo, así que `cliente_id` viaja en cada
   // consulta. Mientras el usuario todavía no cargó se usa un id imposible
   // (-1) para no traer momentáneamente los pedidos de todos los usuarios.
-  const { pedidos, total, page, limit, totalPaginas, loading, error } =
+  const { pedidos, total, page, limit, totalPaginas, loading, error, recargar } =
     useListaPedidos({ ...filtros, cliente_id: usuario?.usuario_id ?? -1 });
 
   /** Actualiza un filtro y regresa a la primera página. */
@@ -52,6 +62,32 @@ export default function PedidosLista() {
     campo: K,
     valor: ListarPedidosParams[K],
   ) => setFiltros((f) => ({ ...f, [campo]: valor, page: 1 }));
+
+  // Id del pedido que se está cancelando (bloquea su botón mientras dura la petición).
+  const [cancelandoId, setCancelandoId] = useState<number | null>(null);
+  const [errorCancelar, setErrorCancelar] = useState<string | null>(null);
+
+  const cancelarPedido = async (p: Pedido) => {
+    if (cancelandoId !== null) return;
+    if (!window.confirm(`¿Seguro que deseas cancelar el pedido ${p.pedido_numero}?`)) {
+      return;
+    }
+    setCancelandoId(p.pedido_id);
+    setErrorCancelar(null);
+    try {
+      await cambiarEstadoPedido(p.pedido_id, {
+        nuevo_estado: "CANCELADO",
+        pedido_version: p.pedido_version,
+      });
+      await recargar();
+    } catch (err) {
+      setErrorCancelar(
+        err instanceof Error ? err.message : "No se pudo cancelar el pedido",
+      );
+    } finally {
+      setCancelandoId(null);
+    }
+  };
 
   return (
     <>
@@ -134,6 +170,11 @@ export default function PedidosLista() {
             {error}
           </p>
         )}
+        {errorCancelar && (
+          <p className="pedidos-banner-error" role="alert">
+            {errorCancelar}
+          </p>
+        )}
 
         <div className="pedidos-tabla-wrap">
           <table className="pedidos-tabla">
@@ -180,6 +221,16 @@ export default function PedidosLista() {
                       >
                         Ver detalle
                       </Link>
+                      {puedeCancelar(p) && (
+                        <button
+                          type="button"
+                          className="pedidos-link-btn pedidos-link-btn-peligro"
+                          onClick={() => cancelarPedido(p)}
+                          disabled={cancelandoId !== null}
+                        >
+                          {cancelandoId === p.pedido_id ? "Cancelando…" : "Cancelar"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

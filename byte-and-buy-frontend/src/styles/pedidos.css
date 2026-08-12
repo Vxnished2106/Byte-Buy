@@ -93,6 +93,13 @@
   text-decoration: underline;
   cursor: pointer;
 }
+.pedidos-link-btn-peligro {
+  color: var(--pedido-peligro);
+}
+.pedidos-link-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* Filtros */
 .pedidos-filtros {
