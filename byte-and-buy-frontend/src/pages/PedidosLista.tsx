@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
+import ConfirmModal from "../components/ConfirmModal";
 import Header from "../components/Header";
 import { useListaPedidos } from "../hooks/useListaPedidos";
 import { useUsuario } from "../hooks/useUsuario";
@@ -63,29 +64,28 @@ export default function PedidosLista() {
     valor: ListarPedidosParams[K],
   ) => setFiltros((f) => ({ ...f, [campo]: valor, page: 1 }));
 
-  // Id del pedido que se está cancelando (bloquea su botón mientras dura la petición).
-  const [cancelandoId, setCancelandoId] = useState<number | null>(null);
+  // Pedido pendiente de confirmar cancelación en el modal (null = modal cerrado).
+  const [pedidoACancelar, setPedidoACancelar] = useState<Pedido | null>(null);
+  const [cancelando, setCancelando] = useState(false);
   const [errorCancelar, setErrorCancelar] = useState<string | null>(null);
 
-  const cancelarPedido = async (p: Pedido) => {
-    if (cancelandoId !== null) return;
-    if (!window.confirm(`¿Seguro que deseas cancelar el pedido ${p.pedido_numero}?`)) {
-      return;
-    }
-    setCancelandoId(p.pedido_id);
+  const confirmarCancelacion = async () => {
+    if (!pedidoACancelar || cancelando) return;
+    setCancelando(true);
     setErrorCancelar(null);
     try {
-      await cambiarEstadoPedido(p.pedido_id, {
+      await cambiarEstadoPedido(pedidoACancelar.pedido_id, {
         nuevo_estado: "CANCELADO",
-        pedido_version: p.pedido_version,
+        pedido_version: pedidoACancelar.pedido_version,
       });
+      setPedidoACancelar(null);
       await recargar();
     } catch (err) {
       setErrorCancelar(
         err instanceof Error ? err.message : "No se pudo cancelar el pedido",
       );
     } finally {
-      setCancelandoId(null);
+      setCancelando(false);
     }
   };
 
@@ -225,10 +225,10 @@ export default function PedidosLista() {
                         <button
                           type="button"
                           className="pedidos-link-btn pedidos-link-btn-peligro"
-                          onClick={() => cancelarPedido(p)}
-                          disabled={cancelandoId !== null}
+                          onClick={() => setPedidoACancelar(p)}
+                          disabled={cancelando}
                         >
-                          {cancelandoId === p.pedido_id ? "Cancelando…" : "Cancelar"}
+                          Cancelar
                         </button>
                       )}
                     </td>
@@ -269,6 +269,19 @@ export default function PedidosLista() {
             ))}
           </select>
         </nav>
+
+        {pedidoACancelar && (
+          <ConfirmModal
+            titulo="Cancelar pedido"
+            mensaje={`¿Seguro que deseas cancelar el pedido ${pedidoACancelar.pedido_numero}? Esta acción no se puede deshacer.`}
+            textoConfirmar="Sí, cancelar"
+            textoCancelar="Volver"
+            peligro
+            procesando={cancelando}
+            onConfirmar={confirmarCancelacion}
+            onCancelar={() => setPedidoACancelar(null)}
+          />
+        )}
       </main>
     </>
   );

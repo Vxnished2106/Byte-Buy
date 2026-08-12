@@ -71,6 +71,24 @@ Requiere `pedido_version` (concurrencia optimista). Reemplaza el set de líneas.
 { "nuevo_estado": "CONFIRMADO", "pedido_version": 0, "nota": "Pago verificado" }
 ```
 
+### `PATCH /pedidos/:id/confirmar-pago` — Confirmar tras un pago externo al módulo
+Sin body. Deja un pedido `BORRADOR` en `CONFIRMADO` **sin descontar stock** (a
+diferencia de `PATCH /pedidos/:id/estado` con `CONFIRMADO`).
+
+Existe porque el checkout de compra (`venta`/`pago`/`detalle_compra`) es un
+módulo aparte del de pedidos: descuenta el stock por su cuenta al pagar, sin
+pasar por `cambiarEstado`. Si el pedido asociado a esa compra se dejara en
+`BORRADOR`, cancelarlo después no repondría el stock (`reponerStock` solo se
+dispara al cancelar desde `CONFIRMADO`/`EN_PREPARACION`). El frontend llama a
+este endpoint justo después de que el pago se complete (`Pago.tsx` y el flujo
+de respaldo en `PedidoForm.tsx`), para que el estado del pedido quede
+consistente con el stock ya descontado.
+
+No exige `pedido_version` ni dirección de envío (no es una transición elegida
+por el usuario, sino un ajuste de estado posterior a una venta ya
+registrada). Es idempotente: si el pedido ya no está en `BORRADOR`, no hace
+nada y devuelve su estado actual.
+
 ## Esquema `Pedido` (respuesta)
 
 ```jsonc

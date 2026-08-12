@@ -443,6 +443,53 @@ export class PedidoService {
     return this.obtener(id);
   }
 
+  /**
+   * Alinea el estado de un pedido BORRADOR con un pago ya completado fuera de
+   * este módulo (el checkout de `venta`/`pago`/`detalle_compra` descuenta el
+   * stock directamente, sin pasar por `cambiarEstado`). Deja el pedido en
+   * CONFIRMADO SIN volver a descontar stock (ya se descontó al pagar); así,
+   * si el pedido se cancela después, `cambiarEstado` sabe que debe reponerlo.
+   *
+   * A diferencia de `cambiarEstado`, no exige versión ni dirección de envío:
+   * es un ajuste de estado interno posterior a una venta ya realizada, no una
+   * transición elegida por el usuario. Es idempotente: si el pedido ya no
+   * está en BORRADOR (ej. reintento de red), no hace nada y devuelve su
+   * estado actual.
+   *
+   * @throws NotFoundException El pedido no existe.
+   * @throws ForbiddenException Sin permiso sobre el pedido.
+   */
+  async confirmarPorPago(
+    id: number,
+    actor: ActorPedido,
+  ): Promise<ResponsePedidoDto> {
+    const pedido = await this.cargarEntidad(id);
+    this.verificarPermiso(pedido, actor);
+
+    if (pedido.pedido_estado !== PedidoEstado.BORRADOR) {
+      return this.obtener(id);
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      pedido.pedido_estado = PedidoEstado.CONFIRMADO;
+      pedido.updated_by = actor.usuario_id;
+      await manager.save(pedido);
+
+      await manager.save(
+        manager.create(PedidoHistorialEstado, {
+          pedido_id: id,
+          estado_anterior: PedidoEstado.BORRADOR,
+          estado_nuevo: PedidoEstado.CONFIRMADO,
+          usuario_id: actor.usuario_id,
+          historial_nota:
+            'Confirmado automáticamente: el pago ya se procesó y el stock se descontó al pagar.',
+        }),
+      );
+    });
+
+    return this.obtener(id);
+  }
+
   // ---------------------------------------------------------------------------
   // Consultas
   // ---------------------------------------------------------------------------

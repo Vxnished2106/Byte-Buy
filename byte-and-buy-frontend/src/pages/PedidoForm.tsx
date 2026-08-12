@@ -6,7 +6,7 @@ import { usePedido } from "../hooks/usePedido";
 import { useUsuario } from "../hooks/useUsuario";
 import { crearDireccion, listarMisDirecciones } from "../services/direccionEnvio";
 import { listarCiudades, listarPaises, listarRegiones } from "../services/catalogo";
-import { crearPedido, editarPedido } from "../services/pedido";
+import { confirmarPagoPedido, crearPedido, editarPedido } from "../services/pedido";
 import {
   calcularLinea,
   formatearMonto,
@@ -120,7 +120,7 @@ export default function PedidoForm() {
   );
   const [notas, setNotas] = useState(() =>
     estadoPostPago
-      ? `Pedido informativo: la compra ya fue pagada y facturada (factura ${estadoPostPago.facturaNumero}). No confirmar este pedido: el stock de estos productos ya se descontó al pagar.`
+      ? `Pedido informativo: la compra ya fue pagada y facturada (factura ${estadoPostPago.facturaNumero}).`
       : "",
   );
   const [direccionId, setDireccionId] = useState<number>(0);
@@ -341,6 +341,15 @@ export default function PedidoForm() {
         const creado = await crearPedido(payload, idempotencyKey.current);
         setSucio(false);
         if (estadoPostPago) {
+          // El stock de estos productos ya se descontó al pagar (antes de
+          // crear este pedido): se alinea el estado a CONFIRMADO sin volver
+          // a descontarlo, para que una cancelación posterior lo reponga.
+          // Best-effort: no bloquea la navegación a la factura ya generada.
+          try {
+            await confirmarPagoPedido(creado.pedido_id);
+          } catch (err) {
+            console.error("No se pudo confirmar el pedido tras el pago", err);
+          }
           navigate(`/byte&buy/facturacion/${estadoPostPago.facturaId}`);
         } else if (estadoDesdeCarrito) {
           navigate("/byte&buy/pago", {

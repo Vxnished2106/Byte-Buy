@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import { useCarrito } from "../hooks/useCarrito";
 import { useMetodosPago } from "../hooks/useMetodosPago";
 import { usePago } from "../hooks/usePago";
+import { confirmarPagoPedido } from "../services/pedido";
 import type { EstadoConPedido, EstadoPostPago } from "../ts/pedidoReglas";
 import { calcularCostoEnvio } from "../utils/carrito";
 import Visa from "../assets/favicon/visa";
@@ -207,8 +208,16 @@ export default function Pago() {
       );
 
       if (estadoConPedido) {
-        // El pedido y su dirección de envío ya se crearon antes de pagar:
-        // se va directo a la factura.
+        // El pedido ya existía (creado antes de pagar) y se quedó en
+        // BORRADOR: se alinea con la venta ya registrada (CONFIRMADO, sin
+        // volver a descontar stock) para que, si se cancela después, se
+        // repongan los productos. Es best-effort: si falla, no se bloquea
+        // la confirmación de la compra, que ya se completó.
+        try {
+          await confirmarPagoPedido(estadoConPedido.pedidoId);
+        } catch (err) {
+          console.error("No se pudo confirmar el pedido tras el pago", err);
+        }
         navigate(`/byte&buy/facturacion/${factura.factura_id}`);
       } else {
         // Respaldo: se llegó a pagar sin haber creado antes el pedido. Se

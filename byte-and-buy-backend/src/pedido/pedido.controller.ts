@@ -93,4 +93,19 @@ export class PedidoController {
     const actor = await this.actorDe(req);
     return this.pedidoService.cambiarEstado(id, dto, actor);
   }
+
+  /**
+   * Confirma un pedido BORRADOR cuyo pago ya se completó fuera de este
+   * módulo (checkout de venta/pago/detalle_compra, que descuenta el stock
+   * directamente). No vuelve a descontar stock: solo alinea el estado del
+   * pedido con la realidad para que una cancelación posterior lo reponga.
+   */
+  @Patch(':id/confirmar-pago')
+  async confirmarPorPago(
+    @Request() req: any,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ResponsePedidoDto> {
+    const actor = await this.actorDe(req);
+    return this.pedidoService.confirmarPorPago(id, actor);
+  }
 }
