@@ -59,12 +59,6 @@ export default function PedidosLista() {
       <main className="pedidos-container">
         <div className="pedidos-topbar">
           <h1>Pedidos</h1>
-          <button
-            className="pedidos-btn-primary"
-            onClick={() => navigate("/byte&buy/pedidos/nuevo")}
-          >
-            Nuevo pedido
-          </button>
         </div>
 
         <section className="pedidos-filtros" aria-label="Filtros de pedidos">
