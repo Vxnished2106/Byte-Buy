@@ -96,9 +96,23 @@
 .pedidos-link-btn-peligro {
   color: var(--pedido-peligro);
 }
+.pedidos-link-btn-finalizar {
+  color: var(--links-color);
+}
 .pedidos-link-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Acciones del detalle (ej. finalizar un borrador pendiente) */
+.pedido-detalle-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.pedido-detalle-acciones .pedidos-btn-primary {
+  align-self: flex-start;
 }
 
 /* Filtros */

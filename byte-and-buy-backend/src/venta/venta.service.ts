@@ -49,12 +49,16 @@ export class VentaService {
     const usuario = await this.usuarioRepository.findOneBy({ usuario_id: datos.usuario_id });
     if (!usuario) throw new NotFoundException('Usuario no encontrado');
 
-    const carrito = await this.carritoRepository.findOneBy({ carrito_id: datos.carrito_id });
-    if (!carrito) throw new NotFoundException('Carrito no encontrado');
+    // El carrito es opcional: solo se valida cuando la venta se origina de uno
+    // (checkout normal). Al finalizar un pedido en BORRADOR no hay carrito.
+    if (datos.carrito_id != null) {
+      const carrito = await this.carritoRepository.findOneBy({ carrito_id: datos.carrito_id });
+      if (!carrito) throw new NotFoundException('Carrito no encontrado');
+    }
 
     const venta = this.ventaRepository.create({
       usuario_id: datos.usuario_id,
-      carrito_id: datos.carrito_id,
+      carrito_id: datos.carrito_id ?? null,
       venta_monto: datos.venta_monto,
       venta_estado: 'aprobado',
     });

@@ -1,4 +1,12 @@
-import { IsInt, IsEnum, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import {
+  IsInt,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsBoolean,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { PedidoEstado } from '../entities/pedido.entity';
 
 /**
@@ -23,4 +31,14 @@ export class CambiarEstadoPedidoDto {
   @IsString()
   @MaxLength(255)
   nota?: string;
+
+  /**
+   * Confirma el pedido SIN volver a descontar stock. Lo usa el checkout: al
+   * pagar, el `detalle_compra` ya descontó el inventario, así que la
+   * confirmación del pedido no debe descontarlo otra vez. Solo tiene efecto al
+   * transicionar a CONFIRMADO.
+   */
+  @IsOptional()
+  @IsBoolean()
+  omitir_stock?: boolean;
 }

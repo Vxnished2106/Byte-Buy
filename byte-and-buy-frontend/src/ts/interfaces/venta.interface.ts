@@ -15,7 +15,8 @@ export interface Venta {
  * envía desde el frontend.
  */
 export interface CreateVenta {
-  carrito_id: number;
+  /** Opcional: no hay carrito cuando la venta nace de finalizar un pedido. */
+  carrito_id?: number;
   venta_monto: number;
 }
 

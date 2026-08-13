@@ -5,7 +5,12 @@ import Header from "../components/Header";
 import { useListaPedidos } from "../hooks/useListaPedidos";
 import { useUsuario } from "../hooks/useUsuario";
 import { cambiarEstadoPedido } from "../services/pedido";
-import { ETIQUETA_ESTADO, formatearMonto, transicionesDesde } from "../ts/pedidoReglas";
+import {
+  ETIQUETA_ESTADO,
+  formatearMonto,
+  transicionesDesde,
+  type EstadoConPedido,
+} from "../ts/pedidoReglas";
 import type { ListarPedidosParams, Pedido, PedidoEstado } from "../ts/interfaces";
 import "../styles/pedidos.css";
 
@@ -68,6 +73,18 @@ export default function PedidosLista() {
   const [pedidoACancelar, setPedidoACancelar] = useState<Pedido | null>(null);
   const [cancelando, setCancelando] = useState(false);
   const [errorCancelar, setErrorCancelar] = useState<string | null>(null);
+
+  /** Lleva al pago para finalizar un borrador pendiente (cobra desde el pedido). */
+  const finalizarBorrador = (p: Pedido) => {
+    navigate("/byte&buy/pago", {
+      state: {
+        pedidoId: p.pedido_id,
+        pedidoNumero: p.pedido_numero,
+        pedidoVersion: p.pedido_version,
+        desdeBorrador: true,
+      } satisfies EstadoConPedido,
+    });
+  };
 
   const confirmarCancelacion = async () => {
     if (!pedidoACancelar || cancelando) return;
@@ -221,6 +238,15 @@ export default function PedidosLista() {
                       >
                         Ver detalle
                       </Link>
+                      {p.pedido_estado === "BORRADOR" && (
+                        <button
+                          type="button"
+                          className="pedidos-link-btn pedidos-link-btn-finalizar"
+                          onClick={() => finalizarBorrador(p)}
+                        >
+                          Finalizar compra
+                        </button>
+                      )}
                       {puedeCancelar(p) && (
                         <button
                           type="button"

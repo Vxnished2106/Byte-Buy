@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import { useCarrito } from "../hooks/useCarrito";
 import { useMetodosPago } from "../hooks/useMetodosPago";
 import { usePago } from "../hooks/usePago";
+import { usePedido } from "../hooks/usePedido";
 import { confirmarPagoPedido } from "../services/pedido";
 import type { EstadoConPedido, EstadoPostPago } from "../ts/pedidoReglas";
 import { calcularCostoEnvio } from "../utils/carrito";
@@ -92,6 +93,10 @@ export default function Pago() {
   // pasado por ahí), se usa el flujo anterior como respaldo: pedir la
   // dirección de envío después de pagar.
   const estadoConPedido = location.state as EstadoConPedido | null;
+  // Al finalizar un BORRADOR pendiente, la fuente de la compra es el propio
+  // pedido (sus líneas y su total), no el carrito.
+  const esModoBorrador = estadoConPedido?.desdeBorrador === true;
+
   const {
     carrito,
     loading: carritoCargando,
@@ -100,11 +105,41 @@ export default function Pago() {
   const { metodos, loading: metodosCargando, error: errorMetodos } =
     useMetodosPago();
   const { pagar, procesando, error: errorPago } = usePago();
+  const {
+    pedido,
+    loading: pedidoCargando,
+    error: errorPedido,
+  } = usePedido(esModoBorrador ? estadoConPedido!.pedidoId : undefined);
 
   const items = carrito?.items ?? [];
-  const subtotal = carrito?.total ?? 0;
-  const envio = calcularCostoEnvio(items);
+
+  // Líneas normalizadas (mismo shape venga del carrito o del pedido) para
+  // mostrar el resumen y para armar la compra. El importe por línea ya trae
+  // aplicado el descuento en ambos casos.
+  const lineasResumen = esModoBorrador
+    ? (pedido?.detalles ?? []).map((d) => ({
+        producto_id: d.producto_id,
+        nombre: d.producto_nombre ?? `Producto #${d.producto_id}`,
+        cantidad: d.detalle_pedido_cantidad,
+        importe: Number(d.detalle_pedido_total),
+      }))
+    : items.map((item) => ({
+        producto_id: item.producto_id,
+        nombre: item.producto_nombre,
+        cantidad: item.cantidad,
+        importe: item.subtotal,
+      }));
+
+  const subtotal = esModoBorrador
+    ? Number(pedido?.pedido_total ?? 0)
+    : carrito?.total ?? 0;
+  const envio = calcularCostoEnvio(lineasResumen);
   const total = subtotal + envio;
+
+  // Un BORRADOR solo se puede finalizar mientras siga en ese estado: si ya se
+  // confirmó o canceló (ej. otra pestaña, lista desactualizada) no se cobra.
+  const borradorNoFinalizable =
+    esModoBorrador && !!pedido && pedido.pedido_estado !== "BORRADOR";
 
   const [metodoPagoId, setMetodoPagoId] = useState<number | null>(null);
   const [numeroTarjeta, setNumeroTarjeta] = useState("");
@@ -140,7 +175,11 @@ export default function Pago() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!carrito || items.length === 0 || !metodoSeleccionado) return;
+    if (!metodoSeleccionado || lineasResumen.length === 0) return;
+    // En el flujo normal se cobra contra el carrito; en modo borrador, contra
+    // el pedido (que debe seguir en BORRADOR).
+    if (!esModoBorrador && !carrito) return;
+    if (esModoBorrador && (!pedido || borradorNoFinalizable)) return;
     setErrorFormulario(null);
 
     // El pago es simulado: solo se valida el formato de lo ingresado (no si
@@ -192,27 +231,30 @@ export default function Pago() {
 
     try {
       const { factura } = await pagar({
-        carrito_id: carrito.carrito_id,
+        // En modo borrador no hay carrito de origen.
+        ...(esModoBorrador ? {} : { carrito_id: carrito!.carrito_id }),
         monto: total,
         metodo_pago_id: metodoSeleccionado.metodo_pago_id,
         detalle,
-        items: items.map((item) => ({
-          producto_id: item.producto_id,
-          cantidad: item.cantidad,
+        items: lineasResumen.map((l) => ({
+          producto_id: l.producto_id,
+          cantidad: l.cantidad,
         })),
       });
 
-      // La venta ya quedó registrada: se vacía el carrito para reflejar la compra.
-      await Promise.all(
-        items.map((item) => eliminarProducto(item.producto_id)),
-      );
+      // El carrito solo se vacía en el flujo normal (fue su origen). Al
+      // finalizar un borrador, el carrito del usuario no se toca.
+      if (!esModoBorrador) {
+        await Promise.all(
+          items.map((item) => eliminarProducto(item.producto_id)),
+        );
+      }
 
       if (estadoConPedido) {
-        // El pedido ya existía (creado antes de pagar) y se quedó en
-        // BORRADOR: se alinea con la venta ya registrada (CONFIRMADO, sin
-        // volver a descontar stock) para que, si se cancela después, se
-        // repongan los productos. Es best-effort: si falla, no se bloquea
-        // la confirmación de la compra, que ya se completó.
+        // El pedido ya existía en BORRADOR: se alinea con la venta ya
+        // registrada (CONFIRMADO, sin volver a descontar stock) para que, si
+        // se cancela después, se repongan los productos. Es best-effort: si
+        // falla, no se bloquea la confirmación de la compra, ya completada.
         try {
           await confirmarPagoPedido(estadoConPedido.pedidoId);
         } catch (err) {
@@ -242,7 +284,7 @@ export default function Pago() {
     }
   };
 
-  if (carritoCargando || metodosCargando) {
+  if (carritoCargando || metodosCargando || (esModoBorrador && pedidoCargando)) {
     return (
       <>
         <Header />
@@ -253,7 +295,46 @@ export default function Pago() {
     );
   }
 
-  if (items.length === 0) {
+  // El borrador ya no está pendiente (se confirmó o canceló desde otro lado).
+  if (borradorNoFinalizable) {
+    return (
+      <>
+        <Header />
+        <main className="payment-container">
+          <div className="cart-empty">
+            <h3>Este pedido ya no está pendiente</h3>
+            <p>El pedido {estadoConPedido!.pedidoNumero} ya fue procesado.</p>
+            <Link
+              to={`/byte&buy/pedidos/${estadoConPedido!.pedidoId}`}
+              className="cart-empty-button"
+            >
+              Ver pedido
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  // No se pudo cargar el pedido a finalizar.
+  if (esModoBorrador && (errorPedido || !pedido)) {
+    return (
+      <>
+        <Header />
+        <main className="payment-container">
+          <div className="cart-empty">
+            <h3>No se pudo cargar el pedido</h3>
+            <p>{errorPedido ?? "Intenta de nuevo desde tus pedidos."}</p>
+            <Link to="/byte&buy/pedidos" className="cart-empty-button">
+              Ir a mis pedidos
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  if (lineasResumen.length === 0) {
     return (
       <>
         <Header />
@@ -276,6 +357,13 @@ export default function Pago() {
       <main className="payment-container">
         <form className="payment-method-section" onSubmit={handleSubmit}>
           <h2>Método de pago</h2>
+
+          {esModoBorrador && (
+            <p className="payment-info-box">
+              Estás finalizando tu pedido {estadoConPedido!.pedidoNumero}. Se
+              cobrarán los productos de ese pedido; tu carrito no se modifica.
+            </p>
+          )}
 
           {errorMetodos && <p className="payment-error">{errorMetodos}</p>}
 
@@ -444,8 +532,11 @@ export default function Pago() {
             {procesando ? "Procesando..." : "Continuar al pedido"}
           </button>
 
-          <Link to="/byte&buy/carrito" className="back-link">
-            ← Volver al carrito
+          <Link
+            to={esModoBorrador ? "/byte&buy/pedidos" : "/byte&buy/carrito"}
+            className="back-link"
+          >
+            {esModoBorrador ? "← Volver a mis pedidos" : "← Volver al carrito"}
           </Link>
         </form>
 
@@ -453,14 +544,14 @@ export default function Pago() {
           <h4>Tu pedido</h4>
 
           <div className="order-items">
-            {items.map((item) => (
-              <div className="order-item" key={item.producto_id}>
+            {lineasResumen.map((linea) => (
+              <div className="order-item" key={linea.producto_id}>
                 <div className="order-item-image">
-                  <span className="order-item-qty">{item.cantidad}</span>
+                  <span className="order-item-qty">{linea.cantidad}</span>
                 </div>
-                <span className="order-item-name">{item.producto_nombre}</span>
+                <span className="order-item-name">{linea.nombre}</span>
                 <span className="order-item-price">
-                  ${item.subtotal.toFixed(2)}
+                  ${linea.importe.toFixed(2)}
                 </span>
               </div>
             ))}

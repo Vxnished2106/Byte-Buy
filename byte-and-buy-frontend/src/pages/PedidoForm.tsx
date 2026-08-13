@@ -310,11 +310,11 @@ export default function PedidoForm() {
 
     if (hayErrores) return;
 
+    // Solo se envía producto y cantidad: el precio y el descuento los fija el
+    // servidor desde el catálogo (no son editables desde el pedido).
     const items: PedidoItem[] = lineas.map((l) => ({
       producto_id: l.producto_id,
       cantidad: l.cantidad,
-      precio_unitario: l.precio_unitario,
-      descuento_pct: l.descuento_pct,
     }));
 
     setEnviando(true);
@@ -356,6 +356,7 @@ export default function PedidoForm() {
             state: {
               pedidoId: creado.pedido_id,
               pedidoNumero: creado.pedido_numero,
+              pedidoVersion: creado.pedido_version,
             } satisfies EstadoConPedido,
           });
         } else {

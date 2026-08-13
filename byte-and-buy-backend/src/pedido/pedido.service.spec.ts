@@ -180,17 +180,19 @@ describe('PedidoService', () => {
       });
     });
 
-    it('usa el precio del catálogo cuando la línea no envía precio_unitario', async () => {
+    it('usa siempre el precio del catálogo para la línea', async () => {
       await service.crear(dtoBase, actorCliente);
       expect(pedidoCreado().detalles[0].detalle_pedido_precio_unitario).toBe(100);
     });
 
-    it('respeta el precio_unitario enviado por la línea cuando es válido', async () => {
+    it('ignora cualquier precio_unitario que envíe el cliente (usa el del catálogo)', async () => {
       await service.crear(
-        { cliente_id: CLIENTE_ID, items: [{ producto_id: 100, cantidad: 1, precio_unitario: 50 }] },
+        // El cliente no debería poder fijar el precio; se manda igual para
+        // asegurar que el servidor lo descarta y toma el del catálogo (100).
+        { cliente_id: CLIENTE_ID, items: [{ producto_id: 100, cantidad: 1, precio_unitario: 50 } as any] },
         actorCliente,
       );
-      expect(pedidoCreado().detalles[0].detalle_pedido_precio_unitario).toBe(50);
+      expect(pedidoCreado().detalles[0].detalle_pedido_precio_unitario).toBe(100);
     });
 
     it('INVARIANTE: rechaza si el cliente no existe', async () => {

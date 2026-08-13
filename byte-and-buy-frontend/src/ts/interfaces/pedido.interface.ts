@@ -66,14 +66,14 @@ export interface PedidoPaginado {
   total_paginas: number;
 }
 
-/** Línea enviada al crear/editar un pedido. */
+/**
+ * Línea enviada al crear/editar un pedido: solo producto y cantidad. El precio,
+ * el descuento y el impuesto son datos del catálogo y los fija el servidor; el
+ * cliente no puede enviarlos.
+ */
 export interface PedidoItem {
   producto_id: number;
   cantidad: number;
-  /** Opcional: si no se envía, el servidor usa el precio del catálogo. */
-  precio_unitario?: number;
-  /** Opcional: porcentaje de descuento 0–100. */
-  descuento_pct?: number;
 }
 
 /** Cuerpo de `POST /pedidos`. */
@@ -99,6 +99,11 @@ export interface CambiarEstadoPedido {
   nuevo_estado: PedidoEstado;
   pedido_version: number;
   nota?: string;
+  /**
+   * Confirma sin volver a descontar stock (lo usa el checkout: el pago ya lo
+   * descontó al registrar el detalle de compra). Solo aplica al confirmar.
+   */
+  omitir_stock?: boolean;
 }
 
 /** Parámetros de consulta del listado `GET /pedidos`. */

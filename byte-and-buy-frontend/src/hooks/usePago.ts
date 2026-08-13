@@ -12,8 +12,9 @@ interface ItemCheckout {
 }
 
 interface DatosCheckout {
-  carrito_id: number;
-  /** Monto final a cobrar (subtotal del carrito + envío). */
+  /** Carrito de origen. Ausente cuando se finaliza un pedido en BORRADOR. */
+  carrito_id?: number;
+  /** Monto final a cobrar (subtotal + envío). */
   monto: number;
   metodo_pago_id: number;
   /** Datos adicionales a guardar junto al pago (ej. últimos 4 dígitos de la tarjeta, correo de PayPal). */
@@ -47,7 +48,7 @@ export function usePago() {
       setError(null);
       try {
         const venta = await registrarVenta({
-          carrito_id: datos.carrito_id,
+          ...(datos.carrito_id != null ? { carrito_id: datos.carrito_id } : {}),
           venta_monto: datos.monto,
         });
 

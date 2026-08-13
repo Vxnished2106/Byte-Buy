@@ -129,10 +129,10 @@ export class PedidoService {
         );
       }
 
-      const precio = this.redondear(
-        item.precio_unitario ?? Number(producto.producto_precio),
-      );
-      const descuentoPct = item.descuento_pct ?? Number(producto.producto_descuento);
+      // El precio, el descuento y el impuesto son datos del PRODUCTO, no del
+      // pedido: salen siempre del catálogo y el cliente no puede fijarlos.
+      const precio = this.redondear(Number(producto.producto_precio));
+      const descuentoPct = Number(producto.producto_descuento);
       const impuestoPct = Number(producto.producto_impuesto);
 
       if (precio < 0) {
@@ -416,7 +416,11 @@ export class PedidoService {
 
     await this.dataSource.transaction(async (manager) => {
       if (dto.nuevo_estado === PedidoEstado.CONFIRMADO) {
-        await this.descontarStock(manager, pedido);
+        // El checkout ya descontó el inventario al registrar el detalle de
+        // compra; en ese caso se confirma sin volver a descontarlo.
+        if (!dto.omitir_stock) {
+          await this.descontarStock(manager, pedido);
+        }
       } else if (
         dto.nuevo_estado === PedidoEstado.CANCELADO &&
         (estadoAnterior === PedidoEstado.CONFIRMADO ||

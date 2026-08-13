@@ -29,11 +29,14 @@ Header opcional `Idempotency-Key: <uuid>` para evitar duplicados por reintento.
   "pedido_notas": "Entregar en la tarde",    // opcional
   "direccion_envio_id": 10,                    // opcional en BORRADOR
   "items": [
-    { "producto_id": 100, "cantidad": 2 },
-    { "producto_id": 200, "cantidad": 1, "precio_unitario": 50, "descuento_pct": 10 }
+    { "producto_id": 100, "cantidad": 2 },   // solo producto + cantidad
+    { "producto_id": 200, "cantidad": 1 }     // precio/descuento/impuesto: del catálogo
   ]
 }
 ```
+> Cada línea solo lleva `producto_id` y `cantidad`. El precio unitario, el
+> descuento y el impuesto los fija SIEMPRE el servidor desde el catálogo; el
+> cliente no puede enviarlos.
 Respuesta `201`: objeto `Pedido` (ver esquema abajo).
 
 ### `GET /pedidos` — Listado paginado (server-side)

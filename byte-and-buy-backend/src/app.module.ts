@@ -46,7 +46,7 @@ import { PedidoModule } from './pedido/pedido.module';
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        synchronize: false,
         charset: 'utf8mb4',
         // Los MySQL gestionados (Aiven, etc.) exigen TLS. Con DB_SSL=true se
         // conecta cifrado; rejectUnauthorized:false evita tener que embarcar

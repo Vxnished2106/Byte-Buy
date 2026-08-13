@@ -4,8 +4,6 @@ import {
   ArrayNotEmpty,
   ValidateNested,
   Min,
-  Max,
-  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -16,10 +14,10 @@ import { Type } from 'class-transformer';
 /**
  * DTO de una línea del pedido en la creación/edición.
  *
- * `precio_unitario` y `descuento_pct` son opcionales: si no llegan, el servidor
- * usa el precio del catálogo y 0 % de descuento. La validación aquí es solo de
- * forma/rango; las invariantes de negocio (producto activo, stock, etc.) viven
- * en el servicio.
+ * Una línea solo identifica el producto y la cantidad: el precio, el descuento
+ * y el impuesto SIEMPRE salen del catálogo (el cliente no puede fijarlos). La
+ * validación aquí es solo de forma; las invariantes de negocio (producto
+ * activo, stock, etc.) viven en el servicio.
  */
 export class PedidoItemDto {
   /** ID del producto de la línea. */
@@ -30,19 +28,6 @@ export class PedidoItemDto {
   @IsInt()
   @Min(1)
   cantidad: number;
-
-  /** Precio unitario propuesto (opcional; el servidor puede sobrescribirlo). */
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  precio_unitario?: number;
-
-  /** Porcentaje de descuento de la línea (0–100). */
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(100)
-  descuento_pct?: number;
 }
 
 /**

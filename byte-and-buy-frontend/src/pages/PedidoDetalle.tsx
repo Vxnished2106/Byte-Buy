@@ -1,7 +1,11 @@
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import Header from "../components/Header";
 import { usePedido } from "../hooks/usePedido";
-import { ETIQUETA_ESTADO, formatearMonto } from "../ts/pedidoReglas";
+import {
+  ETIQUETA_ESTADO,
+  formatearMonto,
+  type EstadoConPedido,
+} from "../ts/pedidoReglas";
 import "../styles/pedidos.css";
 
 /**
@@ -10,6 +14,7 @@ import "../styles/pedidos.css";
  * administración, no el cliente.
  */
 export default function PedidoDetalle() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const pedidoId = id ? Number(id) : undefined;
 
@@ -57,6 +62,31 @@ export default function PedidoDetalle() {
             {ETIQUETA_ESTADO[pedido.pedido_estado]}
           </span>
         </div>
+
+        {pedido.pedido_estado === "BORRADOR" && (
+          <div className="pedido-detalle-acciones">
+            <p className="pedidos-banner-info">
+              Este pedido quedó pendiente de pago. Puedes finalizarlo cuando
+              quieras; se cobrarán estos productos sin tocar tu carrito.
+            </p>
+            <button
+              type="button"
+              className="pedidos-btn-primary"
+              onClick={() =>
+                navigate("/byte&buy/pago", {
+                  state: {
+                    pedidoId: pedido.pedido_id,
+                    pedidoNumero: pedido.pedido_numero,
+                    pedidoVersion: pedido.pedido_version,
+                    desdeBorrador: true,
+                  } satisfies EstadoConPedido,
+                })
+              }
+            >
+              Finalizar compra
+            </button>
+          </div>
+        )}
 
         <section className="pedido-detalle-meta">
           <div><span>Fecha</span><span>{new Date(pedido.pedido_fecha).toLocaleDateString()}</span></div>

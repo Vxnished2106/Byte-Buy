@@ -155,4 +155,13 @@ export interface EstadoDesdeCarrito {
 export interface EstadoConPedido {
   pedidoId: number;
   pedidoNumero: string;
+  /** Versión del pedido recién creado, para confirmarlo al pagar (concurrencia optimista). */
+  pedidoVersion: number;
+  /**
+   * `true` cuando se llega al pago para FINALIZAR un pedido en BORRADOR que
+   * quedó pendiente (no viene del carrito). En ese caso `Pago` toma los
+   * productos y el monto del propio pedido, no del carrito, y no vacía el
+   * carrito al terminar.
+   */
+  desdeBorrador?: boolean;
 }
